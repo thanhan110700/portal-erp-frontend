@@ -14,17 +14,16 @@ export const loginApi = {
     credentials: LoginCredentials,
   ): Promise<{ user: User; token: string }> {
     await this.getCsrfCookie();
-    const response = await axiosInstance.post<{ data: User; token: string }>(
-      "/auth/login",
-      credentials,
-    );
-    const u = response.data.data;
+    const response = await axiosInstance.post<{
+      data: { token: string; token_type: string; user: User };
+    }>("/v1/auth/login", credentials);
+    const { token, user: u } = response.data.data;
     return {
       user: {
         ...u,
         permissions: Array.isArray(u.permissions) ? u.permissions : [],
       },
-      token: response.data.token,
+      token,
     };
   },
 
@@ -46,7 +45,7 @@ export const loginApi = {
   },
 
   async getMe(): Promise<User> {
-    const response = await axiosInstance.get<ApiResponse<User>>("/auth/me");
+    const response = await axiosInstance.get<ApiResponse<User>>("/v1/auth/me");
     const u = response.data.data;
     return {
       ...u,

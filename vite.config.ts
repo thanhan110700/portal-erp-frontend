@@ -24,8 +24,8 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
     },
   },
-  // server: {
-  //   host: true,
-  //   allowedHosts: ['ticollab.test'],
-  // },
+  server: {
+    host: true,
+    allowedHosts: ["portal.test"],
+  },
 });
