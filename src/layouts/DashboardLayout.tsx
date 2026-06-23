@@ -1,123 +1,89 @@
-import { useState, useMemo, memo } from "react";
-import { Layout, Menu } from "antd";
-import { Link, useNavigation, Outlet } from "react-router-dom";
+import { memo } from "react"
+import { Outlet, useMatches, useNavigation } from "react-router-dom"
 
-import { Header } from "@/components/common/Header";
-import { ScreenTitle } from "@/components/common/ScreenTitle";
-import { NAVIGATION_ITEMS, type NavItem } from "@/constants/header";
-import { useTheme } from "@/hooks/useTheme";
-import { cn } from "@/lib/utils";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Separator } from "@/components/ui/separator"
+import { ThemeToggle } from "@/components/common/ThemeToggle"
+import { MobileBottomNav } from "@/components/common/MobileBottomNav"
+import { useIsMobile } from "@/hooks/useMobile"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
 
-import logoRed from "@/assets/logo-s-red.png";
-import logoWhite from "@/assets/logo-s-white.png";
+type RouteTitleHandle = { title?: string }
 
-const { Content, Sider } = Layout;
-
-function NavigationProgress() {
-  const { state } = useNavigation();
-  if (state !== "loading") return null;
-  return (
-    <div className="nav-progress-bar">
-      <div className="nav-progress-bar__inner" />
-    </div>
-  );
+function useRouteTitle() {
+  const matches = useMatches()
+  const leaf = matches[matches.length - 1]
+  return (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? ""
 }
 
-function filterNavItemsForUser(items: NavItem[]): NavItem[] {
-  return items;
+function NavigationProgress() {
+  const { state } = useNavigation()
+  if (state !== "loading") return null
+  return (
+    <div className="fixed top-0 left-0 z-50 h-0.5 w-full overflow-hidden" aria-hidden>
+      <div
+        className="h-full w-1/4 bg-primary"
+        style={{ animation: "nav-progress 1.2s ease-in-out infinite" }}
+      />
+    </div>
+  )
 }
 
 function DashboardLayoutInner() {
-  const [collapsed, setCollapsed] = useState(false);
-  const { theme } = useTheme();
-
-  const navItems = useMemo(() => {
-    return filterNavItemsForUser(NAVIGATION_ITEMS);
-  }, []);
-
-  // Build vertical menu items
-  const menuItems = useMemo(() => {
-    return navItems.map((item) => {
-      const Icon = item.icon;
-      if (item.items?.length) {
-        return {
-          key: item.name,
-          icon: Icon ? <Icon /> : null,
-          label: item.name,
-          children: item.items.map((sub) => {
-            const SubIcon = sub.icon;
-            return {
-              key: sub.href,
-              icon: SubIcon ? <SubIcon /> : null,
-              label: <Link to={sub.href}>{sub.name}</Link>,
-            };
-          }),
-        };
-      }
-      return {
-        key: item.href ?? item.name,
-        icon: Icon ? <Icon /> : null,
-        label: item.href ? <Link to={item.href}>{item.name}</Link> : item.name,
-      };
-    });
-  }, [navItems]);
-
-  const isDark = theme === "dark";
-  const logoSrc = isDark ? logoWhite : logoRed;
+  const title = useRouteTitle()
+  const isMobile = useIsMobile()
 
   return (
-    <Layout className="min-h-screen">
-      <NavigationProgress />
+    <TooltipProvider>
+      {/* On mobile: no persistent sidebar — just bottom nav + sheet via SidebarTrigger */}
+      <SidebarProvider defaultOpen={!isMobile}>
+        <NavigationProgress />
 
-      {/* Sider (Sidebar Menu) */}
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}
-        trigger={null}
-        theme={theme}
-        className="border-r border-border/50 bg-card sticky top-0 h-screen left-0"
-      >
-        {/* Brand / Logo section */}
-        <div
-          className={cn(
-            "h-16 flex items-center gap-3 border-b border-border/50 overflow-hidden",
-            collapsed ? "justify-center p-0" : "justify-start px-5",
-          )}
-        >
-          <img
-            src={logoSrc}
-            alt="Logo"
-            className={cn(
-              "h-6 w-auto object-contain shrink-0",
-              !isDark && "[filter:hue-rotate(215deg)_saturate(1.5)]",
-            )}
-          />
-        </div>
+        {/* Sidebar only visible on desktop, Sheet on mobile */}
+        <AppSidebar />
 
-        {/* Sidebar Menu */}
-        <Menu
-          mode="inline"
-          theme={theme}
-          items={menuItems}
-          className="!border-r-0"
-        />
-      </Sider>
+        <SidebarInset>
+          {/* Sticky header */}
+          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur px-3 md:px-4 supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center gap-2">
+              {/* On mobile: hamburger opens full sidebar Sheet */}
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-1 h-4" />
+              {title && (
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="font-medium text-sm">{title}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+            </div>
+          </header>
 
-      {/* Main Layout containing Topbar and Content */}
-      <Layout>
-        <Header
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed(!collapsed)}
-        />
+          {/* Main content — extra bottom padding on mobile for bottom nav */}
+          <main className={`flex-1 px-3 py-4 md:px-6 md:py-6 ${isMobile ? "pb-20" : ""}`}>
+            {/* <ScreenTitle /> */}
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
 
-        <Content className="p-6 bg-background min-h-[calc(100vh-64px)] [overflow:initial]">
-          <ScreenTitle />
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
-  );
+      {/* Mobile-only bottom navigation bar */}
+      <MobileBottomNav />
+    </TooltipProvider>
+  )
 }
 
-export const DashboardLayout = memo(DashboardLayoutInner);
+export const DashboardLayout = memo(DashboardLayoutInner)
+export default DashboardLayout

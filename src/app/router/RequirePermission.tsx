@@ -1,11 +1,20 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
+import { Navigate } from "react-router-dom"
+
+import { PATHS } from "@/constants/paths"
+import { hasPermission } from "@/constants/permissions"
+import { useAuthStore } from "@/hooks/useAuthStore"
 
 export function RequirePermission({
+  permission,
   children,
 }: {
-  permission: string;
-  children: ReactNode;
+  permission: string
+  children: ReactNode
 }) {
-  // Tạm thời bỏ qua kiểm tra permission
-  return <>{children}</>;
+  const user = useAuthStore((s) => s.user)
+  if (!hasPermission(user?.permissions, permission)) {
+    return <Navigate to={PATHS.dashboard} replace />
+  }
+  return <>{children}</>
 }

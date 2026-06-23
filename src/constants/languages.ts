@@ -183,4 +183,4 @@ export const LANGUAGE_OPTIONS: { label: string; value: string }[] = [
   { label: "Yoruba", value: "yo" },
   { label: "Zhuang", value: "za" },
   { label: "Zulu", value: "zu" },
-];
+]

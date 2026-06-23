@@ -1,10 +1,10 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
 interface SessionStore {
-  token: string | null;
-  setToken: (token: string | null) => void;
-  clearSession: () => void;
+  token: string | null
+  setToken: (token: string | null) => void
+  clearSession: () => void
 }
 
 export const useSessionStore = create<SessionStore>()(
@@ -16,4 +16,4 @@ export const useSessionStore = create<SessionStore>()(
     }),
     { name: "session-store" },
   ),
-);
+)

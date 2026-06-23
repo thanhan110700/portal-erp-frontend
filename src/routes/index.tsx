@@ -1,19 +1,15 @@
-import { lazy } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { lazy } from "react"
+import { createBrowserRouter, Navigate } from "react-router-dom"
 
-import { AppErrorPage } from "@/features/errors/pages/AppErrorPage";
-// import { ProtectedRoute } from "@/app/router/ProtectedRoute";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
-import { PATHS, routeSegment } from "@/constants/paths";
-import { PageLoader } from "@/components/common/PageLoader";
-// import { RequirePermission } from '@/app/router/RequirePermission'
+import { AppErrorPage } from "@/features/errors/pages/AppErrorPage"
+import { DashboardLayout } from "@/layouts/DashboardLayout"
+import { PATHS, routeSegment } from "@/constants/paths"
+import { PageLoader } from "@/components/common/PageLoader"
 
-const AuthLayout = lazy(() => import("@/layouts/AuthLayout"));
+const AuthLayout = lazy(() => import("@/layouts/AuthLayout"))
 const LoginPage = lazy(() =>
-  import("@/features/auth/pages/LoginPage").then((m) => ({
-    default: m.LoginPage,
-  })),
-);
+  import("@/features/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+)
 
 // function withPermission(Page: ComponentType, permission?: string): ComponentType {
 //   if (!permission) return Page
@@ -49,9 +45,8 @@ export const router = createBrowserRouter([
       {
         path: "*",
         lazy: async () => {
-          const { NotFoundPage } =
-            await import("@/features/errors/pages/NotFoundPage");
-          return { Component: NotFoundPage };
+          const { NotFoundPage } = await import("@/features/errors/pages/NotFoundPage")
+          return { Component: NotFoundPage }
         },
       },
       {
@@ -66,11 +61,19 @@ export const router = createBrowserRouter([
               {
                 path: routeSegment(PATHS.dashboard),
                 lazy: async () => {
-                  const { DashboardPage } =
-                    await import("@/features/dashboard/pages/DashboardPage");
-                  return { Component: DashboardPage };
+                  const { DashboardPage } = await import("@/features/dashboard/pages/DashboardPage")
+                  return { Component: DashboardPage }
                 },
                 handle: { title: "Dashboard" },
+              },
+              {
+                path: routeSegment(PATHS.examples),
+                lazy: async () => {
+                  const { ComponentExamplesPage } =
+                    await import("@/features/examples/pages/ComponentExamplesPage")
+                  return { Component: ComponentExamplesPage }
+                },
+                handle: { title: "Component Examples" },
               },
             ],
           },
@@ -78,4 +81,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+])

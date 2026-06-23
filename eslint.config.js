@@ -1,15 +1,14 @@
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-import globals from 'globals'
-import tseslint from 'typescript-eslint'
-import importPlugin from 'eslint-plugin-import'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import reactCompiler from 'eslint-plugin-react-compiler'
-import js from '@eslint/js'
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
+import globals from "globals"
+import tseslint from "typescript-eslint"
+import importPlugin from "eslint-plugin-import"
+import reactHooks from "eslint-plugin-react-hooks"
+import reactRefresh from "eslint-plugin-react-refresh"
+import js from "@eslint/js"
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'eslint.config.js', 'dist/**', 'node_modules/**'],
+    ignores: ["eslint.config.mjs", "eslint.config.js", "dist/**", "node_modules/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -19,51 +18,66 @@ export default tseslint.config(
         ...globals.browser,
         ...globals.node,
       },
-      sourceType: 'module',
+      sourceType: "module",
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
     settings: {
-      'import/resolver': {
+      "import/resolver": {
         typescript: {
           alwaysTryTypes: true,
-          project: './tsconfig.json',
+          project: "./tsconfig.json",
         },
       },
     },
   },
-  eslintPluginPrettierRecommended,
   {
     plugins: {
       import: importPlugin,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-      'react-compiler': reactCompiler,
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-compiler/react-compiler': 'warn',
-      'react-refresh/only-export-components': ['off', { allowConstantExport: true }],
-      'prettier/prettier': 'error',
-      '@typescript-eslint/no-empty-function': [
-        'error',
+      "react-refresh/only-export-components": ["off", { allowConstantExport: true }],
+      "prettier/prettier": [
+        "error",
         {
-          allow: ['functions', 'constructors'],
+          semi: false,
+          singleQuote: false,
+          printWidth: 100,
+          tabWidth: 2,
+          useTabs: false,
+          trailingComma: "all",
+          arrowParens: "always",
+          endOfLine: "lf",
+          jsxSingleQuote: false,
+          bracketSpacing: true,
         },
       ],
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/require-await': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
-      '@typescript-eslint/only-throw-error': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      quotes: ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
+      "jsx-quotes": ["error", "prefer-double"],
+      "@typescript-eslint/no-empty-function": [
+        "error",
+        {
+          allow: ["functions", "constructors"],
+        },
+      ],
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-return": "warn",
+      "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/require-await": "warn",
+      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/only-throw-error": "warn",
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-empty-function": "off",
     },
   },
+  eslintPluginPrettierRecommended,
 )

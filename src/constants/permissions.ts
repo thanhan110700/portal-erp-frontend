@@ -5,44 +5,41 @@
 
 export const PermissionSlugs = {
   FullAccess: "*",
-} as const;
+} as const
 
 export function allPermissionSlugs(): string[] {
-  return Object.values(PermissionSlugs);
+  return Object.values(PermissionSlugs)
 }
 
 export function hasFullAccess(perms: string[]): boolean {
   // Always return true to default to full access
-  return perms !== undefined;
+  return perms !== undefined
 }
 
-export function hasPermission(
-  perms: string[] | null | undefined,
-  slug: string,
-): boolean {
+export function hasPermission(perms: string[] | null | undefined, slug: string): boolean {
   // Always return true to default to full access
-  return perms !== undefined && slug !== undefined;
+  return perms !== undefined && slug !== undefined
 }
 
 export function countActivePermissions(perms: string[]): number {
-  return perms.length ? 1 : 1;
+  return perms.length ? 1 : 1
 }
 
 export type PermissionDefinition = {
-  key: keyof typeof PermissionSlugs;
-  slug: string;
-  label: string;
-};
+  key: keyof typeof PermissionSlugs
+  slug: string
+  label: string
+}
 
 export type PermissionCluster = {
-  id: string;
-  label: string;
+  id: string
+  label: string
   screens: {
-    id: string;
-    label: string;
-    permissions: PermissionDefinition[];
-  }[];
-};
+    id: string
+    label: string
+    permissions: PermissionDefinition[]
+  }[]
+}
 
 export const PERMISSION_CATALOG: PermissionCluster[] = [
   {
@@ -53,13 +50,9 @@ export const PERMISSION_CATALOG: PermissionCluster[] = [
         id: "full-access",
         label: "Full Access",
         permissions: [
-          {
-            key: "FullAccess",
-            slug: PermissionSlugs.FullAccess,
-            label: "Full Access",
-          },
+          { key: "FullAccess", slug: PermissionSlugs.FullAccess, label: "Full Access" },
         ],
       },
     ],
   },
-];
+]

@@ -1,111 +1,145 @@
+import { forwardRef, memo, useCallback, useEffect, useMemo, useState } from "react"
+import type { Control, FieldPath, FieldValues } from "react-hook-form"
+import { EditorContent, useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import Underline from "@tiptap/extension-underline"
+import Link from "@tiptap/extension-link"
+import Image from "@tiptap/extension-image"
+import Placeholder from "@tiptap/extension-placeholder"
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableCell } from "@tiptap/extension-table-cell"
+import { TableHeader } from "@tiptap/extension-table-header"
 import {
-  forwardRef,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableCell } from "@tiptap/extension-table-cell";
-import { TableHeader } from "@tiptap/extension-table-header";
+  Bold,
+  Code,
+  CodeSquare,
+  Heading1,
+  Heading2,
+  Heading3,
+  ImageIcon,
+  Italic,
+  Link2,
+  Link2Off,
+  List,
+  ListOrdered,
+  Minus,
+  Quote,
+  Redo2,
+  Strikethrough,
+  Underline as UnderlineIcon,
+  Undo2,
+  Table as TableIcon,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  FileCode,
+} from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
-  BoldOutlined,
-  ItalicOutlined,
-  UnderlineOutlined,
-  StrikethroughOutlined,
-  OrderedListOutlined,
-  UnorderedListOutlined,
-  LinkOutlined,
-  DisconnectOutlined,
-  PictureOutlined,
-  CodeOutlined,
-  MinusOutlined,
-  TableOutlined,
-  RedoOutlined,
-  UndoOutlined,
-  DeleteOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
-import { Button, Input, Popover, Tooltip, Divider, Space } from "antd";
-import { cn } from "@/lib/utils";
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ToolbarButton — small icon toggle button
 // ─────────────────────────────────────────────────────────────────────────────
 
 type ToolbarButtonProps = {
-  onClick: () => void;
-  active?: boolean;
-  disabled?: boolean;
-  title: string;
-  children: React.ReactNode;
-};
+  onClick: () => void
+  active?: boolean
+  disabled?: boolean
+  title: string
+  children: React.ReactNode
+}
 
 const ToolbarButton = memo(
   forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     ({ onClick, active, disabled, title, children }, ref) => {
       return (
-        <Tooltip title={title} placement="top">
-          <button
-            ref={ref}
-            type="button"
-            title={title}
-            disabled={disabled}
-            onClick={onClick}
-            className={cn(
-              "inline-flex items-center justify-center w-7 h-7 rounded border-none transition-colors duration-150 text-sm text-inherit",
-              disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer",
-              active ? "bg-foreground/8" : "bg-transparent",
-            )}
-          >
-            {children}
-          </button>
-        </Tooltip>
-      );
+        <button
+          ref={ref}
+          type="button"
+          title={title}
+          disabled={disabled}
+          onClick={onClick}
+          className={cn(
+            "inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors",
+            "hover:bg-accent hover:text-accent-foreground",
+            "disabled:pointer-events-none disabled:opacity-40",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            active && "bg-accent text-foreground",
+          )}
+        >
+          {children}
+        </button>
+      )
     },
   ),
-);
-ToolbarButton.displayName = "ToolbarButton";
+)
+ToolbarButton.displayName = "ToolbarButton"
+
+const ToolbarTooltipButton = memo((props: ToolbarButtonProps) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <ToolbarButton {...props} title={props.title} />
+      </TooltipTrigger>
+      <TooltipContent side="top" sideOffset={8}>
+        {props.title}
+      </TooltipContent>
+    </Tooltip>
+  )
+})
+ToolbarTooltipButton.displayName = "ToolbarTooltipButton"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ToolbarSeparator
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ToolbarSeparator = memo(() => <div className="mx-1 h-5 w-px shrink-0 bg-border" />)
+ToolbarSeparator.displayName = "ToolbarSeparator"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TextEditor — headless Tiptap rich text editor with full toolbar
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type TextEditorProps = {
-  value?: string;
-  onChange?: (html: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  style?: React.CSSProperties;
+  value?: string
+  onChange?: (html: string) => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
   /** Minimum height of the content area. Defaults to 240px. */
-  minHeight?: string;
-};
+  minHeight?: string
+}
 
 export const TextEditor = memo(function TextEditor({
   value,
   onChange,
   placeholder = "Write something…",
   disabled = false,
-  style,
+  className,
   minHeight = "240px",
 }: TextEditorProps) {
-  const [linkOpen, setLinkOpen] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
-  const [htmlMode, setHtmlMode] = useState(false);
-  const [htmlDraft, setHtmlDraft] = useState("");
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [linkUrl, setLinkUrl] = useState("")
+  const [htmlMode, setHtmlMode] = useState(false)
+  const [htmlDraft, setHtmlDraft] = useState("")
 
+  // NOTE: useEditor does not re-create when extensions change.
+  // `placeholder` must be static for the lifetime of this component instance.
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -115,109 +149,101 @@ export const TextEditor = memo(function TextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          style: "color: #1677ff; text-decoration: underline; cursor: pointer;",
+          class: "text-primary underline underline-offset-2 cursor-pointer",
           rel: "noopener noreferrer",
         },
       }),
       Image.configure({
-        HTMLAttributes: {
-          style: "border-radius: 4px; max-width: 100%; height: auto;",
-        },
+        HTMLAttributes: { class: "rounded-md max-w-full h-auto" },
       }),
       Placeholder.configure({ placeholder }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
-          style:
-            "border-collapse: collapse; width: 100%; margin: 16px 0; border: 1px solid #d9d9d9;",
+          class: "border-collapse table-auto w-full my-4 border border-border",
         },
       }),
       TableRow.configure({
-        HTMLAttributes: { style: "border-bottom: 1px solid #d9d9d9;" },
+        HTMLAttributes: { class: "border-b border-border transition-colors" },
       }),
       TableHeader.configure({
         HTMLAttributes: {
-          style:
-            "border: 1px solid #d9d9d9; padding: 8px 12px; font-weight: 600; text-align: left; background: #fafafa;",
+          class: "border border-border bg-muted/50 px-4 py-2 font-semibold text-left",
         },
       }),
       TableCell.configure({
-        HTMLAttributes: {
-          style: "border: 1px solid #d9d9d9; padding: 8px 12px;",
-        },
+        HTMLAttributes: { class: "border border-border px-4 py-2" },
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- static for editor lifetime
     [],
-  );
+  )
 
   const editor = useEditor({
     extensions,
     content: value ?? "",
     onUpdate: ({ editor: e }) => {
-      onChange?.(e.getHTML());
+      onChange?.(e.getHTML())
     },
     editable: !disabled,
     immediatelyRender: false,
-  });
+  })
 
+  // Sync editable state when disabled changes
   useEffect(() => {
-    if (!editor) return;
-    editor.setEditable(!disabled);
-  }, [editor, disabled]);
+    if (!editor) return
+    editor.setEditable(!disabled)
+  }, [editor, disabled])
 
+  // Sync when value changes externally (e.g. form.reset(), async API load)
   useEffect(() => {
-    if (!editor || editor.isFocused) return;
-    const incoming = value ?? "";
+    if (!editor || editor.isFocused) return
+    const incoming = value ?? ""
     if (incoming !== editor.getHTML()) {
-      editor.commands.setContent(incoming, { emitUpdate: false });
+      editor.commands.setContent(incoming, { emitUpdate: false })
     }
-  }, [value, editor]);
+  }, [value, editor])
 
   const handleLinkOpen = useCallback(() => {
-    if (!editor) return;
-    const href = editor.getAttributes("link").href;
-    setLinkUrl(typeof href === "string" ? href : "");
-    setLinkOpen(true);
-  }, [editor]);
+    if (!editor) return
+    const href = editor.getAttributes("link").href
+    setLinkUrl(typeof href === "string" ? href : "")
+    setLinkOpen(true)
+  }, [editor])
 
   const handleLinkApply = useCallback(() => {
-    if (!editor) return;
-    const url = linkUrl.trim();
+    if (!editor) return
+    const url = linkUrl.trim()
     if (!url) {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      editor.chain().focus().extendMarkRange("link").unsetLink().run()
     } else {
-      editor
-        .chain()
-        .focus()
-        .extendMarkRange("link")
-        .setLink({ href: url })
-        .run();
+      editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run()
     }
-    setLinkOpen(false);
-    setLinkUrl("");
-  }, [editor, linkUrl]);
+    setLinkOpen(false)
+    setLinkUrl("")
+  }, [editor, linkUrl])
 
   const handleLinkRemove = useCallback(() => {
-    if (!editor) return;
-    editor.chain().focus().extendMarkRange("link").unsetLink().run();
-    setLinkOpen(false);
-    setLinkUrl("");
-  }, [editor]);
+    if (!editor) return
+    editor.chain().focus().extendMarkRange("link").unsetLink().run()
+    setLinkOpen(false)
+    setLinkUrl("")
+  }, [editor])
 
   const handleToggleHtmlMode = useCallback(() => {
-    if (!editor) return;
+    if (!editor) return
     if (!htmlMode) {
-      setHtmlDraft(editor.getHTML());
-      setHtmlMode(true);
+      setHtmlDraft(editor.getHTML())
+      setHtmlMode(true)
     } else {
-      editor.commands.setContent(htmlDraft, { emitUpdate: true });
-      setHtmlMode(false);
+      editor.commands.setContent(htmlDraft, { emitUpdate: true })
+      setHtmlMode(false)
     }
-  }, [editor, htmlMode, htmlDraft]);
+  }, [editor, htmlMode, htmlDraft])
 
+  // Stable toolbar handlers
   const tb = useMemo(() => {
-    if (!editor) return null;
+    if (!editor) return null
     return {
       undo: () => editor.chain().focus().undo().run(),
       redo: () => editor.chain().focus().redo().run(),
@@ -235,11 +261,7 @@ export const TextEditor = memo(function TextEditor({
       codeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
       hr: () => editor.chain().focus().setHorizontalRule().run(),
       insertTable: () =>
-        editor
-          .chain()
-          .focus()
-          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-          .run(),
+        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
       addColBefore: () => editor.chain().focus().addColumnBefore().run(),
       addColAfter: () => editor.chain().focus().addColumnAfter().run(),
       deleteCol: () => editor.chain().focus().deleteColumn().run(),
@@ -248,326 +270,329 @@ export const TextEditor = memo(function TextEditor({
       deleteRow: () => editor.chain().focus().deleteRow().run(),
       deleteTable: () => editor.chain().focus().deleteTable().run(),
       openMedia: () => {
-        const url = window.prompt("Enter image URL:");
+        const url = window.prompt("Enter image URL:")
         if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
+          editor.chain().focus().setImage({ src: url }).run()
         }
       },
-    };
-  }, [editor]);
+    }
+  }, [editor])
 
-  if (!editor || !tb) return null;
-
-  const toolbarDivider = (
-    <Divider type="vertical" className="!h-5 !my-0 !mx-0.5" />
-  );
-
-  const linkPopoverContent = (
-    <div className="flex flex-col gap-2 w-[240px]">
-      <span className="text-xs text-muted-foreground">Link URL</span>
-      <Space.Compact>
-        <Input
-          size="small"
-          value={linkUrl}
-          onChange={(e) => setLinkUrl(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleLinkApply();
-            }
-          }}
-          placeholder="https://example.com"
-          autoFocus
-        />
-        <Button size="small" type="primary" onClick={handleLinkApply}>
-          Apply
-        </Button>
-      </Space.Compact>
-      {editor.isActive("link") && (
-        <button
-          type="button"
-          onClick={handleLinkRemove}
-          className="flex items-center gap-1 text-xs text-[#ff4d4f] bg-none border-none cursor-pointer p-0"
-        >
-          <DisconnectOutlined />
-          Remove link
-        </button>
-      )}
-    </div>
-  );
+  if (!editor || !tb) return null
 
   return (
     <div
       className={cn(
-        "border border-[#d9d9d9] dark:border-border rounded-md overflow-hidden bg-white dark:bg-[#1c1c1e]",
-        disabled ? "opacity-60 pointer-events-none" : "pointer-events-auto",
+        "overflow-hidden rounded-md border border-border bg-background transition-colors",
+        "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20",
+        disabled && "pointer-events-none opacity-60",
+        className,
       )}
-      style={style}
     >
-      {/* ── Toolbar ── */}
-      <div className="flex flex-wrap items-center gap-0.5 py-1.5 px-2 border-b border-[#d9d9d9] dark:border-border bg-[#fafafa] dark:bg-[#252527]">
-        {/* History */}
-        <ToolbarButton
-          onClick={tb.undo}
-          disabled={!editor.can().undo()}
-          title="Undo (⌘Z)"
-        >
-          <UndoOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={tb.redo}
-          disabled={!editor.can().redo()}
-          title="Redo (⌘⇧Z)"
-        >
-          <RedoOutlined />
-        </ToolbarButton>
-
-        {toolbarDivider}
-
-        {/* Headings */}
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 1 })}
-          onClick={tb.h1}
-          title="Heading 1"
-        >
-          <span className="font-bold text-[11px]">H1</span>
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 2 })}
-          onClick={tb.h2}
-          title="Heading 2"
-        >
-          <span className="font-bold text-[11px]">H2</span>
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 3 })}
-          onClick={tb.h3}
-          title="Heading 3"
-        >
-          <span className="font-bold text-[11px]">H3</span>
-        </ToolbarButton>
-
-        {toolbarDivider}
-
-        {/* Text marks */}
-        <ToolbarButton
-          active={editor.isActive("bold")}
-          onClick={tb.bold}
-          title="Bold (⌘B)"
-        >
-          <BoldOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("italic")}
-          onClick={tb.italic}
-          title="Italic (⌘I)"
-        >
-          <ItalicOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("underline")}
-          onClick={tb.underline}
-          title="Underline (⌘U)"
-        >
-          <UnderlineOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("strike")}
-          onClick={tb.strike}
-          title="Strikethrough"
-        >
-          <StrikethroughOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("code")}
-          onClick={tb.code}
-          title="Inline code"
-        >
-          <CodeOutlined />
-        </ToolbarButton>
-
-        {toolbarDivider}
-
-        {/* Lists */}
-        <ToolbarButton
-          active={editor.isActive("bulletList")}
-          onClick={tb.bulletList}
-          title="Bullet list"
-        >
-          <UnorderedListOutlined />
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("orderedList")}
-          onClick={tb.orderedList}
-          title="Numbered list"
-        >
-          <OrderedListOutlined />
-        </ToolbarButton>
-
-        {toolbarDivider}
-
-        {/* Link */}
-        <Popover
-          open={linkOpen}
-          onOpenChange={setLinkOpen}
-          content={linkPopoverContent}
-          trigger="click"
-          placement="bottom"
-        >
-          <ToolbarButton
-            active={editor.isActive("link")}
-            onClick={handleLinkOpen}
-            title="Insert link"
+      <TooltipProvider delayDuration={400}>
+        {/* ── Toolbar ── */}
+        <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/30 p-1.5">
+          {/* History */}
+          <ToolbarTooltipButton onClick={tb.undo} disabled={!editor.can().undo()} title="Undo (⌘Z)">
+            <Undo2 className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            onClick={tb.redo}
+            disabled={!editor.can().redo()}
+            title="Redo (⌘⇧Z)"
           >
-            <LinkOutlined />
-          </ToolbarButton>
-        </Popover>
+            <Redo2 className="size-3.5" />
+          </ToolbarTooltipButton>
 
-        {/* Image */}
-        <ToolbarButton onClick={tb.openMedia} title="Insert image">
-          <PictureOutlined />
-        </ToolbarButton>
+          <ToolbarSeparator />
 
-        {toolbarDivider}
-
-        {/* HR */}
-        <ToolbarButton onClick={tb.hr} title="Horizontal rule">
-          <MinusOutlined />
-        </ToolbarButton>
-
-        {toolbarDivider}
-
-        {/* Table */}
-        <ToolbarButton onClick={tb.insertTable} title="Insert table">
-          <TableOutlined />
-        </ToolbarButton>
-
-        {editor.isActive("table") && (
-          <>
-            {toolbarDivider}
-            <ToolbarButton onClick={tb.addColBefore} title="Add column before">
-              <ArrowLeftOutlined />
-            </ToolbarButton>
-            <ToolbarButton onClick={tb.addColAfter} title="Add column after">
-              <ArrowRightOutlined />
-            </ToolbarButton>
-            <ToolbarButton onClick={tb.deleteCol} title="Delete column">
-              <span className="text-[10px] font-bold">-C</span>
-            </ToolbarButton>
-            {toolbarDivider}
-            <ToolbarButton onClick={tb.addRowBefore} title="Add row before">
-              <ArrowUpOutlined />
-            </ToolbarButton>
-            <ToolbarButton onClick={tb.addRowAfter} title="Add row after">
-              <ArrowDownOutlined />
-            </ToolbarButton>
-            <ToolbarButton onClick={tb.deleteRow} title="Delete row">
-              <span className="text-[10px] font-bold">-R</span>
-            </ToolbarButton>
-            {toolbarDivider}
-            <ToolbarButton onClick={tb.deleteTable} title="Delete table">
-              <DeleteOutlined className="text-[#ff4d4f]" />
-            </ToolbarButton>
-          </>
-        )}
-
-        <div className="ml-auto">
-          <ToolbarButton
-            onClick={handleToggleHtmlMode}
-            active={htmlMode}
-            title="Edit HTML"
+          {/* Headings */}
+          <ToolbarTooltipButton
+            active={editor.isActive("heading", { level: 1 })}
+            onClick={tb.h1}
+            title="Heading 1"
           >
-            <FileTextOutlined />
-          </ToolbarButton>
+            <Heading1 className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("heading", { level: 2 })}
+            onClick={tb.h2}
+            title="Heading 2"
+          >
+            <Heading2 className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("heading", { level: 3 })}
+            onClick={tb.h3}
+            title="Heading 3"
+          >
+            <Heading3 className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Text marks */}
+          <ToolbarTooltipButton
+            active={editor.isActive("bold")}
+            onClick={tb.bold}
+            title="Bold (⌘B)"
+          >
+            <Bold className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("italic")}
+            onClick={tb.italic}
+            title="Italic (⌘I)"
+          >
+            <Italic className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("underline")}
+            onClick={tb.underline}
+            title="Underline (⌘U)"
+          >
+            <UnderlineIcon className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("strike")}
+            onClick={tb.strike}
+            title="Strikethrough"
+          >
+            <Strikethrough className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("code")}
+            onClick={tb.code}
+            title="Inline code"
+          >
+            <Code className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Lists */}
+          <ToolbarTooltipButton
+            active={editor.isActive("bulletList")}
+            onClick={tb.bulletList}
+            title="Bullet list"
+          >
+            <List className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("orderedList")}
+            onClick={tb.orderedList}
+            title="Numbered list"
+          >
+            <ListOrdered className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Block formats */}
+          <ToolbarTooltipButton
+            active={editor.isActive("blockquote")}
+            onClick={tb.blockquote}
+            title="Blockquote"
+          >
+            <Quote className="size-3.5" />
+          </ToolbarTooltipButton>
+          <ToolbarTooltipButton
+            active={editor.isActive("codeBlock")}
+            onClick={tb.codeBlock}
+            title="Code block"
+          >
+            <CodeSquare className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Link */}
+          <Popover open={linkOpen} onOpenChange={setLinkOpen}>
+            <Tooltip>
+              <PopoverAnchor asChild>
+                <TooltipTrigger asChild>
+                  <ToolbarButton
+                    active={editor.isActive("link")}
+                    onClick={handleLinkOpen}
+                    title="Insert link"
+                  >
+                    <Link2 className="size-3.5" />
+                  </ToolbarButton>
+                </TooltipTrigger>
+              </PopoverAnchor>
+              <TooltipContent side="top" sideOffset={8}>
+                Insert link
+              </TooltipContent>
+            </Tooltip>
+            <PopoverContent className="w-64 p-3" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-medium text-muted-foreground">Link URL</p>
+                <div className="flex gap-1.5">
+                  <Input
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        handleLinkApply()
+                      }
+                    }}
+                    placeholder="https://example.com"
+                    className="h-7 text-xs"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-7 shrink-0 px-2 text-xs"
+                    onClick={handleLinkApply}
+                  >
+                    Apply
+                  </Button>
+                </div>
+                {editor.isActive("link") && (
+                  <button
+                    type="button"
+                    onClick={handleLinkRemove}
+                    className="flex cursor-pointer items-center gap-1 self-start text-xs text-destructive hover:underline"
+                  >
+                    <Link2Off className="size-3" />
+                    Remove link
+                  </button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Image */}
+          <ToolbarTooltipButton onClick={tb.openMedia} title="Insert image">
+            <ImageIcon className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Horizontal rule */}
+          <ToolbarTooltipButton onClick={tb.hr} title="Horizontal rule">
+            <Minus className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          <ToolbarSeparator />
+
+          {/* Table Operations */}
+          <ToolbarTooltipButton onClick={tb.insertTable} title="Insert table">
+            <TableIcon className="size-3.5" />
+          </ToolbarTooltipButton>
+
+          {editor.isActive("table") && (
+            <>
+              <ToolbarSeparator />
+              <ToolbarTooltipButton onClick={tb.addColBefore} title="Add column before">
+                <ArrowLeft className="size-3.5" />
+              </ToolbarTooltipButton>
+              <ToolbarTooltipButton onClick={tb.addColAfter} title="Add column after">
+                <ArrowRight className="size-3.5" />
+              </ToolbarTooltipButton>
+              <ToolbarTooltipButton onClick={tb.deleteCol} title="Delete column">
+                <span className="text-[10px] font-bold uppercase">-C</span>
+              </ToolbarTooltipButton>
+
+              <ToolbarSeparator />
+              <ToolbarTooltipButton onClick={tb.addRowBefore} title="Add row before">
+                <ArrowUp className="size-3.5" />
+              </ToolbarTooltipButton>
+              <ToolbarTooltipButton onClick={tb.addRowAfter} title="Add row after">
+                <ArrowDown className="size-3.5" />
+              </ToolbarTooltipButton>
+              <ToolbarTooltipButton onClick={tb.deleteRow} title="Delete row">
+                <span className="text-[10px] font-bold uppercase">-R</span>
+              </ToolbarTooltipButton>
+
+              <ToolbarSeparator />
+              <ToolbarTooltipButton onClick={tb.deleteTable} title="Delete table">
+                <Trash2 className="size-3.5 text-destructive" />
+              </ToolbarTooltipButton>
+            </>
+          )}
+
+          <div className="ml-auto">
+            <ToolbarTooltipButton
+              onClick={handleToggleHtmlMode}
+              active={htmlMode}
+              title="Edit HTML"
+            >
+              <FileCode className="size-3.5" />
+            </ToolbarTooltipButton>
+          </div>
         </div>
-      </div>
 
-      {/* ── HTML source editor ── */}
-      {htmlMode ? (
-        <textarea
-          value={htmlDraft}
-          onChange={(e) => {
-            setHtmlDraft(e.target.value);
-            onChange?.(e.target.value);
-          }}
-          className="w-full resize-y bg-white dark:bg-[#1c1c1e] py-3 px-4 font-mono text-xs border-none outline-none text-foreground"
-          style={{ minHeight }}
-          spellCheck={false}
-        />
-      ) : null}
+        {/* ── HTML source editor ── */}
+        {htmlMode ? (
+          <textarea
+            value={htmlDraft}
+            onChange={(e) => {
+              setHtmlDraft(e.target.value)
+              onChange?.(e.target.value)
+            }}
+            style={{ minHeight }}
+            className="w-full resize-y bg-background px-4 py-3 font-mono text-xs text-foreground outline-none"
+            spellCheck={false}
+          />
+        ) : null}
 
-      {/* ── Editor content ── */}
-      <div className={htmlMode ? "hidden" : "block"}>
-        <EditorContent
-          editor={editor}
-          style={{ "--editor-min-height": minHeight } as React.CSSProperties}
-          className="tiptap-editor"
-        />
-      </div>
-
-      <style>{`
-        .tiptap-editor .tiptap {
-          min-height: ${minHeight};
-          padding: 12px 16px;
-          outline: none;
-        }
-        .tiptap-editor .tiptap p.is-editor-empty:first-child::before {
-          color: #bfbfbf;
-          content: attr(data-placeholder);
-          float: left;
-          height: 0;
-          pointer-events: none;
-        }
-        .tiptap-editor .tiptap h1 { font-size: 1.75em; font-weight: 700; margin: 0.75em 0 0.5em; }
-        .tiptap-editor .tiptap h2 { font-size: 1.4em; font-weight: 600; margin: 0.75em 0 0.5em; }
-        .tiptap-editor .tiptap h3 { font-size: 1.15em; font-weight: 600; margin: 0.75em 0 0.5em; }
-        .tiptap-editor .tiptap p { margin: 0.5em 0; }
-        .tiptap-editor .tiptap ul, .tiptap-editor .tiptap ol { padding-left: 1.5em; margin: 0.5em 0; }
-        .tiptap-editor .tiptap blockquote {
-          border-left: 3px solid #d9d9d9;
-          margin: 0.75em 0;
-          padding-left: 1em;
-          color: #595959;
-        }
-        .tiptap-editor .tiptap code {
-          background: #f5f5f5;
-          border-radius: 3px;
-          padding: 0.1em 0.3em;
-          font-family: monospace;
-          font-size: 0.85em;
-        }
-        .tiptap-editor .tiptap pre {
-          background: #f5f5f5;
-          border-radius: 4px;
-          padding: 12px 16px;
-          margin: 0.75em 0;
-          overflow-x: auto;
-        }
-        .tiptap-editor .tiptap pre code {
-          background: none;
-          padding: 0;
-        }
-        .tiptap-editor .tiptap hr {
-          border: none;
-          border-top: 1px solid #d9d9d9;
-          margin: 1em 0;
-        }
-        [data-theme="dark"] .tiptap-editor .tiptap blockquote {
-          border-left-color: var(--border);
-          color: var(--muted-foreground);
-        }
-        [data-theme="dark"] .tiptap-editor .tiptap code {
-          background: #2c2c2e;
-          color: #ffffff;
-        }
-        [data-theme="dark"] .tiptap-editor .tiptap pre {
-          background: #2c2c2e;
-        }
-        [data-theme="dark"] .tiptap-editor .tiptap hr {
-          border-top-color: var(--border);
-        }
-      `}</style>
+        {/* ── Editor content ── */}
+        <div className={cn("prose prose-sm dark:prose-invert max-w-none", htmlMode && "hidden")}>
+          <EditorContent
+            editor={editor}
+            style={{ "--editor-min-height": minHeight } as React.CSSProperties}
+            className="[&_.tiptap]:min-h-(--editor-min-height) [&_.tiptap]:px-4 [&_.tiptap]:py-3 [&_.tiptap]:outline-none"
+          />
+        </div>
+      </TooltipProvider>
     </div>
-  );
-});
-TextEditor.displayName = "TextEditor";
+  )
+})
+TextEditor.displayName = "TextEditor"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TextEditorField — self-contained RHF field
+// ─────────────────────────────────────────────────────────────────────────────
+
+type TextEditorFieldProps<T extends FieldValues> = {
+  control: Control<T>
+  name: FieldPath<T>
+  label?: string
+  placeholder?: string
+  description?: string
+  minHeight?: string
+}
+
+export function TextEditorField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  placeholder,
+  description,
+  minHeight,
+}: TextEditorFieldProps<T>) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          {label ? <FormLabel>{label}</FormLabel> : null}
+          <FormControl>
+            <TextEditor
+              value={field.value as string | undefined}
+              onChange={field.onChange}
+              placeholder={placeholder}
+              minHeight={minHeight}
+            />
+          </FormControl>
+          {description ? <FormDescription>{description}</FormDescription> : null}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
