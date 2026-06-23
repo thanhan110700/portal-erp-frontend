@@ -1,33 +1,29 @@
-import { memo } from "react";
-import { useMatches } from "react-router-dom";
-import { Typography, Divider } from "antd";
+import { memo } from "react"
+import { useMatches } from "react-router-dom"
 
-type RouteTitleHandle = { title?: string };
+import { cn } from "@/lib/utils"
 
-function ScreenTitleInner() {
-  const matches = useMatches();
-  const leaf = matches[matches.length - 1];
-  const title =
-    (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? "";
+type RouteTitleHandle = { title?: string }
+
+type ScreenTitleProps = {
+  className?: string
+}
+
+function ScreenTitleInner({ className }: ScreenTitleProps) {
+  const matches = useMatches()
+  const leaf = matches[matches.length - 1]
+  const title = (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? ""
 
   if (!title) {
-    return null;
+    return null
   }
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 pb-3">
-        <div
-          className="w-[3px] h-5 rounded-[2px] bg-primary shrink-0"
-          aria-hidden
-        />
-        <Typography.Title level={3} className="!m-0">
-          {title}
-        </Typography.Title>
-      </div>
-      <Divider className="!m-0" />
+    <div className={cn("mb-6 flex items-center gap-2", className)}>
+      <span className="h-5 w-0.5 shrink-0 rounded-full bg-red-600 dark:bg-red-400" aria-hidden />
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
     </div>
-  );
+  )
 }
 
-export const ScreenTitle = memo(ScreenTitleInner);
+export const ScreenTitle = memo(ScreenTitleInner)

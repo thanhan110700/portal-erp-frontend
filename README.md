@@ -4,19 +4,19 @@ SPA frontend cho hệ thống **big-ticollab**, giao tiếp với backend Larave
 
 ## Tech stack
 
-| Lĩnh vực | Package |
-|----------|---------|
-| Build | Vite 8, TypeScript 5.9 |
-| UI core | React 19, React Router 7 |
-| Styling | Tailwind CSS 4, shadcn/ui (radix-nova), CVA, tailwind-merge |
-| UI bổ sung | Mantine 6, mantine-react-table, @tabler/icons-react |
-| Charts | recharts |
-| Forms | react-hook-form, zod, @hookform/resolvers |
-| HTTP | axios (qua `axiosInstance` ở `@/shared/api/axios`) |
-| Auth | Laravel Sanctum (CSRF cookie + `withCredentials`) |
-| Global state | Zustand |
-| Dates | dayjs |
-| Icons | lucide-react (chính), @tabler/icons-react |
+| Lĩnh vực     | Package                                                     |
+| ------------ | ----------------------------------------------------------- |
+| Build        | Vite 8, TypeScript 5.9                                      |
+| UI core      | React 19, React Router 7                                    |
+| Styling      | Tailwind CSS 4, shadcn/ui (radix-nova), CVA, tailwind-merge |
+| UI bổ sung   | Mantine 6, mantine-react-table, @tabler/icons-react         |
+| Charts       | recharts                                                    |
+| Forms        | react-hook-form, zod, @hookform/resolvers                   |
+| HTTP         | axios (qua `axiosInstance` ở `@/shared/api/axios`)          |
+| Auth         | Laravel Sanctum (CSRF cookie + `withCredentials`)           |
+| Global state | Zustand                                                     |
+| Dates        | dayjs                                                       |
+| Icons        | lucide-react (chính), @tabler/icons-react                   |
 
 ## Yêu cầu
 
@@ -97,13 +97,13 @@ fe/src/
 
 ## Path aliases
 
-| Alias | Trỏ tới |
-|-------|---------|
-| `@/` | `fe/src/` |
+| Alias         | Trỏ tới             |
+| ------------- | ------------------- |
+| `@/`          | `fe/src/`           |
 | `@components` | `fe/src/components` |
-| `@hooks` | `fe/src/hooks` |
-| `@lib` | `fe/src/lib` |
-| `@assets` | `fe/src/assets` |
+| `@hooks`      | `fe/src/hooks`      |
+| `@lib`        | `fe/src/lib`        |
+| `@assets`     | `fe/src/assets`     |
 
 ## Quy ước quan trọng
 

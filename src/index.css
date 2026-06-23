@@ -1,197 +1,457 @@
-@import 'tailwindcss';
-@import '@fontsource-variable/inter';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/inter";
+@plugin "@tailwindcss/typography";
 
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  
-  /* Additional design system variables */
-  --color-primary-focus: var(--primary-focus);
-  --color-primary-on-dark: var(--primary-on-dark);
-  --color-ink: var(--ink);
-  --color-body: var(--body);
-  --color-body-on-dark: var(--body-on-dark);
-  --color-body-muted: var(--body-muted);
-  --color-ink-muted-80: var(--ink-muted-80);
-  --color-ink-muted-48: var(--ink-muted-48);
-  --color-divider-soft: var(--divider-soft);
-  --color-hairline: var(--hairline);
-  --color-canvas: var(--canvas);
-  --color-canvas-parchment: var(--canvas-parchment);
-  --color-surface-pearl: var(--surface-pearl);
-  --color-surface-tile-1: var(--surface-tile-1);
-  --color-surface-tile-2: var(--surface-tile-2);
-  --color-surface-tile-3: var(--surface-tile-3);
-  --color-surface-black: var(--surface-black);
-  --color-surface-chip-translucent: var(--surface-chip-translucent);
-  --color-on-primary: var(--on-primary);
-  --color-on-dark: var(--on-dark);
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
-  /* Spacing */
-  --spacing-xxs: var(--spacing-xxs);
-  --spacing-xs: var(--spacing-xs);
-  --spacing-sm: var(--spacing-sm);
-  --spacing-md: var(--spacing-md);
-  --spacing-lg: var(--spacing-lg);
-  --spacing-xl: var(--spacing-xl);
-  --spacing-xxl: var(--spacing-xxl);
-  --spacing-section: var(--spacing-section);
+@custom-variant dark (&:is(.dark *));
 
-  /* Border radius */
-  --radius-none: var(--radius-none);
-  --radius-xs: var(--radius-xs);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-pill: var(--radius-pill);
+.row-stripe tbody tr:nth-child(even) td {
+  background-color: color-mix(in oklch, var(--muted-foreground) 8%, transparent);
+}
+.row-stripe tbody tr:hover td {
+  background-color: color-mix(in oklch, var(--muted-foreground) 12%, transparent);
+}
+.row-stripe tbody tr[data-summary] td {
+  background-color: color-mix(in oklch, var(--muted-foreground) 18%, transparent);
+}
+
+/* Sticky columns need solid backgrounds so content doesn't bleed through on scroll */
+.row-stripe thead th.sticky-col {
+  background-color: color-mix(in oklch, var(--muted-foreground) 6%, var(--card));
+}
+.row-stripe tbody tr td.sticky-col {
+  background-color: var(--card);
+}
+.row-stripe tbody tr:nth-child(even) td.sticky-col {
+  background-color: color-mix(in oklch, var(--muted-foreground) 8%, var(--card));
+}
+.row-stripe tbody tr:hover td.sticky-col {
+  background-color: color-mix(in oklch, var(--muted-foreground) 12%, var(--card));
+}
+.row-stripe tbody tr[data-summary] td.sticky-col {
+  background-color: color-mix(in oklch, var(--muted-foreground) 18%, var(--card));
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: #f5f5f7;
-  --foreground: #1d1d1f;
-  --card: #ffffff;
-  --card-foreground: #1d1d1f;
-  --popover: #ffffff;
-  --popover-foreground: #1d1d1f;
-  --primary: #0066cc;
-  --primary-foreground: #ffffff;
-  --secondary: #ffffff;
-  --secondary-foreground: #1d1d1f;
-  --muted: #ffffff;
-  --muted-foreground: #717171;
-  --accent: #0066cc;
-  --accent-foreground: #ffffff;
-  --destructive: #e01e2c;
-  --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #0066cc;
-
-  /* Apple specific */
-  --primary-focus: #0071e3;
-  --primary-on-dark: #2997ff;
-  --ink: #1d1d1f;
-  --body: #1d1d1f;
-  --body-on-dark: #ffffff;
-  --body-muted: #cccccc;
-  --ink-muted-80: #333333;
-  --ink-muted-48: #7a7a7a;
-  --divider-soft: #f0f0f0;
-  --hairline: #e0e0e0;
-  --canvas: #ffffff;
-  --canvas-parchment: #f5f5f7;
-  --surface-pearl: #fafafc;
-  --surface-tile-1: #272729;
-  --surface-tile-2: #2a2a2c;
-  --surface-tile-3: #252527;
-  --surface-black: #000000;
-  --surface-chip-translucent: rgba(210, 210, 215, 0.64);
-  --on-primary: #ffffff;
-  --on-dark: #ffffff;
-
-  /* Spacing */
-  --spacing-xxs: 4px;
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
-  --spacing-md: 17px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-  --spacing-section: 80px;
-
-  /* Border radius */
-  --radius-none: 0px;
-  --radius-xs: 5px;
-  --radius-sm: 8px;
-  --radius-md: 11px;
-  --radius-lg: 18px;
-  --radius-pill: 9999px;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.627 0.194 149.214);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.145 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --radius: 0.45rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
-[data-theme="dark"] {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #1c1c1e;
-  --card-foreground: #ffffff;
-  --popover: #1c1c1e;
-  --popover-foreground: #ffffff;
-  --primary: #0066cc;
-  --primary-foreground: #ffffff;
-  --secondary: #1c1c1e;
-  --secondary-foreground: #ffffff;
-  --muted: #1c1c1e;
-  --muted-foreground: #cccccc;
-  --accent: #0066cc;
-  --accent-foreground: #ffffff;
-  --destructive: #e01e2c;
-  --destructive-foreground: #ffffff;
-  --border: #2c2c2e;
-  --input: #2c2c2e;
-  --ring: #0066cc;
-
-  /* Apple specific (Dark equivalents) */
-  --primary-focus: #0071e3;
-  --primary-on-dark: #2997ff;
-  --ink: #ffffff;
-  --body: #ffffff;
-  --body-on-dark: #ffffff;
-  --body-muted: #cccccc;
-  --ink-muted-80: #cccccc;
-  --ink-muted-48: #86868b;
-  --divider-soft: #2c2c2e;
-  --hairline: #2c2c2e;
-  --canvas: #1c1c1e;
-  --canvas-parchment: #000000;
-  --surface-pearl: #2c2c2e;
-  --surface-tile-1: #272729;
-  --surface-tile-2: #2a2a2c;
-  --surface-tile-3: #252527;
-  --surface-black: #000000;
-  --surface-chip-translucent: rgba(255, 255, 255, 0.2);
-  --on-primary: #ffffff;
-  --on-dark: #ffffff;
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Inter Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --spacing-8: 2.8rem;
 }
 
-/* Global resets & base */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.627 0.194 149.214);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.145 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+/* ===== Mantine React Table — sync with shadcn semantic tokens ===== */
+/* Uses CSS custom properties so light/dark switch automatically.     */
+
+/* Outer Paper container */
+.mantine-Paper-root {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
 }
 
-#root {
-  min-height: 100vh;
+/* Top toolbar (search + action buttons row) */
+.mantine-Paper-root > div:first-child {
+  background-color: var(--card) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
-/* Navigation progress bar */
+/* Table element */
+.mantine-Table-root {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+}
+
+/* Header cells */
+.mantine-Table-root thead tr th {
+  background-color: var(--muted) !important;
+  color: var(--muted-foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+  padding: 0.5rem 1rem !important;
+  vertical-align: middle !important;
+}
+
+/* Header row — no extra borders */
+.mantine-Table-root thead tr {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Body cells */
+.mantine-Table-root tbody tr td {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-left: none !important;
+  border-right: none !important;
+  font-size: 0.875rem !important;
+  padding: 0.625rem 1rem !important;
+  transition:
+    background-color 0.1s ease-in-out,
+    color 0.1s ease-in-out !important;
+  vertical-align: middle !important;
+}
+
+/* Last body row — remove bottom border so it doesn't double with container */
+.mantine-Table-root tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* Row hover — generic tables */
+.mantine-Table-root tbody tr:hover td {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Campaign report grouped rows (channel/account/user/campaign group headers) */
+.mantine-Table-root tbody tr.campaign-group-row td {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-weight: 600 !important;
+}
+
+.mantine-Table-root tbody tr.campaign-group-row:hover td {
+  background-color: var(--accent) !important;
+}
+
+/* Backup target directly on group cells to avoid MRT/Mantine row style overrides */
+.mantine-Table-root tbody td.campaign-group-cell {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-weight: 600 !important;
+}
+
+.mantine-Table-root tbody tr:hover td.campaign-group-cell {
+  background-color: var(--accent) !important;
+}
+
+/* ── Campaign report table: disable all hover effects ── */
+.campaign-report-table-container .mantine-Table-root tbody tr:hover td {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+.campaign-report-table-container .mantine-Table-root tbody tr.campaign-group-row td,
+.campaign-report-table-container .mantine-Table-root tbody td.campaign-group-cell {
+  background-color: var(--muted) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.campaign-report-table-container .mantine-Table-root tbody tr.campaign-group-row:hover td,
+.campaign-report-table-container .mantine-Table-root tbody tr:hover td.campaign-group-cell {
+  background-color: var(--muted) !important;
+}
+
+/* Campaign report table: remove row separators and set tight padding */
+.campaign-report-table-container .mantine-Table-root thead tr th,
+.campaign-report-table-container .mantine-Table-root tbody tr td,
+.campaign-report-table-container .mantine-Table-root tfoot tr td {
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  border-bottom: none !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+
+/* Campaign report table: shrink sort icons */
+.campaign-report-table-container .mantine-TableHeadCell-Content-Labels .mantine-ActionIcon-root {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+}
+.campaign-report-table-container
+  .mantine-TableHeadCell-Content-Labels
+  .mantine-ActionIcon-root
+  svg {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Bottom toolbar (pagination row) */
+.mantine-Paper-root > div:last-child {
+  background-color: var(--card) !important;
+  border-top: 1px solid var(--border) !important;
+  padding: 0.4rem 0.75rem !important;
+}
+
+/* Pagination active page */
+.mantine-Pagination-control[data-active] {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-color: var(--primary) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px 0 oklch(0 0 0 / 0.05) !important;
+}
+
+/* Pagination controls */
+.mantine-Pagination-control {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  font-size: 0.75rem !important;
+  min-width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.1s ease-in-out !important;
+}
+.mantine-Pagination-control:hover:not([data-active]) {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Pagination dots/gap */
+.mantine-Pagination-dots {
+  min-width: 1.75rem !important;
+  height: 1.75rem !important;
+  color: var(--muted-foreground) !important;
+  font-size: 0.75rem !important;
+}
+
+/* Search / text input */
+.mantine-TextInput-input {
+  height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out !important;
+}
+.mantine-TextInput-input:focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent) !important;
+  outline: none !important;
+}
+.mantine-TextInput-input::placeholder {
+  color: var(--muted-foreground) !important;
+}
+
+/* Select (rows-per-page dropdown) */
+.mantine-Select-input,
+.mantine-NativeSelect-input {
+  height: 1.75rem !important;
+  min-height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Page info and other common text in toolbar (specific to tables) */
+.mantine-Paper-root .mantine-Text-root {
+  font-size: 0.75rem !important;
+  color: var(--muted-foreground) !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* Dropdown list */
+.mantine-Select-dropdown,
+.mantine-Popover-dropdown {
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow:
+    0 4px 16px -4px oklch(0 0 0 / 12%),
+    0 2px 6px -2px oklch(0 0 0 / 8%) !important;
+}
+.mantine-Select-item[data-selected],
+.mantine-Select-item:hover {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Toolbar action icons (column visibility, density, etc.) */
+.mantine-ActionIcon-root {
+  color: var(--muted-foreground) !important;
+  transition:
+    background-color 0.1s ease-in-out,
+    color 0.1s ease-in-out !important;
+  border-radius: var(--radius-sm) !important;
+}
+.mantine-ActionIcon-root:hover {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Header cell sort icon */
+.mantine-TableHeadCell-Content-Wrapper {
+  gap: 0.25rem !important;
+}
+.mantine-TableHeadCell-Content-Labels {
+  gap: 0.125rem !important;
+}
+
+/* Sort icon — brand red (global .mantine-ActionIcon-root uses !important muted,
+   so we need a more-specific rule to apply the red brand color here).
+   MRT controls opacity: 0.5 = unsorted (dim), 1 = sorted active (vivid). */
+.mantine-TableHeadCell-Content-Labels .mantine-ActionIcon-root {
+  color: var(--destructive) !important;
+}
+.mantine-TableHeadCell-Content-Labels .mantine-ActionIcon-root:hover {
+  color: var(--destructive) !important;
+  background-color: color-mix(in oklch, var(--destructive) 10%, transparent) !important;
+}
+
+/* Column menu / resizer */
+.mantine-Table-root thead th[data-column-pinned-right],
+.mantine-Table-root thead th[data-column-pinned-left] {
+  background-color: var(--muted) !important;
+}
+
+/* Loading overlay */
+.mantine-LoadingOverlay-root {
+  background-color: color-mix(in oklch, var(--card) 75%, transparent) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* ================================================================= */
+
 @keyframes nav-progress {
   0% {
     transform: translateX(-100%);
@@ -201,33 +461,19 @@ body {
   }
 }
 
-.nav-progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
-  height: 2px;
-  width: 100%;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.nav-progress-bar__inner {
-  height: 100%;
-  width: 25%;
-  background: var(--ant-color-primary);
-  animation: nav-progress 1.2s ease-in-out infinite;
-}
-
-/* Ant Design layout overrides */
-.ant-layout {
-  min-height: 100vh;
-}
-
-/* Scrollbar utility */
-.no-scrollbar {
-  scrollbar-width: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    font-size: 16px;
+    color-scheme: light dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 }

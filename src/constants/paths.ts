@@ -6,25 +6,23 @@ export const PATHS = {
   root: "/",
   login: "/login",
   dashboard: "/dashboard",
-  example: "/example",
-} as const;
+  examples: "/examples",
+} as const
 
-export type AppPath = (typeof PATHS)[keyof typeof PATHS];
+export type AppPath = (typeof PATHS)[keyof typeof PATHS]
 
 /**
  * React Router `path` for a child of a layout whose parent route is `path: '/'`.
  * (No leading slash; supports nested segments like `settings/users`.)
  */
-export function routeSegment(
-  path: Exclude<AppPath, typeof PATHS.root>,
-): string {
-  return path.slice(1);
+export function routeSegment(path: Exclude<AppPath, typeof PATHS.root>): string {
+  return path.slice(1)
 }
 
 /** Identifies a top-level nav group; set on route `handle.navSection` and optional `NavItem.navSection`. */
 export const NAV_SECTIONS = {
   dashboard: "dashboard",
   settings: "settings",
-} as const;
+} as const
 
-export type NavSectionId = (typeof NAV_SECTIONS)[keyof typeof NAV_SECTIONS];
+export type NavSectionId = (typeof NAV_SECTIONS)[keyof typeof NAV_SECTIONS]

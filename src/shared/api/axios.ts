@@ -1,7 +1,7 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError } from "axios"
 
-import { apiURL } from "@/config";
-import { useSessionStore } from "@/hooks/useSessionStore";
+import { apiURL } from "@/config"
+import { useSessionStore } from "@/hooks/useSessionStore"
 
 export const axiosInstance = axios.create({
   baseURL: apiURL,
@@ -14,38 +14,33 @@ export const axiosInstance = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-});
+})
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = useSessionStore.getState().token;
+  const token = useSessionStore.getState().token
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
-});
+  return config
+})
 
-let isHandlingUnauthorized = false;
+let isHandlingUnauthorized = false
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response;
+    return response
   },
   (error: AxiosError) => {
-    const url = error.config?.url ?? "";
-    const isAuthEndpoint =
-      url.includes("/auth/login") || url.includes("/sanctum/csrf-cookie");
+    const url = error.config?.url ?? ""
+    const isAuthEndpoint = url.includes("/auth/login") || url.includes("/sanctum/csrf-cookie")
 
-    if (
-      error.response?.status === 401 &&
-      !isAuthEndpoint &&
-      !isHandlingUnauthorized
-    ) {
-      isHandlingUnauthorized = true;
-      window.dispatchEvent(new Event("unauthorized"));
+    if (error.response?.status === 401 && !isAuthEndpoint && !isHandlingUnauthorized) {
+      isHandlingUnauthorized = true
+      window.dispatchEvent(new Event("unauthorized"))
       setTimeout(() => {
-        isHandlingUnauthorized = false;
-      }, 3000);
+        isHandlingUnauthorized = false
+      }, 3000)
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   },
-);
+)
