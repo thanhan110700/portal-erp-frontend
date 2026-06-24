@@ -20,5 +20,6 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ["portal.test"],
+    port: 5175,
   },
 })

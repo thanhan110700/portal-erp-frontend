@@ -7,7 +7,10 @@ import { useAuthStore } from "@/hooks/useAuthStore"
 export function RequireMainSystemAdmin({ children }: { children: ReactNode }) {
   const user = useAuthStore((s) => s.user)
 
-  if (!user?.is_admin || !user?.is_main_system) {
+  // "admin" role is the equivalent of is_admin + is_main_system
+  const isAdmin = user?.roles?.includes("admin") ?? false
+
+  if (!isAdmin) {
     return <Navigate to={PATHS.dashboard} replace />
   }
 

@@ -16,14 +16,10 @@ import { useAuthStore } from "@/hooks/useAuthStore"
 import { NAVIGATION_ITEMS } from "@/constants/header"
 import { hasPermission } from "@/constants/permissions"
 
-// Filter navigation items based on user permissions and status
+// Filter navigation items based on user permissions and roles
 function filterNavItemsForUser(
   items: typeof NAVIGATION_ITEMS,
   userPermissions: string[] | undefined,
-  user?: {
-    is_admin?: boolean
-    is_main_system?: boolean
-  } | null,
 ) {
   return items
     .map((item) => {
@@ -31,9 +27,6 @@ function filterNavItemsForUser(
         return item
       }
       const filteredItems = item.items.filter((sub) => {
-        if (sub.adminOnly && !user?.is_admin) return false
-        if (sub.mainSystemOnly && !user?.is_main_system) return false
-
         return !sub.requiredPermission || hasPermission(userPermissions, sub.requiredPermission)
       })
       return { ...item, items: filteredItems }
@@ -52,19 +45,20 @@ function AppSidebarInner({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isCollapsed = state === "collapsed" && !isMobile
 
   // Map user details to the structure NavUser expects
+  // Priority: full_name (from login) → name (from /me) → username → email prefix
   const sidebarUser = React.useMemo(() => {
+    const displayName =
+      user?.full_name ?? user?.name ?? user?.username ?? user?.email?.split("@")[0] ?? "ERP User"
     return {
-      name: user?.name ?? "ERP User",
-      email: user?.email ?? "user@portal-erp.corp",
-      avatar:
-        user?.avatar_url ??
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+      name: displayName,
+      email: user?.email ?? "",
+      avatar: user?.avatar_url ?? "",
     }
   }, [user])
 
   // Filter main navigation items
   const filteredNavItems = React.useMemo(() => {
-    const rawItems = filterNavItemsForUser(NAVIGATION_ITEMS, user?.permissions, user)
+    const rawItems = filterNavItemsForUser(NAVIGATION_ITEMS, user?.permissions)
     return rawItems.map((item) => ({
       title: item.name,
       url: item.href ?? "#",
