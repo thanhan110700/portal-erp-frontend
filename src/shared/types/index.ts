@@ -1,14 +1,17 @@
+/** Shape returned by /v1/auth/login → data.user */
 export interface User {
   id: number
-  name: string
+  /** /me returns full display name (may be null), /login returns full_name */
+  name: string | null
+  /** /login returns username (login handle) */
+  username?: string
+  /** /login returns full_name as display name */
+  full_name?: string
   email: string
-  avatar_url: string | null
+  is_active?: boolean
+  avatar_url?: string | null
+  roles: string[]
   permissions: string[]
-  is_admin: boolean
-  is_main_system: boolean
-  can_view_accounts_unscoped: boolean
-  can_view_ads_report_unscoped: boolean
-  roles: UserRole[]
 }
 
 export interface Role {

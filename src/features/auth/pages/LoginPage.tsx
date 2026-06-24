@@ -5,6 +5,7 @@ import logoRed from "@/assets/logo-s-red.png"
 import logoWhite from "@/assets/logo-s-white.png"
 import tripLogo from "@/assets/trip-logo.png"
 import { ThemeToggle } from "@/components/common/ThemeToggle"
+import { PageLoader } from "@/components/common/PageLoader"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import { PATHS } from "@/constants/paths"
 import { useAuthStore } from "@/hooks/useAuthStore"
@@ -41,9 +42,15 @@ export function LoginPage() {
   const setUser = useAuthStore((s) => s.setUser)
   const showTripLogo = true
   const setToken = useSessionStore((s) => s.setToken)
-  const token = useSessionStore((s) => s.token)
+  const isLoading = useAuthStore((s) => s.isLoading)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
-  if (token !== null) {
+  // Wait for AuthProvider to finish session check before making redirect decisions
+  if (isLoading) {
+    return <PageLoader />
+  }
+
+  if (isAuthenticated) {
     return <Navigate to={PATHS.dashboard} replace />
   }
 

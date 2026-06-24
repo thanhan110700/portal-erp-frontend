@@ -20,22 +20,22 @@ This application is **primarily used on mobile devices**. Every page, component,
 
 ## Tech Stack
 
-| Layer            | Technology                                                     |
-| ---------------- | -------------------------------------------------------------- |
-| **Framework**    | React 19 + Vite 8 (SPA, no SSR)                               |
-| **Language**     | TypeScript 5.9 (`strict` mode)                                 |
-| **Styling**      | Tailwind CSS v4 + `@tailwindcss/vite` plugin                   |
-| **UI Primitives**| shadcn/ui (Radix-based) in `src/components/ui/`                |
-| **Data Table**   | Mantine React Table (`mantine-react-table`) + Mantine Core 6   |
-| **Forms**        | React Hook Form 7 + Zod 4                                     |
-| **State**        | Zustand 5 (client state), React Hook Form (form state)         |
-| **Routing**      | React Router DOM 7                                             |
-| **HTTP**         | Axios 1.x                                                     |
-| **Date**         | Day.js (extended in `src/lib/dayjs.ts`)                        |
-| **Rich Text**    | TipTap 3                                                      |
-| **Icons**        | Lucide React, Tabler Icons React                               |
-| **Linting**      | ESLint 9 (flat config) + Prettier 3                            |
-| **Class Merge**  | `cn()` utility (`clsx` + `tailwind-merge`) in `src/lib/utils`  |
+| Layer             | Technology                                                    |
+| ----------------- | ------------------------------------------------------------- |
+| **Framework**     | React 19 + Vite 8 (SPA, no SSR)                               |
+| **Language**      | TypeScript 5.9 (`strict` mode)                                |
+| **Styling**       | Tailwind CSS v4 + `@tailwindcss/vite` plugin                  |
+| **UI Primitives** | shadcn/ui (Radix-based) in `src/components/ui/`               |
+| **Data Table**    | Mantine React Table (`mantine-react-table`) + Mantine Core 6  |
+| **Forms**         | React Hook Form 7 + Zod 4                                     |
+| **State**         | Zustand 5 (client state), React Hook Form (form state)        |
+| **Routing**       | React Router DOM 7                                            |
+| **HTTP**          | Axios 1.x                                                     |
+| **Date**          | Day.js (extended in `src/lib/dayjs.ts`)                       |
+| **Rich Text**     | TipTap 3                                                      |
+| **Icons**         | Lucide React, Tabler Icons React                              |
+| **Linting**       | ESLint 9 (flat config) + Prettier 3                           |
+| **Class Merge**   | `cn()` utility (`clsx` + `tailwind-merge`) in `src/lib/utils` |
 
 ---
 
@@ -43,16 +43,16 @@ This application is **primarily used on mobile devices**. Every page, component,
 
 All formatting is enforced by **Prettier + ESLint** and runs automatically on save via `.vscode/settings.json`.
 
-| Rule               | Value                          |
-| ------------------ | ------------------------------ |
-| Quotes             | **Double quotes** (`"`)        |
-| JSX Quotes         | **Double quotes** (`"`)        |
-| Semicolons         | **No** (`semi: false`)         |
-| Trailing commas    | **All** (`trailingComma: all`) |
-| Print width        | **100** characters             |
-| Indentation        | **2 spaces** (no tabs)         |
-| Arrow parens       | **Always** (`(x) => ...`)      |
-| Line endings       | **LF** (`\n`)                  |
+| Rule            | Value                          |
+| --------------- | ------------------------------ |
+| Quotes          | **Double quotes** (`"`)        |
+| JSX Quotes      | **Double quotes** (`"`)        |
+| Semicolons      | **No** (`semi: false`)         |
+| Trailing commas | **All** (`trailingComma: all`) |
+| Print width     | **100** characters             |
+| Indentation     | **2 spaces** (no tabs)         |
+| Arrow parens    | **Always** (`(x) => ...`)      |
+| Line endings    | **LF** (`\n`)                  |
 
 **Commands:**
 
@@ -134,14 +134,14 @@ src/
 
 ## Path Aliases
 
-| Alias           | Maps to              |
-| --------------- | -------------------- |
-| `@/*`           | `src/*`              |
-| `@components/*` | `src/components/*`   |
-| `@hooks/*`      | `src/hooks/*`        |
-| `@utils/*`      | `src/utils/*`        |
-| `@lib/*`        | `src/lib/*`          |
-| `@assets/*`     | `src/assets/*`       |
+| Alias           | Maps to            |
+| --------------- | ------------------ |
+| `@/*`           | `src/*`            |
+| `@components/*` | `src/components/*` |
+| `@hooks/*`      | `src/hooks/*`      |
+| `@utils/*`      | `src/utils/*`      |
+| `@lib/*`        | `src/lib/*`        |
+| `@assets/*`     | `src/assets/*`     |
 
 ---
 

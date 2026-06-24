@@ -5,6 +5,7 @@ import { AppErrorPage } from "@/features/errors/pages/AppErrorPage"
 import { DashboardLayout } from "@/layouts/DashboardLayout"
 import { PATHS, routeSegment } from "@/constants/paths"
 import { PageLoader } from "@/components/common/PageLoader"
+import { ProtectedRoute } from "@/app/router/ProtectedRoute"
 
 const AuthLayout = lazy(() => import("@/layouts/AuthLayout"))
 const LoginPage = lazy(() =>
@@ -51,7 +52,7 @@ export const router = createBrowserRouter([
       },
       {
         path: PATHS.root,
-        // element: <ProtectedRoute />,
+        element: <ProtectedRoute />,
         HydrateFallback: PageLoader,
         children: [
           {

@@ -4,6 +4,54 @@ import { apiURL } from "@/config"
 import { axiosInstance } from "@/shared/api/axios"
 import type { ApiResponse, User } from "@/shared/types"
 
+/** Raw shape from /v1/auth/login data.user */
+interface LoginUserRaw {
+  id: number
+  username: string
+  full_name: string
+  email: string
+  roles: string[]
+  permissions?: string[]
+}
+
+/** Raw shape from /v1/auth/me data */
+interface MeUserRaw {
+  id: number
+  name: string | null
+  email: string
+  is_active: boolean
+  roles: string[]
+  permissions: string[]
+  avatar_url?: string | null
+}
+
+/** Normalize login user → consistent User shape */
+function normalizeLoginUser(raw: LoginUserRaw): User {
+  return {
+    id: raw.id,
+    username: raw.username,
+    full_name: raw.full_name,
+    name: raw.full_name ?? raw.username ?? null,
+    email: raw.email,
+    roles: raw.roles ?? [],
+    permissions: Array.isArray(raw.permissions) ? raw.permissions : [],
+    avatar_url: null,
+  }
+}
+
+/** Normalize /me user → consistent User shape */
+function normalizeMeUser(raw: MeUserRaw): User {
+  return {
+    id: raw.id,
+    name: raw.name,
+    email: raw.email,
+    is_active: raw.is_active,
+    roles: raw.roles ?? [],
+    permissions: Array.isArray(raw.permissions) ? raw.permissions : [],
+    avatar_url: raw.avatar_url ?? null,
+  }
+}
+
 export const loginApi = {
   async getCsrfCookie() {
     const baseURL = apiURL.replace(/\/api$/, "")
@@ -13,16 +61,10 @@ export const loginApi = {
   async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
     await this.getCsrfCookie()
     const response = await axiosInstance.post<{
-      data: { token: string; token_type: string; user: User }
+      data: { token: string; token_type: string; user: LoginUserRaw }
     }>("/v1/auth/login", credentials)
-    const { token, user: u } = response.data.data
-    return {
-      user: {
-        ...u,
-        permissions: Array.isArray(u.permissions) ? u.permissions : [],
-      },
-      token,
-    }
+    const { token, user: raw } = response.data.data
+    return { user: normalizeLoginUser(raw), token }
   },
 
   async logout(): Promise<void> {
@@ -32,19 +74,14 @@ export const loginApi = {
   async uploadAvatar(file: File): Promise<User> {
     const form = new FormData()
     form.append("avatar", file)
-    const response = await axiosInstance.post<ApiResponse<User>>("/auth/avatar", form, {
+    const response = await axiosInstance.post<ApiResponse<MeUserRaw>>("/auth/avatar", form, {
       headers: { "Content-Type": "multipart/form-data" },
     })
-    return response.data.data
+    return normalizeMeUser(response.data.data)
   },
 
   async getMe(): Promise<User> {
-    const response = await axiosInstance.get<ApiResponse<User>>("/v1/auth/me")
-    const u = response.data.data
-    return {
-      ...u,
-      permissions: Array.isArray(u.permissions) ? u.permissions : [],
-      is_main_system: Boolean(u.is_main_system),
-    }
+    const response = await axiosInstance.get<ApiResponse<MeUserRaw>>("/v1/auth/me")
+    return normalizeMeUser(response.data.data)
   },
 }

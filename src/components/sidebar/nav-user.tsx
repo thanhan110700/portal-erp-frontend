@@ -14,17 +14,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import {
-  ChevronsUpDownIcon,
-  SparklesIcon,
-  BadgeCheckIcon,
-  CreditCardIcon,
-  BellIcon,
-  LogOutIcon,
-} from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react"
 
 import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { useSessionStore } from "@/hooks/useSessionStore"
 import { PATHS } from "@/constants/paths"
 
 export function NavUser({
@@ -38,10 +32,12 @@ export function NavUser({
 }) {
   const { isMobile, state } = useSidebar()
   const logout = useAuthStore((s) => s.logout)
+  const clearSession = useSessionStore((s) => s.clearSession)
   const navigate = useNavigate()
   const isCollapsed = state === "collapsed" && !isMobile
 
   const handleLogout = () => {
+    clearSession()
     logout()
     void navigate(PATHS.login)
   }
@@ -90,14 +86,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SparklesIcon />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <BadgeCheckIcon />
                 Account
               </DropdownMenuItem>
@@ -108,7 +97,7 @@ export function NavUser({
               <DropdownMenuItem>
                 <BellIcon />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
