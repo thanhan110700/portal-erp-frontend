@@ -101,7 +101,7 @@ type FieldRendererProps<T extends FilterFieldDef = FilterFieldDef> = {
 
 function SelectFieldRenderer({ field, onChange }: FieldRendererProps<SelectFilterField>) {
   const hasAll = !field.hideAllOption
-  const allOption = hasAll ? [{ label: field.placeholder ?? "All", value: "__all__" }] : []
+  const allOption = hasAll ? [{ label: field.placeholder ?? "Tất cả", value: "__all__" }] : []
   const options = [...allOption, ...field.options]
   const val = field.value ?? (hasAll ? "__all__" : undefined)
 

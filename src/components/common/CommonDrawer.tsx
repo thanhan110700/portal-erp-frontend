@@ -37,6 +37,8 @@ export interface DrawerAction {
   closeOnClick?: boolean
   /** HTML button type (default: "button") */
   type?: "button" | "submit" | "reset"
+  /** Associated HTML form ID to submit */
+  form?: string
 }
 
 export interface CommonDrawerProps {
@@ -253,6 +255,7 @@ function ActionButton({ action, onClose }: { action: DrawerAction; onClose: () =
     className,
     closeOnClick,
     type = "button",
+    form,
   } = action
 
   async function handleClick() {
@@ -264,6 +267,7 @@ function ActionButton({ action, onClose }: { action: DrawerAction; onClose: () =
   return (
     <Button
       type={type}
+      form={form}
       variant={variant}
       disabled={disabled || loading}
       className={cn("min-w-[80px]", className)}

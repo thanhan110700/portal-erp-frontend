@@ -72,7 +72,7 @@ function DashboardLayoutInner() {
           </header>
 
           {/* Main content — extra bottom padding on mobile for bottom nav */}
-          <main className={`flex-1 px-3 py-4 md:px-6 md:py-6 ${isMobile ? "pb-20" : ""}`}>
+          <main className={`flex-1 min-w-0 px-3 py-4 md:px-6 md:py-6 ${isMobile ? "pb-20" : ""}`}>
             {/* <ScreenTitle /> */}
             <Outlet />
           </main>
