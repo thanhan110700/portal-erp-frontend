@@ -37,6 +37,8 @@ export interface DialogAction {
   closeOnClick?: boolean
   /** HTML button type (default: "button") */
   type?: "button" | "submit" | "reset"
+  /** Associated HTML form ID to submit */
+  form?: string
 }
 
 export interface CommonDialogProps {
@@ -205,6 +207,7 @@ function ActionButton({ action, onClose }: { action: DialogAction; onClose: () =
     className,
     closeOnClick,
     type = "button",
+    form,
   } = action
 
   async function handleClick() {
@@ -216,6 +219,7 @@ function ActionButton({ action, onClose }: { action: DialogAction; onClose: () =
   return (
     <Button
       type={type}
+      form={form}
       variant={variant}
       disabled={disabled || loading}
       className={cn("min-w-[80px]", className)}

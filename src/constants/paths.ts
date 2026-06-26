@@ -7,21 +7,42 @@ export const PATHS = {
   login: "/login",
   dashboard: "/dashboard",
   examples: "/examples",
+
+  // HR Module
+  hrEmployees: "/hr/employees",
+  hrEmployeeDetail: "/hr/employees/:id",
+  hrTimesheets: "/hr/timesheets",
+  hrKpi: "/hr/kpi",
+
+  // Sales Module
+  salesCustomers: "/sales/customers",
+  salesCustomerDetail: "/sales/customers/:id",
+  salesQuotes: "/sales/quotes",
+  salesContracts: "/sales/contracts",
+
+  // Projects
+  projects: "/projects",
 } as const
 
 export type AppPath = (typeof PATHS)[keyof typeof PATHS]
 
 /**
  * React Router `path` for a child of a layout whose parent route is `path: '/'`.
- * (No leading slash; supports nested segments like `settings/users`.)
+ * (No leading slash; supports nested segments like `hr/employees`.)
  */
 export function routeSegment(path: Exclude<AppPath, typeof PATHS.root>): string {
   return path.slice(1)
 }
 
+/** Build a detail path by replacing `:id` with the actual ID */
+export function hrEmployeeDetailPath(id: number | string): string {
+  return `/hr/employees/${id}`
+}
+
 /** Identifies a top-level nav group; set on route `handle.navSection` and optional `NavItem.navSection`. */
 export const NAV_SECTIONS = {
   dashboard: "dashboard",
+  hr: "hr",
   settings: "settings",
 } as const
 

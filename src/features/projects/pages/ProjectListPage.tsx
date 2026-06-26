@@ -1,0 +1,162 @@
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { Plus } from "lucide-react"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import { ProjectTable } from "../components/ProjectTable"
+import { ProjectFormModal } from "../components/ProjectFormModal"
+
+import { optionApi, type OptionItem } from "@/shared/api/optionApi"
+import { projectApi, type ListProjectsParams } from "../api/projectApi"
+import type { Project } from "../types/project"
+
+export function ProjectListPage() {
+  const navigate = useNavigate()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [queryParams, setQueryParams] = useState<ListProjectsParams>({
+    page: 1,
+    per_page: 10,
+    search: "",
+    status: "",
+  })
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+
+  const [statuses, setStatuses] = useState<OptionItem[]>([])
+  console.log("🚀 ~ ProjectListPage ~ statuses:", statuses)
+
+  const loadProjects = async () => {
+    setIsLoading(true)
+    try {
+      const res = await projectApi.list(queryParams)
+      setProjects(res.data)
+      setTotalRecords(res.meta?.total || 0)
+    } catch {
+      toast.error("Không thể tải danh sách dự án")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    optionApi.getProjectStatuses().then(setStatuses).catch(console.error)
+  }, [])
+
+  useEffect(() => {
+    void loadProjects()
+  }, [queryParams])
+
+  const handleApplyFilters = (values: Record<string, any>) => {
+    setQueryParams((prev) => ({
+      ...prev,
+      ...values,
+      page: 1,
+    }))
+  }
+
+  const handleResetFilters = () => {
+    setQueryParams({
+      page: 1,
+      per_page: 10,
+      search: "",
+      status: "",
+    })
+  }
+
+  const handlePageChange = (page: number) => {
+    setQueryParams((prev: ListProjectsParams) => ({ ...prev, page }))
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await projectApi.delete(id)
+      toast.success("Xóa dự án thành công")
+      void loadProjects()
+    } catch {
+      toast.error("Xóa thất bại")
+    }
+  }
+
+  const filterFields: FilterFieldDef[] = [
+    {
+      field: "search",
+      label: "Tìm kiếm dự án",
+      type: "input",
+      placeholder: "Tên hoặc mã dự án...",
+      value: queryParams.search || "",
+    },
+    {
+      field: "status",
+      label: "Trạng thái",
+      type: "select",
+      value: queryParams.status || null,
+      options: [
+        ...statuses.map((s) => ({
+          label: s.label,
+          value: s.value.toString(),
+        })),
+      ],
+    },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Quản lý Dự án</h1>
+        <Button
+          onClick={() => {
+            setEditingId(null)
+            setModalOpen(true)
+          }}
+        >
+          <Plus className="mr-2 size-4" />
+          Tạo dự án mới
+        </Button>
+      </div>
+
+      <FilterPanel
+        applyMode
+        fields={filterFields}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+      />
+
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
+        <div className="p-0">
+          <ProjectTable
+            data={projects}
+            isLoading={isLoading}
+            onEdit={(id) => {
+              setEditingId(id)
+              setModalOpen(true)
+            }}
+            onDelete={handleDelete}
+            onView={(id) => navigate(`/projects/${id}`)}
+            pagination={{
+              page: queryParams.page || 1,
+              perPage: queryParams.per_page || 10,
+              totalRecords,
+              totalPages: Math.ceil(totalRecords / (queryParams.per_page || 10)),
+              onChange: handlePageChange,
+            }}
+          />
+        </div>
+      </div>
+
+      {modalOpen && (
+        <ProjectFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSuccess={loadProjects}
+          editingId={editingId}
+        />
+      )}
+    </div>
+  )
+}
