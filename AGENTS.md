@@ -64,6 +64,12 @@ pnpm lint:fix      # ESLint --fix only
 
 ---
 
+## Strict Rule: Date Formatting
+
+- You **MUST** use `dayjs` for all date formatting and manipulation instead of `date-fns` or native `Date`. This project relies on `dayjs` extensions defined in `src/lib/dayjs.ts`.
+
+---
+
 ## Tailwind CSS v4 — Important Rules
 
 This project uses **Tailwind CSS v4**. Key differences from v3:
@@ -111,6 +117,12 @@ src/
 
 ## Common Components (reuse these — do NOT recreate)
 
+> **CRITICAL RULE**: You **MUST** use the components provided in the `src/components/common/` folder instead of creating custom ones or using native HTML/shadcn equivalents.
+>
+> - **Selects**: All select inputs **MUST** use the `SearchableSelect` component. Do not use standard `<Select>` or native `<select>`.
+> - **Modals & Drawers**: You **MUST** use `CommonDialog` for modals and `CommonDrawer` for sheets/drawers.
+> - **Date Pickers**: You **MUST** use `CommonDatePicker` or `CommonDateRangePicker`.
+
 | Component                | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
 | `CommonDialog`           | Modal dialog with configurable actions, sizes, loading   |
@@ -153,6 +165,7 @@ src/
 - Export components as **named exports** (no default exports).
 - Keep page components thin — delegate complex UI to feature components.
 - Use `cn()` for all conditional/merged class strings.
+- **Always use Common Components** from `src/components/common/` (e.g., `SearchableSelect`, `CommonDialog`, `CommonDatePicker`) instead of building custom equivalents.
 
 ### State Management
 
@@ -165,8 +178,19 @@ src/
 
 - API functions live in `src/features/<domain>/api/`.
 - Use the shared Axios instance from `src/shared/api/axios.ts`.
+- **Options Mapping**: All backend option APIs (`/v1/options/*`) return items in the `{ value, label }` format. Always use `item.value` and `item.label` when mapping options (e.g., in `SelectItem`), NEVER use `item.id` or `item.name`.
 - Authentication: hybrid (cookie + token), managed by `AuthProvider`.
 - Permissions: string slugs checked via `RequirePermission` route guard.
+
+### Data Tables & Filters
+
+- **Data Tables**: Use **Mantine React Table** (`mantine-react-table`) for all list pages.
+  - Disable default toolbars, filters, and pagination from Mantine React Table config (`enableColumnActions: false`, `enableColumnFilters: false`, `enablePagination: false`, `enableBottomToolbar: false`, `enableTopToolbar: false`).
+  - Striped and hover states should be enabled (`mantineTableProps: { striped: true, highlightOnHover: true }`).
+  - Set table wrapper container overflow to scroll horizontally smoothly on mobile devices.
+- **Filters**: Use the common `FilterPanel` (`@/components/common/FilterPanel`) for filtering options.
+  - Bind fields to `FilterFieldDef` schema and use `applyMode` where filters are submitted explicitly.
+- **Pagination**: Use the custom `TablePagination` (`@/components/common/TablePagination`) beneath the table for standard page-numbered navigation.
 
 ### Verification
 

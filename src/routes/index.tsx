@@ -12,6 +12,16 @@ const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 )
 
+// Projects
+const ProjectListPage = lazy(() =>
+  import("@/features/projects/pages/ProjectListPage").then((m) => ({ default: m.ProjectListPage })),
+)
+const ProjectDetailPage = lazy(() =>
+  import("@/features/projects/pages/ProjectDetailPage").then((m) => ({
+    default: m.ProjectDetailPage,
+  })),
+)
+
 // function withPermission(Page: ComponentType, permission?: string): ComponentType {
 //   if (!permission) return Page
 //   function PermissionGuard() {
@@ -68,6 +78,16 @@ export const router = createBrowserRouter([
                 handle: { title: "Dashboard" },
               },
               {
+                path: routeSegment(PATHS.projects),
+                element: <ProjectListPage />,
+                handle: { title: "Dự án" },
+              },
+              {
+                path: `${routeSegment(PATHS.projects)}/:id`,
+                element: <ProjectDetailPage />,
+                handle: { title: "Chi tiết dự án" },
+              },
+              {
                 path: routeSegment(PATHS.examples),
                 lazy: async () => {
                   const { ComponentExamplesPage } =
@@ -75,6 +95,77 @@ export const router = createBrowserRouter([
                   return { Component: ComponentExamplesPage }
                 },
                 handle: { title: "Component Examples" },
+              },
+              // ── HR Module ──────────────────────────────────────────────
+              {
+                path: routeSegment(PATHS.hrEmployees),
+                lazy: async () => {
+                  const { EmployeeListPage } = await import("@/features/hr/pages/EmployeeListPage")
+                  return { Component: EmployeeListPage }
+                },
+                handle: { title: "Nhân viên" },
+              },
+              {
+                path: "hr/employees/:id",
+                lazy: async () => {
+                  const { EmployeeDetailPage } =
+                    await import("@/features/hr/pages/EmployeeDetailPage")
+                  return { Component: EmployeeDetailPage }
+                },
+                handle: { title: "Chi tiết nhân viên" },
+              },
+              {
+                path: routeSegment(PATHS.hrTimesheets),
+                lazy: async () => {
+                  const { TimesheetListPage } =
+                    await import("@/features/hr/pages/TimesheetListPage")
+                  return { Component: TimesheetListPage }
+                },
+                handle: { title: "Chấm công" },
+              },
+              {
+                path: routeSegment(PATHS.hrKpi),
+                lazy: async () => {
+                  const { KpiDashboardPage } = await import("@/features/hr/pages/KpiDashboardPage")
+                  return { Component: KpiDashboardPage }
+                },
+                handle: { title: "KPI Kinh doanh" },
+              },
+              // ── Sales Module ───────────────────────────────────────────
+              {
+                path: routeSegment(PATHS.salesCustomers),
+                lazy: async () => {
+                  const { CustomerListPage } =
+                    await import("@/features/sales/pages/CustomerListPage")
+                  return { Component: CustomerListPage }
+                },
+                handle: { title: "Khách hàng" },
+              },
+              {
+                path: "sales/customers/:id",
+                lazy: async () => {
+                  const { CustomerDetailPage } =
+                    await import("@/features/sales/pages/CustomerDetailPage")
+                  return { Component: CustomerDetailPage }
+                },
+                handle: { title: "Chi tiết khách hàng" },
+              },
+              {
+                path: routeSegment(PATHS.salesQuotes),
+                lazy: async () => {
+                  const { QuoteListPage } = await import("@/features/sales/pages/QuoteListPage")
+                  return { Component: QuoteListPage }
+                },
+                handle: { title: "Báo giá" },
+              },
+              {
+                path: routeSegment(PATHS.salesContracts),
+                lazy: async () => {
+                  const { ContractListPage } =
+                    await import("@/features/sales/pages/ContractListPage")
+                  return { Component: ContractListPage }
+                },
+                handle: { title: "Hợp đồng" },
               },
             ],
           },
