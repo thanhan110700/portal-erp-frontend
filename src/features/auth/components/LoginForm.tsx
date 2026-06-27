@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import type { User } from "@/shared/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { AlertCircle, Loader2, Mail, Lock, ArrowRight } from "lucide-react"
@@ -16,15 +17,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import type { User } from "@/shared/types"
+import { useTranslation } from "react-i18next"
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(1, { message: "Password is required" }),
-  remember: z.boolean().optional(),
-})
+const getLoginSchema = (t: any) =>
+  z.object({
+    email: z.string().email({ message: t("auth:form.validation.email_invalid") }),
+    password: z.string().min(1, { message: t("auth:form.validation.password_required") }),
+    remember: z.boolean().optional(),
+  })
 
-export type LoginFormValues = z.infer<typeof loginSchema>
+export type LoginFormValues = z.infer<ReturnType<typeof getLoginSchema>>
 
 interface LoginFormProps {
   defaultEmail?: string
@@ -32,12 +34,13 @@ interface LoginFormProps {
   submitLabel?: string
 }
 
-export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }: LoginFormProps) {
+export function LoginForm({ defaultEmail, onSuccess }: LoginFormProps) {
+  const { t } = useTranslation(["auth"])
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema(t)),
     defaultValues: {
       email: defaultEmail ?? "",
       password: "",
@@ -54,11 +57,11 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
     } catch (err: unknown) {
       const e = err as { response?: { status?: number; data?: { message?: string } } }
       if (e.response?.status === 422) {
-        setError(e.response.data?.message || "Invalid credentials provided.")
+        setError(e.response.data?.message || t("auth:form.validation.invalid_credentials"))
       } else if (e.response?.status === 401) {
-        setError("Invalid email or password.")
+        setError(t("auth:form.validation.invalid_email_password"))
       } else {
-        setError("An unexpected error occurred. Please try again.")
+        setError(t("auth:form.validation.unexpected_error"))
       }
     } finally {
       setIsSubmitting(false)
@@ -87,7 +90,7 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-foreground font-semibold text-sm">
-                  Email address
+                  {t("auth:form.email_label")}
                 </FormLabel>
                 <FormControl>
                   <div className="relative group">
@@ -95,7 +98,7 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
                       <Mail className="h-5 w-5" />
                     </div>
                     <Input
-                      placeholder="name@company.com"
+                      placeholder={t("auth:form.email_placeholder")}
                       type="email"
                       autoComplete="email"
                       readOnly={!!defaultEmail}
@@ -114,7 +117,9 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-foreground font-semibold text-sm">Password</FormLabel>
+                <FormLabel className="text-foreground font-semibold text-sm">
+                  {t("auth:form.password_label")}
+                </FormLabel>
                 <FormControl>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -122,7 +127,7 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
                     </div>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t("auth:form.password_placeholder")}
                       autoComplete="current-password"
                       className="pl-11 h-12 rounded-xl bg-muted/40 border-border/50 shadow-sm transition-all focus-visible:ring-primary/30 focus-visible:bg-background focus:border-primary text-base font-medium tracking-widest placeholder:tracking-normal"
                       {...field}
@@ -147,7 +152,7 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
                   />
                 </FormControl>
                 <FormLabel className="text-sm font-medium cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
-                  Remember my device
+                  {t("auth:form.remember")}
                 </FormLabel>
               </FormItem>
             )}
@@ -161,11 +166,11 @@ export function LoginForm({ defaultEmail, onSuccess, submitLabel = "Continue" }:
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Authenticating...
+                {t("auth:form.submitting")}
               </>
             ) : (
               <span className="flex items-center">
-                {submitLabel}
+                {t("auth:form.submit")}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
             )}

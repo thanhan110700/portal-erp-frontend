@@ -5,6 +5,7 @@ import type { VoucherAuditLog } from "../types/voucher"
 import { Calendar, User, Clock, ArrowRight } from "lucide-react"
 import dayjs from "dayjs"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface VoucherHistoryDialogProps {
   open: boolean
@@ -19,6 +20,7 @@ export function VoucherHistoryDialog({
   voucherId,
   voucherCode,
 }: VoucherHistoryDialogProps) {
+  const { t } = useTranslation(["finance", "common"])
   const [history, setHistory] = useState<VoucherAuditLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -42,22 +44,22 @@ export function VoucherHistoryDialog({
           setHistory(data || [])
         })
         .catch(() => {
-          toast.error("Không thể tải lịch sử chứng từ")
+          toast.error(t("finance:history.fetch_error"))
         })
         .finally(() => {
           setIsLoading(false)
         })
     }
-  }, [open, voucherId])
+  }, [open, voucherId, t])
 
   return (
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={`Lịch sử thay đổi: ${voucherCode}`}
+      title={t("finance:history.title", { code: voucherCode })}
       size="lg"
       cancelAction={{
-        label: "Đóng",
+        label: t("finance:history.close"),
         onClick: onClose,
       }}
     >
@@ -66,9 +68,7 @@ export function VoucherHistoryDialog({
           <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       ) : history.length === 0 ? (
-        <div className="p-8 text-center text-muted-foreground">
-          Chưa ghi nhận hoạt động nào cho chứng từ này.
-        </div>
+        <div className="p-8 text-center text-muted-foreground">{t("finance:history.empty")}</div>
       ) : (
         <div className="relative border-l border-muted pl-6 ml-2 py-2 space-y-6">
           {history.map((log) => (
@@ -82,7 +82,9 @@ export function VoucherHistoryDialog({
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5 font-medium text-foreground">
                     <User className="size-3.5 text-muted-foreground" />
-                    <span>{log.user?.full_name || `Mã NV: ${log.user?.id}`}</span>
+                    <span>
+                      {log.user?.full_name || t("finance:history.user_id", { id: log.user?.id })}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="size-3.5" />
@@ -96,14 +98,16 @@ export function VoucherHistoryDialog({
 
                 {log.notes && (
                   <p className="text-xs text-muted-foreground bg-background p-2 rounded border-l-2 border-primary/50">
-                    Ý kiến: {log.notes}
+                    {t("finance:history.opinion")} {log.notes}
                   </p>
                 )}
 
                 {/* Render differences if changes exist */}
                 {log.changes && Object.keys(log.changes).length > 0 && (
                   <div className="mt-2 text-xs space-y-1 bg-background p-2 rounded border border-dashed">
-                    <p className="font-semibold text-muted-foreground mb-1">Chi tiết thay đổi:</p>
+                    <p className="font-semibold text-muted-foreground mb-1">
+                      {t("finance:history.changes_title")}
+                    </p>
                     {Object.entries(log.changes).map(([field, delta]: [string, any]) => {
                       const from = delta.old ?? "—"
                       const to = delta.new ?? "—"

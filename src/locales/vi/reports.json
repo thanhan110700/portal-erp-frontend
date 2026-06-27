@@ -1,0 +1,109 @@
+{
+  "title": "Báo cáo Phân tích Quản trị",
+  "subtitle": "Tổng quan trực quan về dòng tiền, công nợ, hiệu suất kinh doanh và năng suất dự án.",
+  "fetch_error": "Không thể tải báo cáo dữ liệu",
+  "tabs": {
+    "incomeExpense": "Thu chi & Dòng tiền",
+    "receivables": "Phải thu khách hàng",
+    "projectProfit": "Hiệu quả dự án",
+    "salesPerformance": "Hiệu suất Sales",
+    "pipeline": "Phễu cơ hội"
+  },
+  "filters": {
+    "title": "Bộ lọc báo cáo",
+    "dateFrom": "Từ ngày",
+    "dateTo": "Đến ngày",
+    "customer": "Khách hàng",
+    "customer_placeholder": "Chọn khách hàng...",
+    "salesRep": "Nhân viên phụ trách",
+    "salesRep_placeholder": "Chọn nhân viên...",
+    "year": "Năm",
+    "year_placeholder": "Nhập năm...",
+    "month": "Tháng",
+    "month_all": "Cả năm",
+    "month_placeholder": "Chọn tháng..."
+  },
+  "incomeExpense": {
+    "columns": {
+      "period": "Thời gian",
+      "income": "Tổng thu",
+      "expense": "Tổng chi",
+      "net": "Dòng tiền ròng",
+      "month": "Tháng {{month}} / {{year}}"
+    },
+    "chart": {
+      "title": "Biểu đồ so sánh Thu - Chi theo tháng",
+      "no_data": "Không có dữ liệu trong khoảng thời gian này.",
+      "income": "Thu tiền",
+      "expense": "Chi tiêu",
+      "net": "Dòng tiền ròng",
+      "period": "T.{{month}}/{{year}}"
+    },
+    "summary": {
+      "title": "Tóm tắt Dòng tiền",
+      "total_income": "TỔNG THU TIỀN",
+      "total_expense": "TỔNG CHI TIÊU",
+      "total_net": "TỔNG DÒNG TIỀN THUẦN"
+    }
+  },
+  "receivables": {
+    "columns": {
+      "contract": "Hợp đồng",
+      "customer": "Khách hàng",
+      "salesRep": "Sales phụ trách",
+      "date": "Ngày ký",
+      "value": "Tổng giá trị",
+      "received": "Đã thu",
+      "outstanding": "Còn lại cần thu"
+    },
+    "summary": {
+      "outstanding": "TỔNG GIÁ TRỊ HỢP ĐỒNG ĐANG NỢ",
+      "received": "Đã THU HỒI",
+      "unpaid": "DƯ NỢ CÒN PHẢI THU (CHƯA THANH TOÁN)"
+    }
+  },
+  "projectProfit": {
+    "columns": {
+      "code": "Mã dự án",
+      "name": "Tên dự án",
+      "contractValue": "Giá trị hợp đồng",
+      "received": "Doanh thu thực thu",
+      "spent": "Chi phí thực tế",
+      "profit": "Lợi nhuận ròng",
+      "margin": "Tỷ suất lợi nhuận"
+    }
+  },
+  "salesPerformance": {
+    "chart": {
+      "title": "So sánh doanh số ký hợp đồng theo nhân viên",
+      "no_data": "Không có dữ liệu hợp đồng ký mới trong giai đoạn này.",
+      "signed": "Hợp đồng đã ký",
+      "received": "Đã thu tiền",
+      "rep_code": "Mã: {{id}}"
+    },
+    "conversion": {
+      "title": "Tỷ lệ chuyển đổi báo giá",
+      "description": "Tỷ lệ chuyển đổi thành công từ Báo giá sang Hợp đồng ký kết.",
+      "quotes_created": "Tổng số Báo giá lập:",
+      "quotes_signed": "Số báo giá đã chốt ký:",
+      "no_data": "Không tìm thấy báo cáo báo giá."
+    }
+  },
+  "pipeline": {
+    "summary": {
+      "active_projects": "DỰ ÁN ĐANG THỰC HIỆN",
+      "pending_quotes": "BÁO GIÁ ĐANG CHỜ PHẢN HỒI",
+      "signed_contracts": "HỢP ĐỒNG ĐÃ KÝ THÀNH CÔNG"
+    },
+    "charts": {
+      "project_title": "Phân bổ Dự án theo Trạng thái",
+      "project_no_data": "Không có dự án.",
+      "project_tooltip": "{{count}} dự án",
+      "quote_title": "Phân bổ Báo giá theo Trạng thái",
+      "quote_no_data": "Không có báo giá.",
+      "quote_tooltip": "{{count}} báo giá",
+      "quantity": "Số lượng"
+    },
+    "no_data": "Không tìm thấy báo cáo phễu cơ hội."
+  }
+}

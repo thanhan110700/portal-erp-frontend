@@ -1,5 +1,6 @@
 import { memo, useEffect } from "react"
 import { useMatches } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 import { appTitle } from "@/config"
 
@@ -14,7 +15,9 @@ function routeHandlePageTitle(handle: unknown): string {
 function DocumentTitleInner() {
   const matches = useMatches()
   const leaf = matches.at(-1)
-  const pageTitle = routeHandlePageTitle(leaf?.handle)
+  const rawTitle = routeHandlePageTitle(leaf?.handle)
+  const { t } = useTranslation()
+  const pageTitle = rawTitle ? t(rawTitle) : ""
 
   useEffect(() => {
     document.title = pageTitle ? `${pageTitle}` : appTitle

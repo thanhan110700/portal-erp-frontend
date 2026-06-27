@@ -17,6 +17,7 @@ export interface Voucher {
   contract?: { id: number; name: string } | null
   customer?: { id: number; name: string } | null
   department?: { id: number; name: string } | null
+  employees?: Array<{ id: number; full_name: string }>
   files?: Array<{ id: number; name: string; url: string }>
   created_at: string
   updated_at: string
@@ -34,6 +35,7 @@ export interface CreateVoucherPayload {
   contract_id?: number | null
   customer_id?: number | null
   department_id?: number | null
+  employee_ids?: number[]
 }
 
 export type UpdateVoucherPayload = Partial<CreateVoucherPayload>

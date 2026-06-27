@@ -11,28 +11,31 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { Quote, CreateQuotePayload } from "../types/sales"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
 
-const quoteSchema = z.object({
-  customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
-  quote_date: z.string().min(1, "Vui lòng nhập ngày báo giá"),
-  quote_value: z
-    .number({ message: "Vui lòng nhập tổng giá trị" })
-    .gt(0, "Giá trị báo giá phải lớn hơn 0"),
-  description: z
-    .string()
-    .max(5000, "Mô tả không được quá 5000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  notes: z
-    .string()
-    .max(2000, "Ghi chú không được quá 2000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-})
+const createQuoteSchema = (t: TFunction) =>
+  z.object({
+    customer_id: z.number().min(1, t("sales:quote.form.validation.customer_required")),
+    quote_date: z.string().min(1, t("sales:quote.form.validation.date_required")),
+    quote_value: z
+      .number({ message: t("sales:quote.form.validation.value_required") })
+      .gt(0, t("sales:quote.form.validation.value_min")),
+    description: z
+      .string()
+      .max(5000, t("sales:quote.form.validation.desc_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    notes: z
+      .string()
+      .max(2000, t("sales:quote.form.validation.notes_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+  })
 
-type QuoteFormData = z.infer<typeof quoteSchema>
+type QuoteFormData = z.infer<ReturnType<typeof createQuoteSchema>>
 
 interface QuoteFormModalProps {
   open: boolean
@@ -42,6 +45,7 @@ interface QuoteFormModalProps {
 }
 
 export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormModalProps) {
+  const { t } = useTranslation()
   const isEditing = !!editData
 
   const [customers, setCustomers] = useState<OptionItem[]>([])
@@ -53,7 +57,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
     control,
     formState: { errors, isSubmitting },
   } = useForm<QuoteFormData>({
-    resolver: zodResolver(quoteSchema),
+    resolver: zodResolver(createQuoteSchema(t)),
     defaultValues: {
       customer_id: 0,
       quote_date: new Date().toISOString().split("T")[0],
@@ -99,7 +103,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Đã xảy ra lỗi khi lưu báo giá")
+      toast.error(t("sales:quote.form.save_error"))
     }
   }
 
@@ -107,23 +111,27 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? `Cập nhật Báo giá — ${editData.quote_code}` : "Tạo Báo giá mới"}
+      title={
+        isEditing
+          ? t("sales:quote.form.edit_title", { code: editData.quote_code })
+          : t("sales:quote.form.add_title")
+      }
       size="xl"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu Báo giá",
+        label: isSubmitting ? t("sales:quote.form.saving") : t("sales:quote.form.save"),
         type: "submit",
         form: "quote-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
     >
       <form id="quote-form" onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="q-customer">Khách hàng *</Label>
+          <Label htmlFor="q-customer">{t("sales:quote.form.fields.customer")} *</Label>
           <Controller
             name="customer_id"
             control={control}
@@ -135,7 +143,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
                   label: item.label,
                   value: item.value?.toString() || item.id?.toString() || "",
                 }))}
-                placeholder="Chọn khách hàng..."
+                placeholder={t("sales:quote.form.fields.customer_placeholder")}
               />
             )}
           />
@@ -151,7 +159,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày báo giá"
+                  label={t("sales:quote.form.fields.quote_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -162,10 +170,11 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="q-value">Tổng giá trị (VNĐ) *</Label>
+            <Label htmlFor="q-value">{t("sales:quote.form.fields.value")} *</Label>
             <Input
               id="q-value"
               type="number"
+              inputMode="decimal"
               min="0"
               {...register("quote_value", { valueAsNumber: true })}
               aria-invalid={!!errors.quote_value}
@@ -177,11 +186,11 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="q-description">Nội dung chi tiết</Label>
+          <Label htmlFor="q-description">{t("sales:quote.form.fields.description")}</Label>
           <Textarea
             id="q-description"
             rows={3}
-            placeholder="Ghi chú nội dung báo giá..."
+            placeholder={t("sales:quote.form.fields.description_placeholder")}
             {...register("description")}
             className="resize-none"
             aria-invalid={!!errors.description}
@@ -192,11 +201,11 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="q-notes">Ghi chú nội bộ</Label>
+          <Label htmlFor="q-notes">{t("sales:quote.form.fields.notes")}</Label>
           <Textarea
             id="q-notes"
             rows={2}
-            placeholder="Ghi chú riêng biệt cho nội bộ..."
+            placeholder={t("sales:quote.form.fields.notes_placeholder")}
             {...register("notes")}
             className="resize-none"
             aria-invalid={!!errors.notes}

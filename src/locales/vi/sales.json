@@ -1,0 +1,304 @@
+{
+  "title": "Quản lý Bán hàng",
+  "customer": "Khách hàng",
+  "customersList": "Danh sách khách hàng",
+  "contact": "Liên hệ",
+  "quote": "Báo giá",
+  "contract": "Hợp đồng",
+  "interaction": "Lịch sử tương tác",
+  "value": "Giá trị",
+  "pipeline": "Đường ống bán hàng",
+  "revenue": "Doanh thu dự kiến",
+  "customer_list": {
+    "title": "Khách Hàng",
+    "subtitle": "Quản lý hồ sơ khách hàng & đối tác",
+    "add_new": "Thêm khách hàng",
+    "search": "Tìm kiếm",
+    "search_placeholder": "Tên, SĐT, Email...",
+    "classification": "Phân loại",
+    "sales_rep": "Sale phụ trách",
+    "fetch_error": "Không thể tải danh sách khách hàng",
+    "delete_success": "Đã xóa khách hàng",
+    "delete_error": "Xóa thất bại",
+    "update_success": "Đã cập nhật khách hàng",
+    "create_success": "Đã thêm khách hàng mới",
+    "delete_title": "Xóa khách hàng?",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa khách hàng {{name}} không? Hành động này không thể hoàn tác.",
+    "columns": {
+      "customer": "Khách hàng",
+      "classification": "Phân loại",
+      "phone": "SĐT",
+      "email": "Email",
+      "sales_rep": "Sales phụ trách"
+    }
+  },
+  "customer_form": {
+    "add_title": "Thêm khách hàng mới",
+    "edit_title": "Cập nhật khách hàng — {{name}}",
+    "save": "Lưu Khách hàng",
+    "saving": "Đang lưu...",
+    "load_error": "Không thể tải thông tin chi tiết khách hàng",
+    "save_error": "Đã xảy ra lỗi khi lưu khách hàng",
+    "fields": {
+      "name": "Tên khách hàng",
+      "name_placeholder": "Công ty ABC",
+      "phone": "Số điện thoại",
+      "phone_placeholder": "0987654321",
+      "email": "Email",
+      "email_placeholder": "email@example.com",
+      "tax": "Mã số thuế",
+      "tax_placeholder": "0101234567",
+      "address": "Địa chỉ",
+      "address_placeholder": "123 Đường ABC, Phường X, Quận Y...",
+      "classification": "Phân loại",
+      "classification_placeholder": "Chọn phân loại...",
+      "sales_rep": "Sales phụ trách",
+      "sales_rep_placeholder": "Chọn nhân viên sales...",
+      "notes": "Ghi chú",
+      "notes_placeholder": "Ghi chú thêm về khách hàng..."
+    },
+    "validation": {
+      "name_required": "Vui lòng nhập tên khách hàng",
+      "name_max": "Tên khách hàng không được quá 255 ký tự",
+      "phone_required": "Vui lòng nhập số điện thoại",
+      "phone_max": "Số điện thoại không được quá 20 ký tự",
+      "email_max": "Email không được quá 150 ký tự",
+      "email_invalid": "Email không hợp lệ",
+      "address_max": "Địa chỉ không được quá 1000 ký tự",
+      "tax_max": "Mã số thuế không được quá 50 ký tự",
+      "sales_required": "Vui lòng chọn nhân viên sales",
+      "notes_max": "Ghi chú không được quá 2000 ký tự"
+    }
+  },
+  "customer_detail": {
+    "fetch_error": "Không thể tải thông tin khách hàng",
+    "contact_update_success": "Đã cập nhật liên hệ",
+    "contact_create_success": "Đã thêm liên hệ mới",
+    "contact_update_error": "Cập nhật liên hệ thất bại",
+    "contact_create_error": "Thêm liên hệ thất bại",
+    "contact_delete_success": "Đã xóa liên hệ",
+    "contact_delete_error": "Xóa liên hệ thất bại",
+    "interaction_create_success": "Đã ghi nhận tương tác",
+    "interaction_create_error": "Thêm tương tác thất bại",
+    "interaction_delete_success": "Đã xóa tương tác",
+    "interaction_delete_error": "Xóa tương tác thất bại",
+    "tax_number": "Mã số thuế",
+    "unclassified": "Chưa phân loại",
+    "contact_info": "Thông tin liên hệ",
+    "sales_rep": "Sales phụ trách",
+    "unassigned": "Chưa phân công",
+    "notes": "Ghi chú",
+    "contacts_tab": "Người liên hệ",
+    "interactions_tab": "Lịch sử tương tác",
+    "contacts_list": "Danh sách người liên hệ",
+    "add_contact": "Thêm liên hệ",
+    "interactions_list": "Lịch sử làm việc",
+    "add_interaction": "Ghi nhận tương tác"
+  },
+  "contact": {
+    "columns": {
+      "name": "Họ và tên",
+      "position": "Chức vụ",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "is_primary": "Liên hệ chính"
+    },
+    "yes": "Có",
+    "add_title": "Thêm Người Liên Hệ",
+    "edit_title": "Cập nhật Người Liên Hệ",
+    "save": "Lưu liên hệ",
+    "update": "Cập nhật",
+    "is_primary_label": "Đây là người liên hệ chính",
+    "validation": {
+      "name_required": "Vui lòng nhập họ và tên",
+      "name_max": "Họ và tên không được quá 255 ký tự",
+      "position_max": "Chức vụ không được quá 100 ký tự",
+      "phone_max": "Số điện thoại không được quá 20 ký tự"
+    }
+  },
+  "interaction": {
+    "empty_state": {
+      "title": "Chưa có lịch sử tương tác nào",
+      "description": "Bấm Thêm tương tác để ghi nhận lịch sử làm việc với khách hàng này."
+    },
+    "default_type": "Tương tác",
+    "recorded_by": "Ghi nhận bởi",
+    "add_title": "Thêm Lịch sử Tương tác",
+    "save": "Lưu tương tác",
+    "fields": {
+      "type": "Hình thức",
+      "type_placeholder": "Chọn...",
+      "date": "Ngày thực hiện",
+      "content": "Nội dung trao đổi",
+      "content_placeholder": "Ghi chú chi tiết nội dung đã trao đổi với khách hàng..."
+    },
+    "validation": {
+      "type_required": "Vui lòng chọn hình thức",
+      "date_required": "Vui lòng chọn ngày",
+      "content_required": "Vui lòng nhập nội dung"
+    },
+    "default_types": {
+      "call": "Gọi điện",
+      "email": "Email",
+      "meeting": "Gặp mặt",
+      "zalo": "Zalo/Chat"
+    }
+  },
+  "quote": {
+    "title": "Báo Giá",
+    "description": "Quản lý danh sách báo giá gửi khách hàng",
+    "create": "Tạo báo giá",
+    "fetch_error": "Không thể tải danh sách báo giá",
+    "delete_success": "Đã xóa báo giá",
+    "delete_error": "Xóa thất bại",
+    "update_success": "Đã cập nhật báo giá",
+    "create_success": "Đã tạo báo giá mới",
+    "filters": {
+      "search_placeholder": "Mã BG, Khách hàng...",
+      "all_customers": "Tất cả khách hàng",
+      "created_by": "Người tạo",
+      "all_creators": "Tất cả người tạo",
+      "created_date": "Ngày tạo",
+      "time_range": "Khoảng thời gian"
+    },
+    "columns": {
+      "quote_code": "Mã BG",
+      "customer": "Khách hàng",
+      "quote_date": "Ngày báo giá",
+      "value": "Giá trị (VNĐ)"
+    },
+    "actions": {
+      "attachments": "Đính kèm",
+      "download_pdf": "Tải PDF",
+      "delete_title": "Xóa báo giá?",
+      "delete_confirm": "Bạn có chắc chắn muốn xóa báo giá",
+      "delete_warning": "không? Hành động này không thể hoàn tác.",
+      "delete": "Xóa"
+    },
+    "form": {
+      "edit_title": "Cập nhật Báo giá — {{code}}",
+      "add_title": "Tạo Báo giá mới",
+      "saving": "Đang lưu...",
+      "save": "Lưu Báo giá",
+      "save_error": "Đã xảy ra lỗi khi lưu báo giá",
+      "fields": {
+        "customer": "Khách hàng",
+        "customer_placeholder": "Chọn khách hàng...",
+        "quote_date": "Ngày báo giá",
+        "value": "Tổng giá trị (VNĐ)",
+        "description": "Nội dung chi tiết",
+        "description_placeholder": "Ghi chú nội dung báo giá...",
+        "notes": "Ghi chú nội bộ",
+        "notes_placeholder": "Ghi chú riêng biệt cho nội bộ..."
+      },
+      "validation": {
+        "customer_required": "Vui lòng chọn khách hàng",
+        "date_required": "Vui lòng nhập ngày báo giá",
+        "value_required": "Vui lòng nhập tổng giá trị",
+        "value_min": "Giá trị báo giá phải lớn hơn 0",
+        "desc_max": "Mô tả không được quá 5000 ký tự",
+        "notes_max": "Ghi chú không được quá 2000 ký tự"
+      }
+    },
+    "files": {
+      "fetch_error": "Không thể tải tài liệu chứng từ",
+      "upload_success": "Tải đính kèm thành công",
+      "upload_error": "Tải đính kèm thất bại",
+      "delete_confirm": "Bạn có chắc chắn muốn xóa tài liệu đính kèm này?",
+      "delete_success": "Đã xóa tài liệu đính kèm",
+      "delete_error": "Xóa tài liệu thất bại",
+      "title": "Tài liệu đính kèm báo giá: {{code}}",
+      "select_file": "Chọn tài liệu báo giá mới",
+      "file_hint": "Hỗ trợ PDF, hình ảnh hoặc bảng tính Excel lên đến 10 MB",
+      "uploading": "Đang tải lên...",
+      "upload": "Tải lên tài liệu",
+      "current_files": "Danh sách đính kèm hiện tại",
+      "no_files": "Chưa có tài liệu đính kèm nào.",
+      "validation": {
+        "file_required": "Vui lòng chọn tệp tin"
+      }
+    }
+  },
+  "contract": {
+    "title": "Hợp Đồng",
+    "description": "Quản lý danh sách hợp đồng đã ký kết",
+    "create": "Tạo hợp đồng",
+    "fetch_error": "Không thể tải danh sách hợp đồng",
+    "fetch_detail_error": "Không thể tải chi tiết hợp đồng",
+    "delete_success": "Đã xóa hợp đồng",
+    "delete_error": "Xóa thất bại",
+    "update_success": "Đã cập nhật hợp đồng",
+    "create_success": "Đã tạo hợp đồng mới",
+    "filters": {
+      "search_placeholder": "Mã HĐ, Khách hàng..."
+    },
+    "columns": {
+      "contract_code": "Mã Hợp đồng",
+      "customer": "Khách hàng",
+      "contract_date": "Ngày Hợp đồng",
+      "value": "Giá trị HĐ (VNĐ)",
+      "sales_rep": "Sales phụ trách"
+    },
+    "actions": {
+      "attachments": "Đính kèm",
+      "download_file": "Tải File",
+      "delete_title": "Xóa hợp đồng?",
+      "delete_confirm": "Bạn có chắc chắn muốn xóa hợp đồng",
+      "delete_warning": "không? Hành động này không thể hoàn tác.",
+      "delete": "Xóa"
+    },
+    "form": {
+      "edit_title": "Cập nhật Hợp đồng — {{code}}",
+      "add_title": "Tạo Hợp đồng mới",
+      "saving": "Đang lưu...",
+      "save": "Lưu Hợp đồng",
+      "save_error": "Đã xảy ra lỗi khi lưu hợp đồng",
+      "fields": {
+        "customer": "Khách hàng",
+        "customer_placeholder": "Chọn khách hàng...",
+        "quote_link": "Liên kết Báo giá (Tùy chọn)",
+        "no_link": "--- Không liên kết ---",
+        "quote_placeholder": "Chọn báo giá (nếu có)",
+        "sales_rep": "Sales phụ trách",
+        "sales_placeholder": "Chọn sales...",
+        "status": "Trạng thái",
+        "status_placeholder": "Chọn trạng thái...",
+        "contract_date": "Ngày HĐ",
+        "signed_date": "Ngày ký",
+        "value": "Giá trị HĐ (VNĐ)",
+        "content": "Nội dung hợp đồng",
+        "content_placeholder": "Ghi chú nội dung chính...",
+        "terms": "Điều khoản đặc biệt",
+        "terms_placeholder": "Các điều khoản thanh toán, giao hàng bổ sung..."
+      },
+      "validation": {
+        "customer_required": "Vui lòng chọn khách hàng",
+        "date_required": "Vui lòng nhập ngày hợp đồng",
+        "value_required": "Vui lòng nhập giá trị hợp đồng",
+        "value_min": "Giá trị hợp đồng phải lớn hơn 0",
+        "sales_required": "Vui lòng chọn Sales phụ trách",
+        "status_required": "Vui lòng chọn trạng thái",
+        "content_max": "Nội dung hợp đồng không được quá 10000 ký tự",
+        "terms_max": "Điều khoản không được quá 5000 ký tự"
+      }
+    },
+    "files": {
+      "fetch_error": "Không thể tải tài liệu chứng từ",
+      "upload_success": "Tải đính kèm thành công",
+      "upload_error": "Tải đính kèm thất bại",
+      "delete_confirm": "Bạn có chắc chắn muốn xóa tài liệu đính kèm này?",
+      "delete_success": "Đã xóa tài liệu đính kèm",
+      "delete_error": "Xóa tài liệu thất bại",
+      "title": "Tài liệu đính kèm hợp đồng: {{code}}",
+      "select_file": "Chọn tài liệu hợp đồng mới",
+      "file_hint": "Hỗ trợ PDF, hình ảnh hoặc bảng tính Excel lên đến 10 MB",
+      "uploading": "Đang tải lên...",
+      "upload": "Tải lên tài liệu",
+      "current_files": "Danh sách đính kèm hiện tại",
+      "no_files": "Chưa có tài liệu đính kèm nào.",
+      "validation": {
+        "file_required": "Vui lòng chọn tệp tin"
+      }
+    }
+  }
+}

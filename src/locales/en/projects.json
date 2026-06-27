@@ -1,0 +1,264 @@
+{
+  "title": "Project Management",
+  "project": "Project",
+  "projectsList": "Projects List",
+  "task": "Task",
+  "milestone": "Milestone",
+  "member": "Member",
+  "progress": "Progress",
+  "budget": "Budget",
+  "expense": "Project Expense",
+  "assignProject": "Assign Project",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "list": {
+    "title": "Project Management",
+    "create": "Create New Project",
+    "search": "Search projects",
+    "search_placeholder": "Project name or code...",
+    "filter_status": "Status",
+    "fetch_error": "Failed to fetch project list",
+    "delete_success": "Project deleted successfully",
+    "delete_error": "Failed to delete project"
+  },
+  "columns": {
+    "code": "Proj. Code",
+    "name": "Project Name",
+    "customer": "Customer",
+    "contract_value": "Value (VND)",
+    "status": "Status"
+  },
+  "form": {
+    "update_title": "Update Project",
+    "create_title": "Create New Project",
+    "submit_create": "Create Project",
+    "submit_update": "Update",
+    "name": "Project Name *",
+    "customer": "Customer",
+    "customer_placeholder": "Select customer",
+    "contract": "Contract (Optional)",
+    "contract_none": "--- No Link ---",
+    "contract_placeholder": "Select contract",
+    "start_date": "Start Date",
+    "end_date": "End Date (Expected)",
+    "value": "Contract Value (VND) *",
+    "status": "Status",
+    "status_placeholder": "Select...",
+    "description": "Project Description",
+    "fetch_error": "Failed to fetch project info",
+    "update_success": "Project updated successfully",
+    "create_success": "Project created successfully",
+    "update_error": "Update failed",
+    "create_error": "Creation failed",
+    "validation": {
+      "name_required": "Please enter a name",
+      "date_required": "Please select a date",
+      "value_required": "Please enter a value"
+    }
+  },
+  "detail": {
+    "not_found": "Project info not found.",
+    "fetch_error": "Failed to fetch project info",
+    "status_update_success": "Project status updated successfully",
+    "status_update_error": "Failed to update status",
+    "customer": "Customer:",
+    "contract_value_title": "CONTRACT VALUE",
+    "currency_unit": "VND",
+    "contract": "Contract:",
+    "received_title": "RECEIVED AMOUNT",
+    "received_progress": "Collection progress:",
+    "spent_title": "SPENT AMOUNT",
+    "spent_ratio": "Expense/Contract ratio:",
+    "profit_title": "PROJECT PROFIT",
+    "profit_margin": "Profit margin:",
+    "change_status": "Change Project Status",
+    "select_status": "Select status...",
+    "time_info": "Execution Time",
+    "start_date": "Start Date:",
+    "end_date_expected": "End Date (Expected):",
+    "progress": "Completion progress:",
+    "description": "Project Description",
+    "no_description": "No detailed description.",
+    "tabs": {
+      "members": "Members",
+      "milestones": "Milestones",
+      "expenses": "Expenses",
+      "files": "Documents",
+      "vouchers": "Vouchers"
+    }
+  },
+  "members": {
+    "title": "Participating Members",
+    "add_member": "Add Member",
+    "update_success": "Member updated successfully",
+    "add_success": "Member added successfully",
+    "process_error": "Error processing request",
+    "delete_confirm": "Are you sure you want to remove this member from the project?",
+    "delete_success": "Member removed from project",
+    "delete_error": "Failed to remove member",
+    "columns": {
+      "full_name": "Full Name",
+      "role": "Role",
+      "start_date": "Start Date",
+      "end_date": "End Date",
+      "labor_cost": "Labor Cost (Month)"
+    },
+    "no_role": "Unassigned",
+    "form": {
+      "title_add": "Add Member to Project",
+      "title_edit": "Update Project Member",
+      "employee": "Employee *",
+      "employee_placeholder": "Select employee...",
+      "role": "Role / Task",
+      "role_placeholder": "Example: Dev, PM, Tester...",
+      "labor_cost": "Labor Cost (VND/month)",
+      "labor_cost_placeholder": "Enter cost...",
+      "start_date": "Join Date",
+      "end_date": "End Date",
+      "notes": "Notes",
+      "notes_placeholder": "Detailed task notes...",
+      "validation": {
+        "employee_required": "Please select an employee",
+        "role_max": "Role cannot exceed 100 characters",
+        "labor_cost_min": "Labor cost must be >= 0",
+        "notes_max": "Notes cannot exceed 1000 characters",
+        "date_invalid": "End date must be greater than or equal to start date",
+        "save_error": "Error saving member information"
+      }
+    }
+  },
+  "milestones": {
+    "title": "Project Milestones",
+    "add_milestone": "Add Milestone",
+    "update_success": "Milestone updated successfully",
+    "add_success": "Milestone added successfully",
+    "process_error": "Error processing request",
+    "delete_confirm": "Are you sure you want to delete this milestone?",
+    "delete_success": "Milestone deleted",
+    "delete_error": "Failed to delete milestone",
+    "columns": {
+      "name": "Milestone Name",
+      "due_date": "Due Date",
+      "status": "Status",
+      "notes": "Notes / Acceptance Criteria"
+    },
+    "form": {
+      "title_add": "Add New Milestone",
+      "title_edit": "Update Milestone",
+      "name": "Milestone Name *",
+      "name_placeholder": "Example: Design Delivery, UAT Handoff...",
+      "due_date": "Due Date *",
+      "status": "Status *",
+      "status_placeholder": "Select status...",
+      "notes": "Notes / Criteria Description",
+      "notes_placeholder": "Detailed notes or acceptance criteria for the milestone...",
+      "validation": {
+        "name_required": "Please enter a milestone name",
+        "name_max": "Milestone name maximum 255 characters",
+        "date_required": "Please select a due date",
+        "notes_max": "Notes maximum 1000 characters",
+        "save_error": "Error saving milestone"
+      }
+    }
+  },
+  "expenses": {
+    "title": "Project Expenses",
+    "add_expense": "Request Expense",
+    "submit_success": "Expense request submitted successfully",
+    "submit_error": "Failed to submit expense request",
+    "approve_success": "Expense request approved",
+    "approve_error": "Approval failed",
+    "reject_prompt": "Enter rejection reason (optional):",
+    "reject_success": "Expense request rejected",
+    "reject_error": "Rejection failed",
+    "delete_confirm": "Are you sure you want to delete this expense request?",
+    "delete_success": "Expense deleted",
+    "delete_error": "Failed to delete expense",
+    "columns": {
+      "type": "Category",
+      "date": "Expense Date",
+      "description": "Reason / Description",
+      "amount": "Amount",
+      "status": "Status",
+      "approvers": "Requester / Approver"
+    },
+    "approvers": {
+      "requester": "Requester:",
+      "approver": "Approver:"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete Request"
+    },
+    "form": {
+      "title": "Project Expense Request",
+      "type": "Expense Category *",
+      "type_placeholder": "Select category...",
+      "amount": "Amount (VND) *",
+      "amount_placeholder": "Enter amount...",
+      "date": "Expense Date *",
+      "description": "Reason / Details *",
+      "description_placeholder": "Describe specific reason and details...",
+      "submit": "Submit Request",
+      "submitting": "Submitting...",
+      "validation": {
+        "type_required": "Please select expense category",
+        "amount_invalid": "Please enter a valid amount",
+        "amount_gt0": "Amount must be greater than 0",
+        "date_required": "Please select expense date",
+        "description_required": "Please enter reason / description",
+        "description_max": "Description maximum 1000 characters",
+        "save_error": "Error submitting expense request"
+      }
+    }
+  },
+  "files": {
+    "title": "Attached Files",
+    "upload": "Upload File",
+    "upload_title": "Upload new file to project",
+    "upload_success": "File uploaded successfully",
+    "upload_error": "Failed to upload file",
+    "delete_confirm": "Are you sure you want to delete this file?",
+    "delete_success": "File deleted",
+    "delete_error": "Failed to delete file",
+    "category": "File Category *",
+    "category_placeholder": "Select category...",
+    "notes": "Description / Notes",
+    "notes_placeholder": "Describe this document (e.g. Floor 1 Technical Drawing...)",
+    "file_label": "Attachment File *",
+    "file_hint": "PDF, image or Office document up to 10 MB",
+    "uploading": "Uploading...",
+    "submit": "Upload",
+    "columns": {
+      "name": "File Name",
+      "category": "Category",
+      "notes": "Notes",
+      "size": "Size",
+      "uploaded_at": "Uploaded At",
+      "employee_code": "Emp Code"
+    },
+    "validation": {
+      "file_required": "Please select a file",
+      "category_required": "Please select a file category",
+      "notes_max": "Notes maximum 500 characters"
+    }
+  },
+  "vouchers": {
+    "title": "Related Vouchers",
+    "info": "View only. Manage vouchers in Finance module.",
+    "fetch_error": "Failed to fetch vouchers",
+    "columns": {
+      "code": "Voucher Code",
+      "type": "Type",
+      "date": "Voucher Date",
+      "amount": "Amount",
+      "status": "Status",
+      "description": "Description / Notes"
+    },
+    "types": {
+      "receipt": "Receipt",
+      "payment": "Payment"
+    }
+  }
+}

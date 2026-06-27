@@ -4,11 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { FileUploadField } from "@/components/common/FileUploadField"
+import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { Download, Trash2, FileText, Upload } from "lucide-react"
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher } from "../types/voucher"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface VoucherAttachmentsDialogProps {
   open: boolean
@@ -18,9 +20,12 @@ interface VoucherAttachmentsDialogProps {
   onRefresh: () => void
 }
 
-const fileSchema = z.object({
-  file: z.any().refine((val) => val instanceof File, "Vui lòng chọn tệp tin"),
-})
+const getFileSchema = (t: any) =>
+  z.object({
+    file: z
+      .any()
+      .refine((val) => val instanceof File, t("finance:attachments.validation.file_required")),
+  })
 
 export function VoucherAttachmentsDialog({
   open,
@@ -29,20 +34,23 @@ export function VoucherAttachmentsDialog({
   voucherCode,
   onRefresh,
 }: VoucherAttachmentsDialogProps) {
+  const { t } = useTranslation(["finance", "common"])
   const [voucher, setVoucher] = useState<Voucher | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const form = useForm({
+    resolver: zodResolver(getFileSchema(t)),
+    defaultValues: {
+      file: null,
+    },
+  })
 
   const {
     handleSubmit,
     control,
     reset,
     formState: { isSubmitting },
-  } = useForm({
-    resolver: zodResolver(fileSchema),
-    defaultValues: {
-      file: null,
-    },
-  })
+  } = form
 
   const loadVoucher = async () => {
     setIsLoading(true)
@@ -50,7 +58,7 @@ export function VoucherAttachmentsDialog({
       const data = await voucherApi.get(voucherId)
       setVoucher(data)
     } catch {
-      toast.error("Không thể tải tài liệu chứng từ")
+      toast.error(t("finance:attachments.fetch_error"))
     } finally {
       setIsLoading(false)
     }
@@ -65,24 +73,24 @@ export function VoucherAttachmentsDialog({
   const handleUpload = async (data: any) => {
     try {
       await voucherApi.uploadFile(voucherId, data.file)
-      toast.success("Tải đính kèm thành công")
+      toast.success(t("finance:attachments.upload_success"))
       reset({ file: null })
       loadVoucher()
       onRefresh()
     } catch {
-      toast.error("Tải đính kèm thất bại")
+      toast.error(t("finance:attachments.upload_error"))
     }
   }
 
   const handleDelete = async (fileId: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa tài liệu đính kèm này?")) return
+    if (!window.confirm(t("finance:attachments.delete_confirm"))) return
     try {
       await voucherApi.deleteFile(voucherId, fileId)
-      toast.success("Đã xóa tài liệu đính kèm")
+      toast.success(t("finance:attachments.delete_success"))
       loadVoucher()
       onRefresh()
     } catch {
-      toast.error("Xóa tài liệu thất bại")
+      toast.error(t("finance:attachments.delete_error"))
     }
   }
 
@@ -90,45 +98,49 @@ export function VoucherAttachmentsDialog({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={`Tài liệu đính kèm: ${voucherCode}`}
+      title={t("finance:attachments.title", { code: voucherCode })}
       size="lg"
       cancelAction={{
-        label: "Đóng",
+        label: t("finance:attachments.close"),
         onClick: onClose,
       }}
     >
       <div className="space-y-6 py-2">
-        <form onSubmit={handleSubmit(handleUpload)} className="space-y-3">
-          <FileUploadField
-            control={control}
-            name="file"
-            label="Chọn tài liệu chứng từ mới"
-            accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-            hint="Hỗ trợ PDF, hình ảnh hoặc bảng tính Excel lên đến 10 MB"
-            required
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              size="sm"
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <Upload className="size-4" />
-              {isSubmitting ? "Đang tải lên..." : "Tải lên tài liệu"}
-            </Button>
-          </div>
-        </form>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(handleUpload)} className="space-y-3">
+            <FileUploadField
+              control={control}
+              name="file"
+              label={t("finance:attachments.select_label")}
+              accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+              hint={t("finance:attachments.select_hint")}
+              required
+            />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                size="sm"
+                className="gap-2 min-h-11 md:min-h-9"
+              >
+                <Upload className="size-4" />
+                {isSubmitting
+                  ? t("finance:attachments.uploading")
+                  : t("finance:attachments.upload_button")}
+              </Button>
+            </div>
+          </form>
+        </Form>
 
         <div className="border-t pt-4">
-          <h4 className="font-semibold text-sm mb-3">Danh sách đính kèm hiện tại</h4>
+          <h4 className="font-semibold text-sm mb-3">{t("finance:attachments.list_title")}</h4>
           {isLoading ? (
             <div className="flex h-20 items-center justify-center">
               <div className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : !voucher?.files || voucher.files.length === 0 ? (
             <p className="text-center text-xs text-muted-foreground py-4">
-              Chưa có tài liệu đính kèm nào.
+              {t("finance:attachments.empty")}
             </p>
           ) : (
             <div className="divide-y rounded-lg border bg-background">

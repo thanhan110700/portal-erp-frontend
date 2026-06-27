@@ -11,46 +11,49 @@ import type { Customer, CreateCustomerPayload } from "../types/sales"
 import { customerApi } from "../api/customerApi"
 import { type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
 
-const customerSchema = z.object({
-  customer_name: z
-    .string()
-    .min(1, "Vui lòng nhập tên khách hàng")
-    .max(255, "Tên khách hàng không được quá 255 ký tự"),
-  phone: z
-    .string()
-    .min(1, "Vui lòng nhập số điện thoại")
-    .max(20, "Số điện thoại không được quá 20 ký tự"),
-  email: z
-    .string()
-    .max(150, "Email không được quá 150 ký tự")
-    .email("Email không hợp lệ")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  address: z
-    .string()
-    .max(1000, "Địa chỉ không được quá 1000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  tax_number: z
-    .string()
-    .max(50, "Mã số thuế không được quá 50 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  classification: z.string().optional().nullable().or(z.literal("")),
-  sales_rep_id: z.number().min(1, "Vui lòng chọn nhân viên sales"),
-  notes: z
-    .string()
-    .max(2000, "Ghi chú không được quá 2000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-})
+const createCustomerSchema = (t: TFunction) =>
+  z.object({
+    customer_name: z
+      .string()
+      .min(1, t("sales:customer_form.validation.name_required"))
+      .max(255, t("sales:customer_form.validation.name_max")),
+    phone: z
+      .string()
+      .min(1, t("sales:customer_form.validation.phone_required"))
+      .max(20, t("sales:customer_form.validation.phone_max")),
+    email: z
+      .string()
+      .max(150, t("sales:customer_form.validation.email_max"))
+      .email(t("sales:customer_form.validation.email_invalid"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    address: z
+      .string()
+      .max(1000, t("sales:customer_form.validation.address_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    tax_number: z
+      .string()
+      .max(50, t("sales:customer_form.validation.tax_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    classification: z.string().optional().nullable().or(z.literal("")),
+    sales_rep_id: z.number().min(1, t("sales:customer_form.validation.sales_required")),
+    notes: z
+      .string()
+      .max(2000, t("sales:customer_form.validation.notes_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+  })
 
-type CustomerFormData = z.infer<typeof customerSchema>
+type CustomerFormData = z.infer<ReturnType<typeof createCustomerSchema>>
 
 interface CustomerFormModalProps {
   open: boolean
@@ -69,6 +72,7 @@ export function CustomerFormModal({
   classifications,
   salesReps,
 }: CustomerFormModalProps) {
+  const { t } = useTranslation()
   const isEditing = !!editData
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
 
@@ -80,7 +84,7 @@ export function CustomerFormModal({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<CustomerFormData>({
-    resolver: zodResolver(customerSchema),
+    resolver: zodResolver(createCustomerSchema(t)),
     defaultValues: {
       customer_name: "",
       phone: "",
@@ -117,7 +121,7 @@ export function CustomerFormModal({
         })
         .catch((err) => {
           console.error(err)
-          toast.error("Không thể tải thông tin chi tiết khách hàng")
+          toast.error(t("sales:customer_form.load_error"))
           onClose()
         })
         .finally(() => {
@@ -152,7 +156,7 @@ export function CustomerFormModal({
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Đã xảy ra lỗi khi lưu khách hàng")
+      toast.error(t("sales:customer_form.save_error"))
     }
   }
 
@@ -162,18 +166,18 @@ export function CustomerFormModal({
       onClose={onClose}
       title={
         isEditing
-          ? `Cập nhật khách hàng — ${editData.customer_name ?? editData.name}`
-          : "Thêm khách hàng mới"
+          ? t("sales:customer_form.edit_title", { name: editData.customer_name ?? editData.name })
+          : t("sales:customer_form.add_title")
       }
       size="xl"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu Khách hàng",
+        label: isSubmitting ? t("sales:customer_form.saving") : t("sales:customer_form.save"),
         type: "submit",
         form: "customer-form",
         disabled: isSubmitting || isLoadingDetail,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting || isLoadingDetail,
         onClick: onClose,
       }}
@@ -190,10 +194,10 @@ export function CustomerFormModal({
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-name">Tên khách hàng *</Label>
+              <Label htmlFor="cus-name">{t("sales:customer_form.fields.name")} *</Label>
               <Input
                 id="cus-name"
-                placeholder="Công ty ABC"
+                placeholder={t("sales:customer_form.fields.name_placeholder")}
                 {...register("customer_name")}
                 aria-invalid={!!errors.customer_name}
               />
@@ -203,10 +207,11 @@ export function CustomerFormModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-phone">Số điện thoại *</Label>
+              <Label htmlFor="cus-phone">{t("sales:customer_form.fields.phone")} *</Label>
               <Input
                 id="cus-phone"
-                placeholder="0987654321"
+                placeholder={t("sales:customer_form.fields.phone_placeholder")}
+                inputMode="tel"
                 {...register("phone")}
                 aria-invalid={!!errors.phone}
               />
@@ -214,11 +219,11 @@ export function CustomerFormModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-email">Email</Label>
+              <Label htmlFor="cus-email">{t("sales:customer_form.fields.email")}</Label>
               <Input
                 id="cus-email"
                 type="email"
-                placeholder="email@example.com"
+                placeholder={t("sales:customer_form.fields.email_placeholder")}
                 {...register("email")}
                 aria-invalid={!!errors.email}
               />
@@ -226,10 +231,10 @@ export function CustomerFormModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-tax">Mã số thuế</Label>
+              <Label htmlFor="cus-tax">{t("sales:customer_form.fields.tax")}</Label>
               <Input
                 id="cus-tax"
-                placeholder="0101234567"
+                placeholder={t("sales:customer_form.fields.tax_placeholder")}
                 {...register("tax_number")}
                 aria-invalid={!!errors.tax_number}
               />
@@ -240,10 +245,10 @@ export function CustomerFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="cus-address">Địa chỉ</Label>
+            <Label htmlFor="cus-address">{t("sales:customer_form.fields.address")}</Label>
             <Input
               id="cus-address"
-              placeholder="123 Đường ABC, Phường X, Quận Y..."
+              placeholder={t("sales:customer_form.fields.address_placeholder")}
               {...register("address")}
               aria-invalid={!!errors.address}
             />
@@ -253,7 +258,7 @@ export function CustomerFormModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="cus-class" className="text-sm font-medium">
-                Phân loại
+                {t("sales:customer_form.fields.classification")}
               </Label>
               <SearchableSelect
                 value={classificationValue || ""}
@@ -262,7 +267,7 @@ export function CustomerFormModal({
                   label: item.label,
                   value: item.value?.toString() || item.id?.toString() || "",
                 }))}
-                placeholder="Chọn phân loại..."
+                placeholder={t("sales:customer_form.fields.classification_placeholder")}
               />
               {errors.classification && (
                 <p className="text-xs text-destructive">{errors.classification.message}</p>
@@ -271,7 +276,7 @@ export function CustomerFormModal({
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="cus-sales" className="text-sm font-medium">
-                Sales phụ trách *
+                {t("sales:customer_form.fields.sales_rep")} *
               </Label>
               <SearchableSelect
                 value={salesRepValue ? salesRepValue.toString() : ""}
@@ -280,7 +285,7 @@ export function CustomerFormModal({
                   label: item.label,
                   value: item.value?.toString() || item.id?.toString() || "",
                 }))}
-                placeholder="Chọn nhân viên sales..."
+                placeholder={t("sales:customer_form.fields.sales_rep_placeholder")}
               />
               {errors.sales_rep_id && (
                 <p className="text-xs text-destructive">{errors.sales_rep_id.message}</p>
@@ -289,11 +294,11 @@ export function CustomerFormModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="cus-notes">Ghi chú</Label>
+            <Label htmlFor="cus-notes">{t("sales:customer_form.fields.notes")}</Label>
             <Textarea
               id="cus-notes"
               rows={3}
-              placeholder="Ghi chú thêm về khách hàng..."
+              placeholder={t("sales:customer_form.fields.notes_placeholder")}
               {...register("notes")}
               className="resize-none"
               aria-invalid={!!errors.notes}

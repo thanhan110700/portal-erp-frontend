@@ -1,5 +1,6 @@
 import { memo } from "react"
 import { useMatches } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 
@@ -12,7 +13,9 @@ type ScreenTitleProps = {
 function ScreenTitleInner({ className }: ScreenTitleProps) {
   const matches = useMatches()
   const leaf = matches[matches.length - 1]
-  const title = (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? ""
+  const rawTitle = (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? ""
+  const { t } = useTranslation()
+  const title = rawTitle ? t(rawTitle) : ""
 
   if (!title) {
     return null

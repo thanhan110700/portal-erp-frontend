@@ -172,6 +172,7 @@ src/
 - **Zustand** for global client state (auth, session, UI state).
   - Always use **selectors** to avoid unnecessary re-renders: `useAuthStore((s) => s.user)`.
 - **React Hook Form** for all form state.
+  - **CRITICAL**: Always use **Zod** for form validation (`zodResolver`). You MUST verify expected payload types from the backend API to ensure 100% accurate data mapping before submission.
 - Use `useMemo` / `useCallback` where performance matters (large lists, expensive computations).
 
 ### API & Data

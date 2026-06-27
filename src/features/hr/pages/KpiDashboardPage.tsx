@@ -17,9 +17,11 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { kpiApi } from "../api/kpiApi"
 import { employeeApi } from "../api/employeeApi"
-import { KpiTable } from "../components/KpiTable"
 import type { Employee } from "../types/employee"
 import type { EmployeeKpi, UpsertKpiPayload } from "../types/kpi"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
+import { KpiTable } from "../components/KpiTable"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -51,9 +53,11 @@ function getKpiBadgeVariant(pct: number | null): "success" | "warning" | "destru
 function TopPerformersCard({
   performers,
   isLoading,
+  t,
 }: {
   performers: EmployeeKpi[]
   isLoading: boolean
+  t: TFunction
 }) {
   const medals = ["🥇", "🥈", "🥉"]
 
@@ -61,17 +65,20 @@ function TopPerformersCard({
     <div className="rounded-xl border bg-card p-4 flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <Trophy className="size-4 text-warning" />
-        <h3 className="font-semibold text-sm">Top Performers</h3>
+        <h3 className="font-semibold text-sm">{t("hr:kpi.dashboard.top_performers")}</h3>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-12 rounded-lg" />
-          ))}
-        </div>
-      ) : performers.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">Chưa có dữ liệu</p>
+        <>
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-12 rounded-lg" />
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            {t("hr:kpi.dashboard.no_data")}
+          </p>
+        </>
       ) : (
         <div className="flex flex-col gap-2">
           {performers.slice(0, 5).map((kpi, idx) => (
@@ -101,42 +108,17 @@ function TopPerformersCard({
 
 // ── Upsert KPI Modal (Admin only) ──────────────────────────────────────────
 
-const upsertKpiSchema = z.object({
-  user_id: z.string().min(1, "Vui lòng chọn nhân viên"),
-  month: z
-    .string()
-    .min(1, "Vui lòng nhập tháng")
-    .refine((val) => {
-      const n = Number(val)
-      return !isNaN(n) && Number.isInteger(n) && n >= 1 && n <= 12
-    }, "Tháng phải từ 1 đến 12"),
-  year: z
-    .string()
-    .min(1, "Vui lòng nhập năm")
-    .refine((val) => {
-      const n = Number(val)
-      return !isNaN(n) && Number.isInteger(n) && n >= 2020 && n <= 2100
-    }, "Năm phải từ 2020 đến 2100"),
-  target_revenue: z
-    .string()
-    .min(1, "Vui lòng nhập doanh thu mục tiêu")
-    .refine((val) => {
-      const n = Number(val)
-      return !isNaN(n) && n >= 0
-    }, "Doanh thu mục tiêu phải lớn hơn hoặc bằng 0"),
-  actual_revenue: z
-    .string()
-    .optional()
-    .nullable()
-    .refine((val) => {
-      if (!val) return true
-      const n = Number(val)
-      return !isNaN(n) && n >= 0
-    }, "Doanh thu thực tế phải lớn hơn hoặc bằng 0"),
-  notes: z.string().max(1000, "Ghi chú không được vượt quá 1000 ký tự").optional().nullable(),
-})
+const createUpsertKpiSchema = (t: TFunction) =>
+  z.object({
+    user_id: z.string().min(1, t("hr:kpi.form.validation.user_required")),
+    month: z.string().min(1, t("hr:kpi.form.validation.month_required")),
+    year: z.string().min(1, t("hr:kpi.form.validation.year_required")),
+    target_revenue: z.string().min(1, t("hr:kpi.form.validation.target_required")),
+    actual_revenue: z.string().optional().nullable(),
+    notes: z.string().max(1000, t("hr:kpi.form.validation.notes_max")).optional().nullable(),
+  })
 
-type UpsertKpiFormData = z.infer<typeof upsertKpiSchema>
+type UpsertKpiFormData = z.infer<ReturnType<typeof createUpsertKpiSchema>>
 
 function UpsertKpiModal({
   open,
@@ -155,6 +137,7 @@ function UpsertKpiModal({
   defaultYear: number
   editData?: EmployeeKpi | null
 }) {
+  const { t } = useTranslation(["hr", "common"])
   const isEditing = !!editData
   const {
     register,
@@ -164,7 +147,7 @@ function UpsertKpiModal({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<UpsertKpiFormData>({
-    resolver: zodResolver(upsertKpiSchema),
+    resolver: zodResolver(createUpsertKpiSchema(t)),
     defaultValues: {
       user_id: "",
       month: defaultMonth.toString(),
@@ -217,16 +200,16 @@ function UpsertKpiModal({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? "Cập nhật mục tiêu KPI" : "Đặt mục tiêu KPI"}
+      title={isEditing ? t("hr:kpi.form.update_title") : t("hr:kpi.form.create_title")}
       size="md"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu KPI",
+        label: isSubmitting ? t("common:table.loading") : t("hr:kpi.form.submit"),
         type: "submit",
         form: "kpi-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -239,7 +222,7 @@ function UpsertKpiModal({
         {/* Employee select */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="kpi-emp" className="text-sm font-medium">
-            Nhân viên *
+            {t("hr:kpi.form.employee")}
           </Label>
           <input type="hidden" {...register("user_id")} />
           <SearchableSelect
@@ -251,7 +234,7 @@ function UpsertKpiModal({
               label: `${e.full_name} (${e.user_code})`,
               value: e.id.toString(),
             }))}
-            placeholder="Chọn nhân viên kinh doanh..."
+            placeholder={t("hr:kpi.form.employee_placeholder")}
             className={errors.user_id ? "border-destructive h-9" : "h-9"}
             disabled={isEditing}
           />
@@ -262,11 +245,12 @@ function UpsertKpiModal({
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="kpi-month" className="text-sm font-medium">
-              Tháng *
+              {t("hr:kpi.form.month")}
             </Label>
             <Input
               id="kpi-month"
               type="number"
+              inputMode="decimal"
               min={1}
               max={12}
               {...register("month")}
@@ -277,11 +261,12 @@ function UpsertKpiModal({
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="kpi-year" className="text-sm font-medium">
-              Năm *
+              {t("hr:kpi.form.year")}
             </Label>
             <Input
               id="kpi-year"
               type="number"
+              inputMode="decimal"
               min={2020}
               max={2100}
               {...register("year")}
@@ -295,11 +280,12 @@ function UpsertKpiModal({
         {/* Target */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="kpi-target" className="text-sm font-medium">
-            Doanh thu mục tiêu (VND) *
+            {t("hr:kpi.form.target")}
           </Label>
           <Input
             id="kpi-target"
             type="number"
+            inputMode="decimal"
             min={0}
             placeholder="50000000"
             {...register("target_revenue")}
@@ -313,13 +299,14 @@ function UpsertKpiModal({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="kpi-actual" className="text-sm font-medium">
-            Doanh thu thực tế (VND)
+            {t("hr:kpi.form.actual")}
           </Label>
           <Input
             id="kpi-actual"
             type="number"
+            inputMode="decimal"
             min={0}
-            placeholder="Tự động tính từ hợp đồng"
+            placeholder={t("hr:kpi.form.actual_placeholder")}
             {...register("actual_revenue")}
             className="h-9"
             aria-invalid={!!errors.actual_revenue}
@@ -331,7 +318,7 @@ function UpsertKpiModal({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="kpi-notes" className="text-sm font-medium">
-            Ghi chú
+            {t("hr:kpi.form.notes")}
           </Label>
           <Textarea
             id="kpi-notes"
@@ -349,6 +336,7 @@ function UpsertKpiModal({
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export function KpiDashboardPage() {
+  const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
 
@@ -371,7 +359,7 @@ export function KpiDashboardPage() {
       const res = await kpiApi.list({ month, year, per_page: 50 })
       setKpis(res.data)
     } catch {
-      toast.error("Không thể tải dữ liệu KPI")
+      toast.error(t("hr:kpi.dashboard.fetch_error"))
     } finally {
       setIsLoading(false)
     }
@@ -408,12 +396,12 @@ export function KpiDashboardPage() {
   const handleUpsert = async (payload: UpsertKpiPayload) => {
     try {
       await kpiApi.upsert(payload)
-      toast.success("Đã cập nhật KPI thành công")
+      toast.success(t("hr:kpi.dashboard.upsert_success"))
       setUpsertOpen(false)
       fetchKpis()
       fetchTop()
     } catch {
-      toast.error("Không thể lưu KPI")
+      toast.error(t("hr:kpi.dashboard.upsert_error"))
       throw new Error("Upsert failed")
     }
   }
@@ -434,19 +422,19 @@ export function KpiDashboardPage() {
       {
         field: "month",
         type: "select",
-        label: "Tháng",
-        placeholder: "Chọn tháng",
+        label: t("hr:kpi.dashboard.month"),
+        placeholder: t("hr:kpi.dashboard.select_month"),
         value: month.toString(),
         options: Array.from({ length: 12 }).map((_, i) => ({
-          label: `Tháng ${i + 1}`,
+          label: `${t("hr:kpi.dashboard.month")} ${i + 1}`,
           value: (i + 1).toString(),
         })),
       },
       {
         field: "year",
         type: "select",
-        label: "Năm",
-        placeholder: "Chọn năm",
+        label: t("hr:kpi.dashboard.year"),
+        placeholder: t("hr:kpi.dashboard.select_year"),
         value: year.toString(),
         options: [
           { label: "2024", value: "2024" },
@@ -480,8 +468,10 @@ export function KpiDashboardPage() {
             <TrendingUp className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">KPI Kinh doanh</h1>
-            <p className="text-sm text-muted-foreground">{kpis.length} nhân viên có dữ liệu</p>
+            <h1 className="text-xl font-semibold">{t("hr:kpi.dashboard.title")}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t("hr:kpi.dashboard.subtitle", { count: kpis.length })}
+            </p>
           </div>
         </div>
         <div className="flex gap-2 self-start sm:self-auto">
@@ -496,7 +486,7 @@ export function KpiDashboardPage() {
             className="gap-1.5"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("common:actions.refresh")}
           </Button>
           {isAdmin && (
             <Button
@@ -508,7 +498,7 @@ export function KpiDashboardPage() {
               className="gap-2"
             >
               <Plus className="size-4" />
-              Đặt mục tiêu
+              {t("hr:kpi.dashboard.actions.set_target")}
             </Button>
           )}
         </div>
@@ -520,14 +510,14 @@ export function KpiDashboardPage() {
         fields={filterFields}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        title="Lọc thời gian"
+        title={t("hr:kpi.dashboard.filter_time")}
       />
 
       {/* ── Summary Stats ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
-            label: "TB KPI",
+            label: t("hr:kpi.dashboard.stats.avg"),
             value: avgKpi != null ? `${avgKpi.toFixed(1)}%` : "—",
             color:
               avgKpi != null
@@ -538,10 +528,18 @@ export function KpiDashboardPage() {
                     : "text-destructive"
                 : "text-muted-foreground",
           },
-          { label: "Tổng target", value: formatCurrency(totalTarget), color: "text-foreground" },
-          { label: "Thực tế", value: formatCurrency(totalActual), color: "text-primary" },
           {
-            label: "Đạt mục tiêu",
+            label: t("hr:kpi.dashboard.stats.target"),
+            value: formatCurrency(totalTarget),
+            color: "text-foreground",
+          },
+          {
+            label: t("hr:kpi.dashboard.stats.actual"),
+            value: formatCurrency(totalActual),
+            color: "text-primary",
+          },
+          {
+            label: t("hr:kpi.dashboard.stats.achieved"),
             value: `${kpis.filter((k) => (k.kpi_percent ?? 0) >= 100).length}/${kpis.length}`,
             color: "text-success",
           },
@@ -560,7 +558,7 @@ export function KpiDashboardPage() {
         {/* ── KPI Table ─────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Bảng KPI tháng {month}/{year}
+            {t("hr:kpi.dashboard.table_title", { month, year })}
           </h2>
           <KpiTable
             kpis={kpis}
@@ -575,7 +573,7 @@ export function KpiDashboardPage() {
 
         {/* ── Right sidebar ─────────────────────────────────────────────── */}
         <div className="flex flex-col gap-4">
-          <TopPerformersCard performers={topPerformers} isLoading={isTopLoading} />
+          <TopPerformersCard performers={topPerformers} isLoading={isTopLoading} t={t} />
         </div>
       </div>
 

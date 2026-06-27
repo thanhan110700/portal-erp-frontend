@@ -1,0 +1,21 @@
+{
+  "notFound": "Không tìm thấy trang",
+  "unauthorized": "Bạn không có quyền truy cập",
+  "serverError": "Lỗi máy chủ",
+  "networkError": "Lỗi kết nối mạng",
+  "validationError": "Dữ liệu không hợp lệ",
+  "goHome": "Về trang chủ",
+  "retry": "Thử lại",
+  "appError": {
+    "title_outdated": "Phiên bản mới đã sẵn sàng",
+    "title_error": "Đã xảy ra lỗi",
+    "desc_outdated": "Ứng dụng vừa được cập nhật. Vui lòng tải lại trang để sử dụng phiên bản mới nhất.",
+    "desc_error": "Không thể tải trang này. Vui lòng tải lại trang hoặc thử lại sau vài phút nếu lỗi vẫn tiếp diễn.",
+    "reloading": "Đang tải lại…",
+    "reload": "Tải lại trang"
+  },
+  "notFoundPage": {
+    "desc": "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển. Hãy kiểm tra lại URL hoặc quay về trang an toàn.",
+    "goBack": "Quay lại"
+  }
+}

@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState, useMemo } from "react"
 import { toast } from "sonner"
-import { ClipboardList, Plus, Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
+import {
+  ClipboardList,
+  Plus,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Activity,
+} from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { TablePagination } from "@/components/common/TablePagination"
@@ -23,7 +32,7 @@ function StatsCard({
   colorClass,
 }: {
   label: string
-  value: number
+  value: string | number
   icon: React.ElementType
   colorClass: string
 }) {
@@ -43,6 +52,7 @@ function StatsCard({
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export function TimesheetListPage() {
+  const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isManager =
@@ -61,19 +71,28 @@ export function TimesheetListPage() {
   // ── Filter state ────────────────────────────────────────────────────────
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [userFilter, setUserFilter] = useState<string | null>(null)
-  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: null, to: null })
+  const [dateFrom, setDateFrom] = useState<string | null>(null)
+  const [dateTo, setDateTo] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
   // ── Modal state ─────────────────────────────────────────────────────────
   const [submitOpen, setSubmitOpen] = useState(false)
 
   // ── Summary counters ─────────────────────────────────────────────────────
-  const pending = timesheets.filter((t) => t.status === "pending").length
-  const approved = timesheets.filter((t) => t.status === "approved").length
-  const rejected = timesheets.filter((t) => t.status === "rejected").length
-  const totalHours = timesheets
-    .filter((t) => t.status === "approved" && t.working_hours)
-    .reduce((s, t) => s + (t.working_hours ?? 0), 0)
+  const summary = useMemo(
+    () => ({
+      pending: timesheets.filter((t) => t.status === "pending").length,
+      approved: timesheets.filter((t) => t.status === "approved").length,
+      rejected: timesheets.filter((t) => t.status === "rejected").length,
+      totalHours:
+        Math.round(
+          timesheets
+            .filter((t) => t.status === "approved" && t.working_hours)
+            .reduce((s, t) => s + (t.working_hours ?? 0), 0) * 10,
+        ) / 10,
+    }),
+    [timesheets],
+  )
 
   // ── Fetch employees for manager filter ──────────────────────────────────
   useEffect(() => {
@@ -92,8 +111,8 @@ export function TimesheetListPage() {
       const res = await timesheetApi.list({
         user_id: isManager ? (userFilter ? parseInt(userFilter) : null) : (user?.id ?? null),
         status: (statusFilter as TimesheetStatus) || null,
-        from_date: dateRange.from || null,
-        to_date: dateRange.to || null,
+        from_date: dateFrom || null,
+        to_date: dateTo || null,
         page,
         per_page: 20,
       })
@@ -101,11 +120,11 @@ export function TimesheetListPage() {
       setTotalPages(res.meta.last_page)
       setTotal(res.meta.total)
     } catch {
-      toast.error("Không thể tải dữ liệu chấm công")
+      toast.error(t("hr:timesheet.fetch_error"))
     } finally {
       setIsLoading(false)
     }
-  }, [isManager, userFilter, statusFilter, dateRange, page, user?.id])
+  }, [isManager, userFilter, statusFilter, dateFrom, dateTo, page, user?.id, t])
 
   useEffect(() => {
     fetchTimesheets()
@@ -115,14 +134,15 @@ export function TimesheetListPage() {
   const handleSubmit = async (payload: SubmitTimesheetPayload) => {
     try {
       await timesheetApi.submit(payload)
-      toast.success("Đã khai báo chấm công — đang chờ quản lý duyệt")
+      toast.success(t("hr:timesheet.create_success"))
       setSubmitOpen(false)
       fetchTimesheets()
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Ngày này đã có chấm công hoặc đã có lỗi xảy ra"
-      toast.error(msg)
+    } catch (err: any) {
+      if (err.response?.status === 409) {
+        toast.error(t("hr:timesheet.create_error"))
+      } else {
+        toast.error(t("common:messages.error"))
+      }
       throw err
     }
   }
@@ -130,35 +150,21 @@ export function TimesheetListPage() {
   const handleApprove = async (ts: Timesheet) => {
     try {
       await timesheetApi.approve(ts.id)
-      toast.success(`Đã duyệt chấm công của ${ts.user?.full_name}`)
+      toast.success(t("common:messages.success"))
       fetchTimesheets()
     } catch {
-      toast.error("Không thể duyệt chấm công này")
+      toast.error(t("hr:timesheet.approve_error"))
     }
   }
 
   const handleReject = async (ts: Timesheet) => {
     try {
       await timesheetApi.reject(ts.id)
-      toast.success(`Đã từ chối chấm công của ${ts.user?.full_name}`)
+      toast.success(t("common:messages.success"))
       fetchTimesheets()
     } catch {
-      toast.error("Không thể từ chối chấm công này")
+      toast.error(t("hr:timesheet.reject_error"))
     }
-  }
-
-  const handleResetFilters = () => {
-    setStatusFilter(null)
-    setUserFilter(null)
-    setDateRange({ from: null, to: null })
-    setPage(1)
-  }
-
-  const handleApplyFilters = (values: Record<string, unknown>) => {
-    setStatusFilter((values.status as string | null) ?? null)
-    setUserFilter((values.user_id as string | null) ?? null)
-    setDateRange((values.dateRange as DateRangeValue) ?? { from: null, to: null })
-    setPage(1)
   }
 
   const filterFields = useMemo<FilterFieldDef[]>(() => {
@@ -166,13 +172,13 @@ export function TimesheetListPage() {
       {
         field: "status",
         type: "select",
-        label: "Trạng thái",
-        placeholder: "Tất cả trạng thái",
-        value: statusFilter || null,
+        label: t("hr:timesheet.filter_status"),
+        placeholder: t("hr:timesheet.filter_status_all"),
+        value: statusFilter || "",
         options: [
-          { label: "Chờ duyệt", value: "pending" },
-          { label: "Đã duyệt", value: "approved" },
-          { label: "Từ chối", value: "rejected" },
+          { label: t("hr:timesheet.status.pending"), value: "pending" },
+          { label: t("hr:timesheet.status.approved"), value: "approved" },
+          { label: t("hr:timesheet.status.rejected"), value: "rejected" },
         ],
       },
     ]
@@ -183,7 +189,7 @@ export function TimesheetListPage() {
         type: "select",
         label: "Nhân viên",
         placeholder: "Tất cả nhân viên",
-        value: userFilter || null,
+        value: userFilter || "",
         options: employees.map((e) => ({
           label: `${e.full_name} (${e.user_code})`,
           value: e.id.toString(),
@@ -192,15 +198,32 @@ export function TimesheetListPage() {
     }
 
     fields.push({
-      field: "dateRange",
+      field: "date_range",
       type: "daterange",
-      label: "Thời gian",
-      placeholder: "Chọn khoảng ngày",
-      value: dateRange,
+      label: t("hr:timesheet.filter_date_range"),
+      placeholder: t("hr:timesheet.filter_date_range_placeholder"),
+      value: { from: dateFrom, to: dateTo } as DateRangeValue,
     })
 
     return fields
-  }, [statusFilter, userFilter, dateRange, employees, isManager])
+  }, [statusFilter, userFilter, dateFrom, dateTo, employees, isManager, t])
+
+  const handleApplyFilters = (values: Record<string, unknown>) => {
+    setStatusFilter((values.status as string | null) ?? null)
+    setUserFilter((values.user_id as string | null) ?? null)
+    const range = values.date_range as DateRangeValue
+    setDateFrom(range?.from ?? null)
+    setDateTo(range?.to ?? null)
+    setPage(1)
+  }
+
+  const handleResetFilters = () => {
+    setStatusFilter(null)
+    setUserFilter(null)
+    setDateFrom(null)
+    setDateTo(null)
+    setPage(1)
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -211,10 +234,12 @@ export function TimesheetListPage() {
             <ClipboardList className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Chấm công</h1>
+            <h1 className="text-xl font-semibold">{t("hr:timesheet.title")}</h1>
             <p className="text-sm text-muted-foreground">
-              {isLoading ? "Đang tải..." : `${total} bản ghi`}
-              {isManager ? " — Chế độ quản lý" : " — Của tôi"}
+              {isLoading ? t("common:table.loading") : total}
+              {isManager
+                ? ` — ${t("hr:timesheet.mode_manager")}`
+                : ` — ${t("hr:timesheet.mode_my")}`}
             </p>
           </div>
         </div>
@@ -229,7 +254,7 @@ export function TimesheetListPage() {
             className="gap-1.5"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("common:actions.refresh")}
           </Button>
           <Button
             id="btn-submit-timesheet"
@@ -238,7 +263,7 @@ export function TimesheetListPage() {
             className="gap-2"
           >
             <Plus className="size-4" />
-            Khai báo
+            {t("hr:timesheet.create")}
           </Button>
         </div>
       </div>
@@ -246,27 +271,27 @@ export function TimesheetListPage() {
       {/* ── Stats row ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatsCard
-          label="Chờ duyệt"
-          value={pending}
+          label={t("hr:timesheet.status.pending")}
+          value={summary.pending}
           icon={Clock}
           colorClass="bg-warning/10 text-warning"
         />
         <StatsCard
-          label="Đã duyệt"
-          value={approved}
+          label={t("hr:timesheet.status.approved")}
+          value={summary.approved}
           icon={CheckCircle2}
           colorClass="bg-success/10 text-success"
         />
         <StatsCard
-          label="Từ chối"
-          value={rejected}
+          label={t("hr:timesheet.status.rejected")}
+          value={summary.rejected}
           icon={XCircle}
           colorClass="bg-destructive/10 text-destructive"
         />
         <StatsCard
-          label="Tổng giờ"
-          value={Math.round(totalHours * 10) / 10}
-          icon={ClipboardList}
+          label={t("hr:timesheet.summary_hours")}
+          value={`${summary.totalHours}h`}
+          icon={Activity}
           colorClass="bg-primary/10 text-primary"
         />
       </div>
@@ -277,7 +302,7 @@ export function TimesheetListPage() {
         fields={filterFields}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        title="Lọc chấm công"
+        title={t("hr:timesheet.filter_title")}
       />
 
       {/* ── Table ───────────────────────────────────────────────────────── */}

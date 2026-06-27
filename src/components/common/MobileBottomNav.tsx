@@ -2,17 +2,20 @@ import { NavLink } from "react-router-dom"
 import { useIsMobile } from "@/hooks/useMobile"
 import { NAVIGATION_ITEMS } from "@/constants/header"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 export function MobileBottomNav() {
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
 
   if (!isMobile) return null
 
-  // Only leaf items (no sub-items) in bottom bar, max 5
-  const bottomItems = NAVIGATION_ITEMS.filter((item) => item.href && !item.items?.length).slice(
-    0,
-    5,
-  )
+  // Show top-level modules in bottom bar, max 5
+  const bottomItems = NAVIGATION_ITEMS.slice(0, 5).map((item) => {
+    // If the top-level item doesn't have an href, use the href of its first sub-item
+    const targetHref = item.href || (item.items?.[0]?.href ?? "#")
+    return { ...item, targetHref }
+  })
 
   if (bottomItems.length === 0) return null
 
@@ -27,7 +30,7 @@ export function MobileBottomNav() {
         return (
           <NavLink
             key={item.name}
-            to={item.href!}
+            to={item.targetHref}
             end
             className={({ isActive }) =>
               cn(
@@ -52,7 +55,9 @@ export function MobileBottomNav() {
                     )}
                   />
                 )}
-                <span className="truncate leading-none max-w-[56px] text-center">{item.name}</span>
+                <span className="truncate leading-none max-w-[56px] text-center">
+                  {item.translationKey ? t(item.translationKey) : item.name}
+                </span>
               </>
             )}
           </NavLink>

@@ -145,14 +145,14 @@ export function ComponentExamplesPage() {
         type: "input",
         label: "Search Customer",
         placeholder: "Type customer name...",
-        value: tableFilters.search,
+        value: tableFilters.search || "",
       },
       {
         field: "status",
         type: "select",
         label: "Order Status",
         placeholder: "All Statuses",
-        value: tableFilters.status,
+        value: tableFilters.status || "",
         options: [
           { label: "Pending", value: "pending" },
           { label: "Completed", value: "completed" },

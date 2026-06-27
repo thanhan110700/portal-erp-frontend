@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { PATHS } from "@/constants/paths"
+import { useTranslation } from "react-i18next"
 
 export function NotFoundPage() {
+  const { t } = useTranslation(["errors"])
   const navigate = useNavigate()
 
   return (
@@ -26,12 +28,9 @@ export function NotFoundPage() {
       {/* Message */}
       <div className="mt-8 space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Page not found
+          {t("errors:notFound")}
         </h1>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          The page you are looking for doesn&apos;t exist or has been moved. Check the URL or
-          navigate back to safety.
-        </p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t("errors:notFoundPage.desc")}</p>
       </div>
 
       {/* Actions */}
@@ -41,14 +40,14 @@ export function NotFoundPage() {
           className="min-w-36 gap-2 font-semibold"
           onClick={() => void navigate(PATHS.dashboard)}
         >
-          Go to Dashboard
+          {t("errors:goHome")}
         </Button>
         <Button
           size="lg"
           className="min-w-36 gap-2 font-semibold"
           onClick={() => void navigate(-1)}
         >
-          Go Back
+          {t("errors:notFoundPage.goBack")}
         </Button>
       </div>
 

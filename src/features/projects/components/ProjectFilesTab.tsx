@@ -5,6 +5,7 @@ import * as z from "zod"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { Trash2, Download, FileText, Upload, Calendar, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Form } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
@@ -15,6 +16,7 @@ import type { ProjectFile } from "../types/project"
 import { toast } from "sonner"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import dayjs from "dayjs"
+import { useTranslation } from "react-i18next"
 
 interface ProjectFilesTabProps {
   projectId: number
@@ -24,13 +26,11 @@ interface ProjectFilesTabProps {
   isAdmin: boolean
 }
 
-const uploadSchema = z.object({
-  file: z.any().refine((val) => val instanceof File, "Vui lòng chọn tệp tin"),
-  file_category: z.string().min(1, "Vui lòng chọn phân loại tài liệu"),
-  notes: z.string().max(500, "Ghi chú tối đa 500 ký tự").optional().nullable().or(z.literal("")),
-})
-
-type UploadFormData = z.infer<typeof uploadSchema>
+type UploadFormData = {
+  file: File | null
+  file_category: string
+  notes?: string | null
+}
 
 export function ProjectFilesTab({
   projectId,
@@ -39,33 +39,49 @@ export function ProjectFilesTab({
   canEdit,
   isAdmin,
 }: ProjectFilesTabProps) {
+  const { t } = useTranslation(["projects", "common"])
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [categories, setCategories] = useState<OptionItem[]>([])
   const [showUploadForm, setShowUploadForm] = useState(false)
 
-  const {
-    handleSubmit,
-    control,
-    register,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<UploadFormData>({
-    resolver: zodResolver(uploadSchema),
+  const form = useForm<UploadFormData>({
+    resolver: zodResolver(
+      z.object({
+        file: z
+          .any()
+          .refine((val) => val instanceof File, t("projects:files.validation.file_required")),
+        file_category: z.string().min(1, t("projects:files.validation.category_required")),
+        notes: z
+          .string()
+          .max(500, t("projects:files.validation.notes_max"))
+          .optional()
+          .nullable()
+          .or(z.literal("")),
+      }),
+    ),
     defaultValues: {
       file: null,
       file_category: "",
       notes: "",
     },
   })
+  const {
+    handleSubmit,
+    control,
+    register,
+    reset,
+    formState: { errors, isSubmitting },
+  } = form
 
   useEffect(() => {
     optionApi.getFileCategories().then(setCategories).catch(console.error)
   }, [])
 
   const handleUploadSubmit = async (data: UploadFormData) => {
+    if (!data.file) return
     try {
       await projectApi.uploadFile(projectId, data.file, data.file_category, data.notes || undefined)
-      toast.success("Tải tệp lên thành công")
+      toast.success(t("projects:files.upload_success"))
       reset({
         file: null,
         file_category: "",
@@ -74,22 +90,22 @@ export function ProjectFilesTab({
       setShowUploadForm(false)
       onRefresh()
     } catch {
-      toast.error("Tải tệp lên thất bại")
+      toast.error(t("projects:files.upload_error"))
     }
   }
 
   const handleDelete = useCallback(
     async (fileId: number) => {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa tệp này?")) return
+      if (!window.confirm(t("projects:files.delete_confirm"))) return
       try {
         await projectApi.deleteFile(projectId, fileId)
-        toast.success("Đã xóa tệp")
+        toast.success(t("projects:files.delete_success"))
         onRefresh()
       } catch {
-        toast.error("Xóa tệp thất bại")
+        toast.error(t("projects:files.delete_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   const formatFileSize = (bytes: number) => {
@@ -104,7 +120,7 @@ export function ProjectFilesTab({
     () => [
       {
         accessorKey: "original_name",
-        header: "Tên tài liệu",
+        header: t("projects:files.columns.name"),
         size: 250,
         Cell: ({ row }) => {
           const file = row.original
@@ -123,7 +139,7 @@ export function ProjectFilesTab({
       },
       {
         id: "category",
-        header: "Phân loại",
+        header: t("projects:files.columns.category"),
         size: 150,
         Cell: ({ row }) => {
           const file = row.original
@@ -134,7 +150,7 @@ export function ProjectFilesTab({
       },
       {
         id: "notes",
-        header: "Ghi chú",
+        header: t("projects:files.columns.notes"),
         size: 200,
         Cell: ({ row }) => {
           const file = row.original
@@ -147,7 +163,7 @@ export function ProjectFilesTab({
       },
       {
         accessorKey: "file_size",
-        header: "Dung lượng",
+        header: t("projects:files.columns.size"),
         size: 130,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-muted-foreground whitespace-nowrap">
@@ -157,7 +173,7 @@ export function ProjectFilesTab({
       },
       {
         id: "uploaded_at",
-        header: "Ngày tải",
+        header: t("projects:files.columns.uploaded_at"),
         size: 180,
         Cell: ({ row }) => {
           const file = row.original
@@ -169,7 +185,9 @@ export function ProjectFilesTab({
               </div>
               <div className="flex items-center gap-1">
                 <User className="size-3" />
-                <span>Mã NV: {file.uploaded_by}</span>
+                <span>
+                  {t("projects:files.columns.employee_code")}: {file.uploaded_by}
+                </span>
               </div>
             </div>
           )
@@ -177,7 +195,7 @@ export function ProjectFilesTab({
       },
       {
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 130,
         Cell: ({ row }) => {
           const file = row.original
@@ -209,7 +227,7 @@ export function ProjectFilesTab({
         },
       },
     ],
-    [currentUserId, isAdmin, handleDelete],
+    [currentUserId, isAdmin, handleDelete, t],
   )
 
   const table = useMantineReactTable({
@@ -239,7 +257,9 @@ export function ProjectFilesTab({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Tài liệu đính kèm ({files.length})</h3>
+        <h3 className="text-lg font-semibold">
+          {t("projects:files.title")} ({files.length})
+        </h3>
         {canEdit && !showUploadForm && (
           <Button
             size="sm"
@@ -247,7 +267,7 @@ export function ProjectFilesTab({
             className="gap-2 min-h-11 md:min-h-9"
           >
             <Upload className="size-4" />
-            Tải lên tài liệu
+            {t("projects:files.upload")}
           </Button>
         )}
       </div>
@@ -255,7 +275,7 @@ export function ProjectFilesTab({
       {showUploadForm && (
         <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
           <div className="flex items-center justify-between border-b pb-2">
-            <h4 className="font-semibold text-sm">Tải tài liệu mới lên dự án</h4>
+            <h4 className="font-semibold text-sm">{t("projects:files.upload_title")}</h4>
             <Button
               variant="ghost"
               size="icon"
@@ -265,71 +285,73 @@ export function ProjectFilesTab({
               <X className="size-4" />
             </Button>
           </div>
-          <form onSubmit={handleSubmit(handleUploadSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label>Phân loại tài liệu *</Label>
-                  <Controller
-                    name="file_category"
-                    control={control}
-                    render={({ field }) => (
-                      <SearchableSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        options={categories.map((c) => ({
-                          label: c.label,
-                          value: c.value?.toString() || c.id?.toString() || "",
-                        }))}
-                        placeholder="Chọn phân loại..."
-                      />
+          <Form {...form}>
+            <form onSubmit={handleSubmit(handleUploadSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label>{t("projects:files.category")}</Label>
+                    <Controller
+                      name="file_category"
+                      control={control}
+                      render={({ field }) => (
+                        <SearchableSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          options={categories.map((c) => ({
+                            label: c.label,
+                            value: c.value?.toString() || c.id?.toString() || "",
+                          }))}
+                          placeholder={t("projects:files.category_placeholder")}
+                        />
+                      )}
+                    />
+                    {errors.file_category && (
+                      <p className="text-xs text-destructive">{errors.file_category.message}</p>
                     )}
-                  />
-                  {errors.file_category && (
-                    <p className="text-xs text-destructive">{errors.file_category.message}</p>
-                  )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="notes">{t("projects:files.notes")}</Label>
+                    <Input
+                      id="notes"
+                      placeholder={t("projects:files.notes_placeholder")}
+                      {...register("notes")}
+                    />
+                    {errors.notes && (
+                      <p className="text-xs text-destructive">{errors.notes.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="notes">Mô tả / Ghi chú</Label>
-                  <Input
-                    id="notes"
-                    placeholder="Mô tả tài liệu này (ví dụ: Bản vẽ kỹ thuật tầng 1...)"
-                    {...register("notes")}
+                  <FileUploadField
+                    control={control}
+                    name="file"
+                    label={t("projects:files.file_label")}
+                    accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                    hint={t("projects:files.file_hint")}
+                    required
                   />
-                  {errors.notes && (
-                    <p className="text-xs text-destructive">{errors.notes.message}</p>
-                  )}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <FileUploadField
-                  control={control}
-                  name="file"
-                  label="Tệp tin đính kèm *"
-                  accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-                  hint="PDF, hình ảnh hoặc tài liệu Office lên đến 10 MB"
-                  required
-                />
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowUploadForm(false)}
+                  disabled={isSubmitting}
+                  className="min-h-11 md:min-h-9"
+                >
+                  {t("common:action.cancel")}
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="min-h-11 md:min-h-9">
+                  {isSubmitting ? t("projects:files.uploading") : t("projects:files.submit")}
+                </Button>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowUploadForm(false)}
-                disabled={isSubmitting}
-                className="min-h-11 md:min-h-9"
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className="min-h-11 md:min-h-9">
-                {isSubmitting ? "Đang tải lên..." : "Tải lên"}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
       )}
 

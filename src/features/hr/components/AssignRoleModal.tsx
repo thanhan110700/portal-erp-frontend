@@ -4,14 +4,15 @@ import { Label } from "@/components/ui/label"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Badge } from "@/components/ui/badge"
 import type { Employee } from "../types/employee"
+import { useTranslation } from "react-i18next"
 
-const ROLE_OPTIONS = [
-  { value: "admin", label: "Admin", description: "Quản lý toàn bộ hệ thống" },
-  { value: "director", label: "Giám đốc", description: "Duyệt chi, xem tất cả báo cáo" },
-  { value: "accountant", label: "Kế toán", description: "Tạo/sửa phiếu, duyệt chứng từ" },
-  { value: "sales", label: "Kinh doanh", description: "Quản lý KH, báo giá, hợp đồng" },
-  { value: "technician", label: "Kỹ thuật", description: "Quản lý dự án, cập nhật tiến độ" },
-  { value: "employee", label: "Nhân viên", description: "Chấm công, xem dữ liệu cá nhân" },
+const ROLE_OPTIONS_KEYS = [
+  { value: "admin", labelKey: "common:roles.admin" },
+  { value: "director", labelKey: "common:roles.director" },
+  { value: "accountant", labelKey: "common:roles.accountant" },
+  { value: "sales", labelKey: "common:roles.sales" },
+  { value: "technician", labelKey: "common:roles.technician" },
+  { value: "employee", labelKey: "common:roles.employee" },
 ]
 
 interface AssignRoleModalProps {
@@ -22,17 +23,18 @@ interface AssignRoleModalProps {
 }
 
 export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRoleModalProps) {
+  const { t } = useTranslation(["hr", "common"])
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const currentRoles = employee?.roles ?? []
 
   const roleSelectOptions = useMemo(() => {
-    return ROLE_OPTIONS.map((r) => ({
-      label: `${r.label} - ${r.description}`,
+    return ROLE_OPTIONS_KEYS.map((r) => ({
+      label: `${t(r.labelKey)} - ${t(`hr:employees.assign_role.roles.${r.value}`)}`,
       value: r.value,
     }))
-  }, [])
+  }, [t])
 
   const handleSubmit = async () => {
     if (!selectedRole) return
@@ -54,15 +56,15 @@ export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRol
     <CommonDialog
       open={open}
       onClose={handleClose}
-      title={`Phân quyền — ${employee?.full_name}`}
+      title={t("hr:employees.assign_role.title", { name: employee?.full_name })}
       size="md"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Gán vai trò",
+        label: isSubmitting ? t("hr:employees.form.saving") : t("hr:employees.assign_role.submit"),
         disabled: !selectedRole || isSubmitting,
         onClick: handleSubmit,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: handleClose,
       }}
@@ -71,20 +73,22 @@ export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRol
         {/* Current roles display */}
         <div className="flex flex-col gap-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Vai trò hiện tại
+            {t("hr:employees.assign_role.current_roles")}
           </Label>
           <div className="flex flex-wrap gap-2 min-h-8">
             {currentRoles.length > 0 ? (
               currentRoles.map((role) => {
-                const opt = ROLE_OPTIONS.find((r) => r.value === role)
+                const opt = ROLE_OPTIONS_KEYS.find((r) => r.value === role)
                 return (
                   <Badge key={role} variant="secondary" className="text-sm py-1 px-2.5">
-                    {opt?.label ?? role}
+                    {opt ? t(opt.labelKey) : role}
                   </Badge>
                 )
               })
             ) : (
-              <span className="text-sm text-muted-foreground italic">Chưa có vai trò nào</span>
+              <span className="text-sm text-muted-foreground italic">
+                {t("hr:employees.assign_role.no_roles")}
+              </span>
             )}
           </div>
         </div>
@@ -92,17 +96,15 @@ export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRol
         {/* Role selector */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="assign-role-select" className="text-sm font-medium">
-            Gán vai trò mới
+            {t("hr:employees.assign_role.assign_new")}
           </Label>
           <SearchableSelect
             value={selectedRole}
             onValueChange={setSelectedRole}
             options={roleSelectOptions}
-            placeholder="Chọn vai trò..."
+            placeholder={t("hr:employees.assign_role.placeholder")}
           />
-          <p className="text-xs text-muted-foreground">
-            Gán vai trò sẽ thay thế vai trò hiện tại của nhân viên.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("hr:employees.assign_role.warning")}</p>
         </div>
       </div>
     </CommonDialog>
