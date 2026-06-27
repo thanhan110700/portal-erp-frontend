@@ -15,6 +15,8 @@ import {
   Building2,
 } from "lucide-react"
 
+import { PermissionSlugs } from "@/constants/permissions"
+
 export type NavSubItem = {
   name: string
   translationKey?: string
@@ -52,24 +54,28 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         translationKey: "hr:department.title",
         href: PATHS.hrDepartments,
         icon: Building2,
+        requiredPermission: PermissionSlugs.ViewDepartments,
       },
       {
         name: "Nhân viên",
         translationKey: "hr:employee",
         href: PATHS.hrEmployees,
         icon: Users,
+        requiredPermission: PermissionSlugs.ViewEmployees,
       },
       {
         name: "Chấm công",
         translationKey: "hr:timesheet.title",
         href: PATHS.hrTimesheets,
         icon: Clock,
+        requiredPermission: PermissionSlugs.ViewTimesheets,
       },
       {
         name: "KPI",
         translationKey: "hr:kpi.title",
         href: PATHS.hrKpi,
         icon: TrendingUp,
+        requiredPermission: PermissionSlugs.ViewKpis,
       },
     ],
   },
@@ -84,18 +90,21 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         translationKey: "sales:customer",
         href: PATHS.salesCustomers,
         icon: Users,
+        requiredPermission: PermissionSlugs.ViewCustomers,
       },
       {
         name: "Báo giá",
         translationKey: "sales:quote.title",
         href: PATHS.salesQuotes,
         icon: FileText,
+        requiredPermission: PermissionSlugs.ViewQuotes,
       },
       {
         name: "Hợp đồng",
         translationKey: "sales:contract.title",
         href: PATHS.salesContracts,
         icon: FileSignature,
+        requiredPermission: PermissionSlugs.ViewContracts,
       },
     ],
   },
@@ -110,6 +119,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         translationKey: "projects:project",
         href: PATHS.projects,
         icon: FolderKanban,
+        requiredPermission: PermissionSlugs.ViewProjects,
       },
     ],
   },
@@ -124,12 +134,14 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         translationKey: "finance:vouchers",
         href: PATHS.financeVouchers,
         icon: Receipt,
+        requiredPermission: PermissionSlugs.ViewVouchers,
       },
       {
         name: "Báo cáo quản trị",
         translationKey: "reports:title",
         href: PATHS.reports,
         icon: BarChart3,
+        requiredPermission: PermissionSlugs.ViewFinanceReports,
       },
     ],
   },
