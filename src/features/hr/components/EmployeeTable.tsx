@@ -20,17 +20,9 @@ import {
 import { hrEmployeeDetailPath } from "@/constants/paths"
 import type { Employee } from "../types/employee"
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  director: "Giám đốc",
-  accountant: "Kế toán",
-  sales: "Kinh doanh",
-  technician: "Kỹ thuật",
-  employee: "Nhân viên",
-}
-
 function RoleBadge({ role }: { role: string }) {
-  const label = ROLE_LABELS[role] ?? role
+  const { t } = useTranslation(["common"])
+  const label = t(`common:roles.${role}`, { defaultValue: role })
   const variantMap: Record<string, "default" | "secondary" | "warning" | "destructive"> = {
     admin: "destructive",
     director: "warning",
@@ -192,6 +184,11 @@ export function EmployeeTable({
   )
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data: employees,
     enableColumnActions: false,

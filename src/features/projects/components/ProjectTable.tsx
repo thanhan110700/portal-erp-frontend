@@ -111,6 +111,11 @@ export function ProjectTable({
   )
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data,
     state: { isLoading },
@@ -132,6 +137,10 @@ export function ProjectTable({
       },
       sx: { overflowX: "auto", WebkitOverflowScrolling: "touch" },
     },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => onView(row.original.id),
+      style: { cursor: "pointer" },
+    }),
   })
 
   return (

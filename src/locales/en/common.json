@@ -43,7 +43,10 @@
     "ongoing": "Ongoing",
     "testing": "Testing",
     "settled": "Settled",
-    "on_hold": "On Hold"
+    "on_hold": "On Hold",
+    "vip": "VIP",
+    "regular": "Regular",
+    "new": "New"
   },
   "table": {
     "all": "All",
@@ -101,5 +104,13 @@
     "sales_contracts": "Contracts",
     "finance_vouchers": "Vouchers",
     "reports": "Management Reports"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "director": "Director",
+    "accountant": "Accountant",
+    "sales": "Sales",
+    "technician": "Technician",
+    "employee": "Employee"
   }
 }

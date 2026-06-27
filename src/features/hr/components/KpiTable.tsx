@@ -175,6 +175,11 @@ export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: K
   )
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data: kpis,
     enableColumnActions: false,

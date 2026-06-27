@@ -149,6 +149,11 @@ export function ProjectMembersTab({
   }, [canEdit, handleRemove, setSelectedMember, setModalOpen, t])
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data: members,
     enableColumnActions: false,
