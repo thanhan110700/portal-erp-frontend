@@ -110,12 +110,52 @@ function TopPerformersCard({
 
 const createUpsertKpiSchema = (t: TFunction) =>
   z.object({
-    user_id: z.string().min(1, t("hr:kpi.form.validation.user_required")),
-    month: z.string().min(1, t("hr:kpi.form.validation.month_required")),
-    year: z.string().min(1, t("hr:kpi.form.validation.year_required")),
-    target_revenue: z.string().min(1, t("hr:kpi.form.validation.target_required")),
-    actual_revenue: z.string().optional().nullable(),
-    notes: z.string().max(1000, t("hr:kpi.form.validation.notes_max")).optional().nullable(),
+    user_id: z
+      .string()
+      .min(
+        1,
+        t("hr:kpi.form.validation.user_required", { defaultValue: "Vui lòng chọn nhân viên" }),
+      ),
+    month: z
+      .string()
+      .min(1, t("hr:kpi.form.validation.month_required", { defaultValue: "Vui lòng nhập tháng" }))
+      .refine(
+        (v) => parseInt(v) >= 1 && parseInt(v) <= 12,
+        t("hr:kpi.form.validation.month_invalid", { defaultValue: "Tháng phải từ 1 đến 12" }),
+      ),
+    year: z
+      .string()
+      .min(1, t("hr:kpi.form.validation.year_required", { defaultValue: "Vui lòng nhập năm" }))
+      .refine(
+        (v) => parseInt(v) >= 2020 && parseInt(v) <= 2100,
+        t("hr:kpi.form.validation.year_invalid", { defaultValue: "Năm phải từ 2020 đến 2100" }),
+      ),
+    target_revenue: z
+      .string()
+      .min(
+        1,
+        t("hr:kpi.form.validation.target_required", { defaultValue: "Vui lòng nhập mục tiêu" }),
+      )
+      .refine(
+        (v) => parseFloat(v) >= 0,
+        t("hr:kpi.form.validation.target_min", { defaultValue: "Mục tiêu không được nhỏ hơn 0" }),
+      ),
+    actual_revenue: z
+      .string()
+      .optional()
+      .nullable()
+      .refine(
+        (v) => !v || parseFloat(v) >= 0,
+        t("hr:kpi.form.validation.actual_min", { defaultValue: "Thực tế không được nhỏ hơn 0" }),
+      ),
+    notes: z
+      .string()
+      .max(
+        1000,
+        t("hr:kpi.form.validation.notes_max", { defaultValue: "Ghi chú tối đa 1000 ký tự" }),
+      )
+      .optional()
+      .nullable(),
   })
 
 type UpsertKpiFormData = z.infer<ReturnType<typeof createUpsertKpiSchema>>

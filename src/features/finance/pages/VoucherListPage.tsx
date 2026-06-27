@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
+import { RowActions } from "@/components/common/RowActions"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher, ListVouchersParams } from "../types/voucher"
@@ -342,73 +343,54 @@ export function VoucherListPage() {
           const isPending = voucher.status === "pending"
           const isDraftOrPending = voucher.status === "draft" || isPending
 
+          const actions: import("@/components/common/RowActions").RowAction[] = []
+
+          if (canApprove && isPending) {
+            actions.push({
+              label: t("finance:list.actions.approve", { defaultValue: "Duyệt" }),
+              icon: <Check className="size-4" />,
+              onClick: () => handleApprove(voucher.id),
+              className: "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50",
+            })
+            actions.push({
+              label: t("finance:list.actions.reject", { defaultValue: "Từ chối" }),
+              icon: <X className="size-4" />,
+              onClick: () => handleReject(voucher.id),
+              className: "text-rose-600 hover:text-rose-700 hover:bg-rose-50",
+            })
+          }
+
+          if (canEdit && isDraftOrPending) {
+            actions.push({
+              label: t("finance:list.actions.edit", { defaultValue: "Sửa" }),
+              icon: <Edit2 className="size-4" />,
+              onClick: () => {
+                setSelectedVoucher(voucher)
+                setFormOpen(true)
+              },
+            })
+            actions.push({
+              label: t("finance:list.actions.delete", { defaultValue: "Xóa" }),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => handleDelete(voucher.id),
+              className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+              variant: "destructive" as const,
+            })
+          }
+
+          actions.push({
+            label: t("finance:list.actions.history", { defaultValue: "Lịch sử" }),
+            icon: <History className="size-4" />,
+            onClick: () => {
+              setSelectedVoucher(voucher)
+              setHistoryOpen(true)
+            },
+            className: "text-muted-foreground hover:text-foreground",
+          })
+
           return (
-            <div
-              className="flex items-center justify-center gap-1.5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {canApprove && isPending && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 md:size-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                    onClick={() => handleApprove(voucher.id)}
-                    title={t("finance:list.actions.approve")}
-                  >
-                    <Check className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 md:size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                    onClick={() => handleReject(voucher.id)}
-                    title={t("finance:list.actions.reject")}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </>
-              )}
-
-              {canEdit && isDraftOrPending && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-11 md:size-8"
-                  onClick={() => {
-                    setSelectedVoucher(voucher)
-                    setFormOpen(true)
-                  }}
-                  title={t("finance:list.actions.edit")}
-                >
-                  <Edit2 className="size-4" />
-                </Button>
-              )}
-
-              {canEdit && isDraftOrPending && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-11 md:size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(voucher.id)}
-                  title={t("finance:list.actions.delete")}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-11 md:size-8 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  setSelectedVoucher(voucher)
-                  setHistoryOpen(true)
-                }}
-                title={t("finance:list.actions.history")}
-              >
-                <History className="size-4" />
-              </Button>
+            <div onClick={(e) => e.stopPropagation()}>
+              <RowActions actions={actions} />
             </div>
           )
         },
@@ -418,6 +400,11 @@ export function VoucherListPage() {
   )
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data: vouchers,
     enableColumnActions: false,

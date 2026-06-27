@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit } from "lucide-react"
+import { Trash2, Edit, Eye } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { RowActions } from "@/components/common/RowActions"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,26 +25,6 @@ interface CustomerTableProps {
   onEdit: (customer: Customer) => void
   onDelete: (id: number) => Promise<void>
   isAdmin?: boolean
-}
-
-function getClassificationBadge(classification?: string | null) {
-  if (!classification) return <Badge variant="outline">—</Badge>
-  switch (classification.toLowerCase()) {
-    case "vip":
-      return <Badge className="bg-amber-500 hover:bg-amber-600 text-white">VIP</Badge>
-    case "regular":
-      return <Badge variant="secondary">Regular</Badge>
-    case "new":
-      return (
-        <Badge variant="outline" className="text-primary border-primary">
-          New
-        </Badge>
-      )
-    case "inactive":
-      return <Badge variant="destructive">Inactive</Badge>
-    default:
-      return <Badge variant="outline">{classification}</Badge>
-  }
 }
 
 export function CustomerTable({
@@ -79,7 +59,7 @@ export function CustomerTable({
         accessorKey: "classification",
         header: t("sales:customer_list.columns.classification"),
         size: 110,
-        Cell: ({ cell }) => getClassificationBadge(cell.getValue<string | null>()),
+        Cell: ({ cell }) => <StatusBadge status={cell.getValue<string | null>()} />,
       },
       {
         accessorKey: "phone",
@@ -110,6 +90,12 @@ export function CustomerTable({
         Cell: ({ row }) => {
           const actions: import("@/components/common/RowActions").RowAction[] = [
             {
+              label: t("common:actions.view_detail", { defaultValue: "Chi tiết" }),
+              icon: <Eye className="size-4" />,
+              onClick: () => navigate(`/sales/customers/${row.original.id}`),
+              className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
+            },
+            {
               label: t("common:actions.edit", { defaultValue: "Sửa" }),
               icon: <Edit className="size-4" />,
               onClick: () => onEdit(row.original),
@@ -133,10 +119,15 @@ export function CustomerTable({
         },
       },
     ],
-    [isAdmin, onEdit, t],
+    [isAdmin, onEdit, t, navigate],
   )
 
   const table = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns,
     data: customers,
     enableColumnActions: false,
