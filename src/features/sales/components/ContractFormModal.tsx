@@ -1,5 +1,7 @@
 import { useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { Input } from "@/components/ui/input"
@@ -9,6 +11,32 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { Contract, CreateContractPayload } from "../types/sales"
 import type { OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+
+const contractSchema = z.object({
+  customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
+  quote_id: z.number().optional().nullable(),
+  contract_date: z.string().min(1, "Vui lòng nhập ngày hợp đồng"),
+  contract_value: z
+    .number({ message: "Vui lòng nhập giá trị hợp đồng" })
+    .gt(0, "Giá trị hợp đồng phải lớn hơn 0"),
+  sales_rep_id: z.number().min(1, "Vui lòng chọn Sales phụ trách"),
+  signed_date: z.string().optional().nullable().or(z.literal("")),
+  status: z.string().min(1, "Vui lòng chọn trạng thái"),
+  content: z
+    .string()
+    .max(10000, "Nội dung hợp đồng không được quá 10000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  terms: z
+    .string()
+    .max(5000, "Điều khoản không được quá 5000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+})
+
+type ContractFormData = z.infer<typeof contractSchema>
 
 interface ContractFormModalProps {
   open: boolean
@@ -40,9 +68,11 @@ export function ContractFormModal({
     control,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<CreateContractPayload>({
+  } = useForm<ContractFormData>({
+    resolver: zodResolver(contractSchema),
     defaultValues: {
       customer_id: 0,
+      quote_id: null,
       sales_rep_id: 0,
       contract_date: new Date().toISOString().split("T")[0],
       signed_date: "",
@@ -60,7 +90,7 @@ export function ContractFormModal({
       if (editData) {
         reset({
           customer_id: editData.customer?.id || 0,
-          quote_id: editData.quote?.id || undefined,
+          quote_id: editData.quote?.id || null,
           sales_rep_id: editData.sales_rep?.id || 0,
           contract_date: editData.contract_date || new Date().toISOString().split("T")[0],
           signed_date: editData.signed_date || "",
@@ -75,7 +105,7 @@ export function ContractFormModal({
       } else {
         reset({
           customer_id: 0,
-          quote_id: undefined,
+          quote_id: null,
           sales_rep_id: 0,
           contract_date: new Date().toISOString().split("T")[0],
           signed_date: "",
@@ -88,9 +118,19 @@ export function ContractFormModal({
     }
   }, [open, editData, reset])
 
-  const handleFormSubmit = async (data: CreateContractPayload) => {
+  const handleFormSubmit = async (data: ContractFormData) => {
     try {
-      const payload = { ...data, signed_date: data.signed_date || null }
+      const payload: CreateContractPayload = {
+        customer_id: data.customer_id,
+        quote_id: data.quote_id || undefined,
+        sales_rep_id: data.sales_rep_id,
+        contract_date: data.contract_date,
+        contract_value: data.contract_value,
+        signed_date: data.signed_date || null,
+        status: data.status,
+        content: data.content || undefined,
+        terms: data.terms || undefined,
+      }
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
@@ -132,10 +172,6 @@ export function ContractFormModal({
             <Controller
               name="customer_id"
               control={control}
-              rules={{
-                required: "Vui lòng chọn khách hàng",
-                min: { value: 1, message: "Vui lòng chọn khách hàng" },
-              }}
               render={({ field }) => (
                 <SearchableSelect
                   value={field.value ? field.value.toString() : ""}
@@ -161,7 +197,7 @@ export function ContractFormModal({
               render={({ field }) => (
                 <SearchableSelect
                   value={field.value ? field.value.toString() : ""}
-                  onValueChange={(val) => field.onChange(parseInt(val))}
+                  onValueChange={(val) => field.onChange(val && val !== "0" ? parseInt(val) : null)}
                   options={[
                     { label: "--- Không liên kết ---", value: "0" },
                     ...filteredQuotes.map((item) => ({
@@ -173,6 +209,9 @@ export function ContractFormModal({
                 />
               )}
             />
+            {errors.quote_id && (
+              <p className="text-xs text-destructive">{errors.quote_id.message}</p>
+            )}
           </div>
         </div>
 
@@ -182,10 +221,6 @@ export function ContractFormModal({
             <Controller
               name="sales_rep_id"
               control={control}
-              rules={{
-                required: "Vui lòng chọn Sales",
-                min: { value: 1, message: "Vui lòng chọn Sales" },
-              }}
               render={({ field }) => (
                 <SearchableSelect
                   value={field.value ? field.value.toString() : ""}
@@ -204,7 +239,7 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-status">Trạng thái</Label>
+            <Label htmlFor="c-status">Trạng thái *</Label>
             <Controller
               name="status"
               control={control}
@@ -229,6 +264,7 @@ export function ContractFormModal({
                 />
               )}
             />
+            {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
           </div>
         </div>
 
@@ -237,7 +273,6 @@ export function ContractFormModal({
             <Controller
               name="contract_date"
               control={control}
-              rules={{ required: "Vui lòng nhập ngày HĐ" }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
                   label="Ngày HĐ"
@@ -271,11 +306,7 @@ export function ContractFormModal({
               id="c-value"
               type="number"
               min="0"
-              {...register("contract_value", {
-                required: "Vui lòng nhập giá trị hợp đồng",
-                valueAsNumber: true,
-                min: { value: 0, message: "Giá trị không hợp lệ" },
-              })}
+              {...register("contract_value", { valueAsNumber: true })}
               aria-invalid={!!errors.contract_value}
             />
             {errors.contract_value && (
@@ -292,7 +323,9 @@ export function ContractFormModal({
             placeholder="Ghi chú nội dung chính..."
             {...register("content")}
             className="resize-none"
+            aria-invalid={!!errors.content}
           />
+          {errors.content && <p className="text-xs text-destructive">{errors.content.message}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -303,7 +336,9 @@ export function ContractFormModal({
             placeholder="Các điều khoản thanh toán, giao hàng bổ sung..."
             {...register("terms")}
             className="resize-none"
+            aria-invalid={!!errors.terms}
           />
+          {errors.terms && <p className="text-xs text-destructive">{errors.terms.message}</p>}
         </div>
       </form>
     </CommonDialog>

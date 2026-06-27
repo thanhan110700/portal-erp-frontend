@@ -110,7 +110,7 @@ function SelectFieldRenderer({ field, onChange }: FieldRendererProps<SelectFilte
       value={val}
       onValueChange={(v) => onChange(v === "__all__" ? null : v)}
       options={options}
-      placeholder={field.placeholder ?? "Select..."}
+      placeholder={field.placeholder ?? "Chọn..."}
       className={cn("h-8 text-xs", field.className)}
     />
   )
@@ -142,10 +142,10 @@ function MultiSelectFieldRenderer({ field, onChange }: FieldRendererProps<MultiS
 
   const triggerText =
     selectedLabels.length === 0
-      ? (field.placeholder ?? "Select...")
+      ? (field.placeholder ?? "Chọn...")
       : selectedLabels.length === 1
         ? selectedLabels[0]
-        : `${selectedLabels.length} selected`
+        : `Đã chọn ${selectedLabels.length}`
 
   return (
     <Popover
@@ -189,7 +189,7 @@ function MultiSelectFieldRenderer({ field, onChange }: FieldRendererProps<MultiS
           <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <input
             className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
-            placeholder="Search..."
+            placeholder="Tìm kiếm..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -200,7 +200,7 @@ function MultiSelectFieldRenderer({ field, onChange }: FieldRendererProps<MultiS
           onTouchMove={(e) => e.stopPropagation()}
         >
           {filtered.length === 0 ? (
-            <p className="py-4 text-center text-xs text-muted-foreground">No results</p>
+            <p className="py-4 text-center text-xs text-muted-foreground">Không tìm thấy kết quả</p>
           ) : (
             filtered.map((opt) => (
               <label
@@ -225,7 +225,7 @@ function InputFieldRenderer({ field, onChange }: FieldRendererProps<InputFilterF
   return (
     <Input
       className={cn("h-8 w-full text-xs", field.className)}
-      placeholder={field.placeholder ?? "Search..."}
+      placeholder={field.placeholder ?? "Tìm kiếm..."}
       value={field.value ?? ""}
       onChange={(e) => onChange(e.target.value || null)}
     />
@@ -249,7 +249,7 @@ function DateRangeFieldRenderer({ field, onChange }: FieldRendererProps<DateRang
       className={field.className}
       from={field.value?.from ?? null}
       to={field.value?.to ?? null}
-      placeholder={field.placeholder ?? "Select date range"}
+      placeholder={field.placeholder ?? "Chọn khoảng ngày"}
       onChange={(from, to) => onChange({ from, to })}
     />
   )
@@ -260,7 +260,7 @@ function ToggleFieldRenderer({ field, onChange }: FieldRendererProps<ToggleFilte
     <div className={cn("flex items-center gap-2", field.className)}>
       <Switch size="sm" checked={field.value} onCheckedChange={(checked) => onChange(checked)} />
       <span className="text-xs text-muted-foreground">
-        {field.value ? (field.onLabel ?? "On") : (field.offLabel ?? "Off")}
+        {field.value ? (field.onLabel ?? "Bật") : (field.offLabel ?? "Tắt")}
       </span>
     </div>
   )
@@ -292,7 +292,7 @@ function fieldsToRecord(fields: FilterFieldDef[]): Record<string, unknown> {
 }
 
 function FilterPanelInner(props: FilterPanelProps) {
-  const { fields, onReset, defaultOpen = true, title = "Filters", className } = props
+  const { fields, onReset, defaultOpen = true, title = "Bộ lọc", className } = props
   const [open, setOpen] = useState(defaultOpen)
 
   const [draft, setDraft] = useState<Record<string, unknown>>(() => fieldsToRecord(fields))
@@ -354,7 +354,7 @@ function FilterPanelInner(props: FilterPanelProps) {
                 className="h-7 gap-1.5 px-3 text-xs font-semibold"
                 onClick={handleApply}
               >
-                Apply Filters
+                Áp dụng bộ lọc
               </Button>
             )}
             <Button
@@ -365,7 +365,7 @@ function FilterPanelInner(props: FilterPanelProps) {
               onClick={onReset}
             >
               <RotateCcw className="h-3 w-3" />
-              Reset
+              Đặt lại
             </Button>
           </div>
         </div>
