@@ -5,22 +5,79 @@ import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { Input } from "@/components/ui/input"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Label } from "@/components/ui/label"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import type { CreateEmployeePayload, Department, Employee } from "../types/employee"
 
-interface EmployeeFormData {
-  full_name: string
-  email: string
-  phone: string
-  department_id: string
-  position: string
-  hire_date: string
-  resign_date: string
-  address: string
-  social_insurance: string
-  national_id: string
-  manager_id: string
-  password: string
-}
+const employeeFormSchema = z
+  .object({
+    full_name: z
+      .string()
+      .min(1, "Vui lòng nhập họ tên")
+      .max(150, "Họ tên không được quá 150 ký tự"),
+    email: z.string().min(1, "Vui lòng nhập email").email("Email không hợp lệ"),
+    phone: z
+      .string()
+      .max(20, "Số điện thoại không được quá 20 ký tự")
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    department_id: z.string().min(1, "Vui lòng chọn phòng ban"),
+    position: z
+      .string()
+      .min(1, "Vui lòng nhập chức vụ")
+      .max(100, "Chức vụ không được quá 100 ký tự"),
+    hire_date: z.string().min(1, "Vui lòng nhập ngày vào làm"),
+    resign_date: z.string().optional().nullable().or(z.literal("")),
+    address: z
+      .string()
+      .max(500, "Địa chỉ không được quá 500 ký tự")
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    social_insurance: z
+      .string()
+      .max(20, "Số BHXH không được quá 20 ký tự")
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    national_id: z
+      .string()
+      .max(20, "CMND / CCCD không được quá 20 ký tự")
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    manager_id: z.string().optional().nullable().or(z.literal("")),
+    password: z.string().optional().nullable().or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      if (data.resign_date && data.hire_date) {
+        const resign = new Date(data.resign_date)
+        const hire = new Date(data.hire_date)
+        return resign > hire
+      }
+      return true
+    },
+    {
+      message: "Ngày nghỉ việc phải sau ngày vào làm",
+      path: ["resign_date"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.password && data.password.length > 0) {
+        return data.password.length >= 8
+      }
+      return true
+    },
+    {
+      message: "Mật khẩu phải từ 8 ký tự trở lên",
+      path: ["password"],
+    },
+  )
+
+type EmployeeFormData = z.infer<typeof employeeFormSchema>
 
 interface EmployeeFormModalProps {
   open: boolean
@@ -53,6 +110,7 @@ export function EmployeeFormModal({
     control,
     formState: { errors, isSubmitting },
   } = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeFormSchema),
     defaultValues: {
       full_name: "",
       email: "",
@@ -127,9 +185,7 @@ export function EmployeeFormModal({
     setValue("manager_id", value)
   }
 
-  const { ref: fullNameRef, ...fullNameRegister } = register("full_name", {
-    required: "Vui lòng nhập họ tên",
-  })
+  const { ref: fullNameRef, ...fullNameRegister } = register("full_name")
 
   return (
     <CommonDialog
@@ -176,10 +232,7 @@ export function EmployeeFormModal({
               id="emp-email"
               type="email"
               placeholder="nva@company.com"
-              {...register("email", {
-                required: "Vui lòng nhập email",
-                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Email không hợp lệ" },
-              })}
+              {...register("email")}
               aria-invalid={!!errors.email}
               className="h-9"
             />
@@ -199,7 +252,7 @@ export function EmployeeFormModal({
             <Input
               id="emp-position"
               placeholder="Kế toán viên"
-              {...register("position", { required: "Vui lòng nhập chức vụ" })}
+              {...register("position")}
               aria-invalid={!!errors.position}
               className="h-9"
             />
@@ -209,10 +262,7 @@ export function EmployeeFormModal({
         {/* Department + Manager */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Phòng ban *" error={errors.department_id?.message} id="emp-dept">
-            <input
-              type="hidden"
-              {...register("department_id", { required: "Vui lòng chọn phòng ban" })}
-            />
+            <input type="hidden" {...register("department_id")} />
             <SearchableSelect
               value={deptValue}
               onValueChange={handleDeptChange}
@@ -228,7 +278,7 @@ export function EmployeeFormModal({
           <FormField label="Quản lý trực tiếp" id="emp-manager">
             <input type="hidden" {...register("manager_id")} />
             <SearchableSelect
-              value={managerValue}
+              value={managerValue || undefined}
               onValueChange={handleManagerChange}
               options={[
                 { label: "Không có", value: "none" },
@@ -251,7 +301,6 @@ export function EmployeeFormModal({
             <Controller
               name="hire_date"
               control={control}
-              rules={{ required: "Vui lòng chọn ngày vào" }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
                   value={field.value || null}
@@ -262,7 +311,7 @@ export function EmployeeFormModal({
             />
           </FormField>
 
-          <FormField label="Ngày nghỉ việc" id="emp-resign">
+          <FormField label="Ngày nghỉ việc" id="emp-resign" error={errors.resign_date?.message}>
             <Controller
               name="resign_date"
               control={control}

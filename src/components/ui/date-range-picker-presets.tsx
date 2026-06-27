@@ -23,42 +23,42 @@ type Preset = { label: string; getValue: () => DateRangeValue }
 
 const PRESETS: Preset[] = [
   {
-    label: "Today",
+    label: "Hôm nay",
     getValue: () => {
       const d = dayjs().format("YYYY-MM-DD")
       return { from: d, to: d }
     },
   },
   {
-    label: "Yesterday",
+    label: "Hôm qua",
     getValue: () => {
       const d = dayjs().subtract(1, "day").format("YYYY-MM-DD")
       return { from: d, to: d }
     },
   },
   {
-    label: "Last 7 Days",
+    label: "7 ngày qua",
     getValue: () => ({
       from: dayjs().subtract(6, "day").format("YYYY-MM-DD"),
       to: dayjs().format("YYYY-MM-DD"),
     }),
   },
   {
-    label: "Last 30 Days",
+    label: "30 ngày qua",
     getValue: () => ({
       from: dayjs().subtract(29, "day").format("YYYY-MM-DD"),
       to: dayjs().format("YYYY-MM-DD"),
     }),
   },
   {
-    label: "This Month",
+    label: "Tháng này",
     getValue: () => ({
       from: dayjs().startOf("month").format("YYYY-MM-DD"),
       to: dayjs().endOf("month").format("YYYY-MM-DD"),
     }),
   },
   {
-    label: "Last Month",
+    label: "Tháng trước",
     getValue: () => {
       const m = dayjs().subtract(1, "month")
       return {
@@ -68,14 +68,14 @@ const PRESETS: Preset[] = [
     },
   },
   {
-    label: "This Year",
+    label: "Năm nay",
     getValue: () => ({
       from: dayjs().startOf("year").format("YYYY-MM-DD"),
       to: dayjs().endOf("year").format("YYYY-MM-DD"),
     }),
   },
   {
-    label: "Last Year",
+    label: "Năm trước",
     getValue: () => {
       const y = dayjs().subtract(1, "year")
       return {
@@ -84,7 +84,7 @@ const PRESETS: Preset[] = [
       }
     },
   },
-  { label: "Custom", getValue: () => ({ from: null, to: null }) },
+  { label: "Tùy chọn", getValue: () => ({ from: null, to: null }) },
 ]
 
 export type DateRangePickerPresetsProps = {
@@ -99,7 +99,7 @@ export function DateRangePickerPresets({
   from,
   to,
   onChange,
-  placeholder = "Select date range",
+  placeholder = "Chọn khoảng ngày",
   className,
 }: DateRangePickerPresetsProps) {
   const isMobile = useIsMobile()
@@ -128,8 +128,8 @@ export function DateRangePickerPresets({
   }
 
   function handlePresetDesktop(preset: Preset) {
-    if (preset.label === "Custom") {
-      setActivePreset("Custom")
+    if (preset.label === "Tùy chọn") {
+      setActivePreset("Tùy chọn")
       return
     }
     const val = preset.getValue()
@@ -141,8 +141,8 @@ export function DateRangePickerPresets({
   }
 
   function handlePresetMobile(preset: Preset) {
-    if (preset.label === "Custom") {
-      setActivePreset("Custom")
+    if (preset.label === "Tùy chọn") {
+      setActivePreset("Tùy chọn")
       setDraft({ from: undefined, to: undefined })
       return
     }
@@ -203,7 +203,7 @@ export function DateRangePickerPresets({
         <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
         <DrawerContent className="p-0 flex flex-col max-h-[85dvh] overflow-hidden">
           <DrawerHeader className="border-b border-border pb-3 shrink-0">
-            <DrawerTitle className="text-center text-sm font-medium">Select Date Range</DrawerTitle>
+            <DrawerTitle className="text-center text-sm font-medium">Chọn khoảng ngày</DrawerTitle>
           </DrawerHeader>
 
           {/* Presets — gradient fade indicates scrollability */}
@@ -236,7 +236,7 @@ export function DateRangePickerPresets({
               selected={draft}
               onSelect={(range) => {
                 setDraft(range ?? { from: undefined, to: undefined })
-                setActivePreset("Custom")
+                setActivePreset("Tùy chọn")
               }}
               numberOfMonths={1}
               className="[--cell-size:--spacing(10)]"
@@ -246,16 +246,16 @@ export function DateRangePickerPresets({
           {/* Footer */}
           <div className="shrink-0 border-t px-4 py-3 flex items-center justify-between gap-3">
             <span className="font-mono text-sm text-muted-foreground truncate">
-              {draftLabel || "Select dates"}
+              {draftLabel || "Chọn ngày"}
             </span>
             <div className="flex gap-2 shrink-0">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" size="sm" className="h-9 px-4 text-sm">
-                  Cancel
+                  Hủy
                 </Button>
               </DrawerClose>
               <Button type="button" size="sm" className="h-9 px-4 text-sm" onClick={handleApply}>
-                Apply
+                Áp dụng
               </Button>
             </div>
           </div>
@@ -294,7 +294,7 @@ export function DateRangePickerPresets({
               selected={draft}
               onSelect={(range) => {
                 setDraft(range ?? { from: undefined, to: undefined })
-                setActivePreset("Custom")
+                setActivePreset("Tùy chọn")
               }}
               numberOfMonths={2}
             />
@@ -309,10 +309,10 @@ export function DateRangePickerPresets({
                   className="h-7 text-xs"
                   onClick={() => setOpen(false)}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <Button type="button" size="sm" className="h-7 text-xs" onClick={handleApply}>
-                  Apply
+                  Áp dụng
                 </Button>
               </div>
             </div>

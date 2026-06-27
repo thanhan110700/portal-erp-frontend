@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState, useMemo } from "react"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { TrendingUp, Trophy, RefreshCw, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -99,14 +101,42 @@ function TopPerformersCard({
 
 // ── Upsert KPI Modal (Admin only) ──────────────────────────────────────────
 
-interface UpsertKpiFormData {
-  user_id: string
-  month: string
-  year: string
-  target_revenue: string
-  actual_revenue: string
-  notes: string
-}
+const upsertKpiSchema = z.object({
+  user_id: z.string().min(1, "Vui lòng chọn nhân viên"),
+  month: z
+    .string()
+    .min(1, "Vui lòng nhập tháng")
+    .refine((val) => {
+      const n = Number(val)
+      return !isNaN(n) && Number.isInteger(n) && n >= 1 && n <= 12
+    }, "Tháng phải từ 1 đến 12"),
+  year: z
+    .string()
+    .min(1, "Vui lòng nhập năm")
+    .refine((val) => {
+      const n = Number(val)
+      return !isNaN(n) && Number.isInteger(n) && n >= 2020 && n <= 2100
+    }, "Năm phải từ 2020 đến 2100"),
+  target_revenue: z
+    .string()
+    .min(1, "Vui lòng nhập doanh thu mục tiêu")
+    .refine((val) => {
+      const n = Number(val)
+      return !isNaN(n) && n >= 0
+    }, "Doanh thu mục tiêu phải lớn hơn hoặc bằng 0"),
+  actual_revenue: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => {
+      if (!val) return true
+      const n = Number(val)
+      return !isNaN(n) && n >= 0
+    }, "Doanh thu thực tế phải lớn hơn hoặc bằng 0"),
+  notes: z.string().max(1000, "Ghi chú không được vượt quá 1000 ký tự").optional().nullable(),
+})
+
+type UpsertKpiFormData = z.infer<typeof upsertKpiSchema>
 
 function UpsertKpiModal({
   open,
@@ -115,6 +145,7 @@ function UpsertKpiModal({
   employees,
   defaultMonth,
   defaultYear,
+  editData,
 }: {
   open: boolean
   onClose: () => void
@@ -122,7 +153,9 @@ function UpsertKpiModal({
   employees: Employee[]
   defaultMonth: number
   defaultYear: number
+  editData?: EmployeeKpi | null
 }) {
+  const isEditing = !!editData
   const {
     register,
     handleSubmit,
@@ -131,6 +164,7 @@ function UpsertKpiModal({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<UpsertKpiFormData>({
+    resolver: zodResolver(upsertKpiSchema),
     defaultValues: {
       user_id: "",
       month: defaultMonth.toString(),
@@ -145,16 +179,27 @@ function UpsertKpiModal({
 
   useEffect(() => {
     if (open) {
-      reset({
-        user_id: "",
-        month: defaultMonth.toString(),
-        year: defaultYear.toString(),
-        target_revenue: "",
-        actual_revenue: "",
-        notes: "",
-      })
+      if (editData) {
+        reset({
+          user_id: editData.user_id.toString(),
+          month: editData.month.toString(),
+          year: editData.year.toString(),
+          target_revenue: editData.target_revenue?.toString() ?? "",
+          actual_revenue: editData.actual_revenue?.toString() ?? "",
+          notes: editData.notes ?? "",
+        })
+      } else {
+        reset({
+          user_id: "",
+          month: defaultMonth.toString(),
+          year: defaultYear.toString(),
+          target_revenue: "",
+          actual_revenue: "",
+          notes: "",
+        })
+      }
     }
-  }, [open, defaultMonth, defaultYear, reset])
+  }, [open, editData, defaultMonth, defaultYear, reset])
 
   const onFormSubmit = async (data: UpsertKpiFormData) => {
     const payload: UpsertKpiPayload = {
@@ -172,7 +217,7 @@ function UpsertKpiModal({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title="Đặt mục tiêu KPI"
+      title={isEditing ? "Cập nhật mục tiêu KPI" : "Đặt mục tiêu KPI"}
       size="md"
       primaryAction={{
         label: isSubmitting ? "Đang lưu..." : "Lưu KPI",
@@ -196,7 +241,7 @@ function UpsertKpiModal({
           <Label htmlFor="kpi-emp" className="text-sm font-medium">
             Nhân viên *
           </Label>
-          <input type="hidden" {...register("user_id", { required: "Chọn nhân viên" })} />
+          <input type="hidden" {...register("user_id")} />
           <SearchableSelect
             value={employeeValue}
             onValueChange={(v) => {
@@ -208,6 +253,7 @@ function UpsertKpiModal({
             }))}
             placeholder="Chọn nhân viên kinh doanh..."
             className={errors.user_id ? "border-destructive h-9" : "h-9"}
+            disabled={isEditing}
           />
           {errors.user_id && <p className="text-xs text-destructive">{errors.user_id.message}</p>}
         </div>
@@ -223,9 +269,11 @@ function UpsertKpiModal({
               type="number"
               min={1}
               max={12}
-              {...register("month", { required: true, min: 1, max: 12 })}
+              {...register("month")}
               className="h-9"
+              disabled={isEditing}
             />
+            {errors.month && <p className="text-xs text-destructive">{errors.month.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="kpi-year" className="text-sm font-medium">
@@ -236,9 +284,11 @@ function UpsertKpiModal({
               type="number"
               min={2020}
               max={2100}
-              {...register("year", { required: true })}
+              {...register("year")}
               className="h-9"
+              disabled={isEditing}
             />
+            {errors.year && <p className="text-xs text-destructive">{errors.year.message}</p>}
           </div>
         </div>
 
@@ -252,7 +302,7 @@ function UpsertKpiModal({
             type="number"
             min={0}
             placeholder="50000000"
-            {...register("target_revenue", { required: "Nhập doanh thu mục tiêu" })}
+            {...register("target_revenue")}
             aria-invalid={!!errors.target_revenue}
             className="h-9"
           />
@@ -263,14 +313,14 @@ function UpsertKpiModal({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="kpi-actual" className="text-sm font-medium">
-            Doanh thu thực tế *
+            Doanh thu thực tế (VND)
           </Label>
           <Input
             id="kpi-actual"
             type="number"
             min={0}
             placeholder="Tự động tính từ hợp đồng"
-            {...register("actual_revenue", { required: "Nhập doanh số thực tế" })}
+            {...register("actual_revenue")}
             className="h-9"
             aria-invalid={!!errors.actual_revenue}
           />
@@ -289,6 +339,7 @@ function UpsertKpiModal({
             {...register("notes")}
             className="resize-none text-sm"
           />
+          {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
         </div>
       </form>
     </CommonDialog>
@@ -311,6 +362,7 @@ export function KpiDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isTopLoading, setIsTopLoading] = useState(true)
   const [upsertOpen, setUpsertOpen] = useState(false)
+  const [editKpi, setEditKpi] = useState<EmployeeKpi | null>(null)
 
   // Fetch KPI list
   const fetchKpis = useCallback(async () => {
@@ -447,7 +499,14 @@ export function KpiDashboardPage() {
             Làm mới
           </Button>
           {isAdmin && (
-            <Button size="sm" onClick={() => setUpsertOpen(true)} className="gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditKpi(null)
+                setUpsertOpen(true)
+              }}
+              className="gap-2"
+            >
               <Plus className="size-4" />
               Đặt mục tiêu
             </Button>
@@ -503,7 +562,15 @@ export function KpiDashboardPage() {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             Bảng KPI tháng {month}/{year}
           </h2>
-          <KpiTable kpis={kpis} isLoading={isLoading} />
+          <KpiTable
+            kpis={kpis}
+            isLoading={isLoading}
+            isAdmin={isAdmin}
+            onEdit={(kpi) => {
+              setEditKpi(kpi)
+              setUpsertOpen(true)
+            }}
+          />
         </div>
 
         {/* ── Right sidebar ─────────────────────────────────────────────── */}
@@ -516,11 +583,15 @@ export function KpiDashboardPage() {
       {isAdmin && (
         <UpsertKpiModal
           open={upsertOpen}
-          onClose={() => setUpsertOpen(false)}
+          onClose={() => {
+            setUpsertOpen(false)
+            setEditKpi(null)
+          }}
           onSubmit={handleUpsert}
           employees={employees}
           defaultMonth={month}
           defaultYear={year}
+          editData={editKpi}
         />
       )}
     </div>

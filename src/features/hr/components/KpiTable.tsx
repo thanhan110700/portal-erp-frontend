@@ -1,6 +1,8 @@
 import { useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
+import { Edit } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { EmployeeKpi } from "../types/kpi"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -37,9 +39,11 @@ function getKpiBadgeVariant(pct: number | null): "success" | "warning" | "destru
 interface KpiTableProps {
   kpis: EmployeeKpi[]
   isLoading?: boolean
+  onEdit?: (kpi: EmployeeKpi) => void
+  isAdmin?: boolean
 }
 
-export function KpiTable({ kpis, isLoading = false }: KpiTableProps) {
+export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: KpiTableProps) {
   const columns = useMemo<MRT_ColumnDef<EmployeeKpi>[]>(
     () => [
       {
@@ -139,8 +143,29 @@ export function KpiTable({ kpis, isLoading = false }: KpiTableProps) {
           </span>
         ),
       },
+      ...(isAdmin && onEdit
+        ? [
+            {
+              id: "actions",
+              header: "",
+              size: 80,
+              Cell: ({ row }: { row: { original: EmployeeKpi } }) => (
+                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => onEdit(row.original)}
+                  >
+                    <Edit className="size-4" />
+                  </Button>
+                </div>
+              ),
+            },
+          ]
+        : []),
     ],
-    [],
+    [isAdmin, onEdit],
   )
 
   const table = useMantineReactTable({

@@ -30,7 +30,7 @@ export function DateRangePicker({
   from,
   to,
   onChange,
-  placeholder = "Select date range",
+  placeholder = "Chọn khoảng ngày",
   className,
 }: DateRangePickerProps) {
   const isMobile = useIsMobile()
@@ -111,7 +111,7 @@ export function DateRangePicker({
         <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
         <DrawerContent className="p-0 flex flex-col max-h-[85dvh] overflow-hidden">
           <DrawerHeader className="border-b border-border pb-3 shrink-0">
-            <DrawerTitle className="text-center text-sm font-medium">Select Date Range</DrawerTitle>
+            <DrawerTitle className="text-center text-sm font-medium">Chọn khoảng ngày</DrawerTitle>
           </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 min-h-0">
@@ -128,16 +128,16 @@ export function DateRangePicker({
 
           <div className="border-t border-border p-4 flex items-center justify-between gap-3 shrink-0">
             <span className="font-mono text-sm text-muted-foreground truncate">
-              {draftLabel || "Select dates"}
+              {draftLabel || "Chọn ngày"}
             </span>
             <div className="flex gap-2 shrink-0">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" size="sm" className="h-9 px-4 text-sm">
-                  Cancel
+                  Hủy
                 </Button>
               </DrawerClose>
               <Button type="button" size="sm" className="h-9 px-4 text-sm" onClick={handleApply}>
-                Apply
+                Áp dụng
               </Button>
             </div>
           </div>

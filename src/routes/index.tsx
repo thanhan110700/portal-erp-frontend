@@ -167,6 +167,26 @@ export const router = createBrowserRouter([
                 },
                 handle: { title: "Hợp đồng" },
               },
+              // ── Finance Module ──────────────────────────────────────────
+              {
+                path: routeSegment(PATHS.financeVouchers),
+                lazy: async () => {
+                  const { VoucherListPage } =
+                    await import("@/features/finance/pages/VoucherListPage")
+                  return { Component: VoucherListPage }
+                },
+                handle: { title: "Chứng từ Thu/Chi" },
+              },
+              // ── Reports Module ──────────────────────────────────────────
+              {
+                path: routeSegment(PATHS.reports),
+                lazy: async () => {
+                  const { ReportDashboardPage } =
+                    await import("@/features/reports/pages/ReportDashboardPage")
+                  return { Component: ReportDashboardPage }
+                },
+                handle: { title: "Báo cáo quản trị" },
+              },
             ],
           },
         ],

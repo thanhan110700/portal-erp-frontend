@@ -10,6 +10,8 @@ import {
   FileText,
   FileSignature,
   FolderKanban,
+  Receipt,
+  BarChart3,
 } from "lucide-react"
 
 export type NavSubItem = {
@@ -84,6 +86,23 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         name: "Quản lý Dự án",
         href: PATHS.projects,
         icon: FolderKanban,
+      },
+    ],
+  },
+  {
+    name: "Tài chính",
+    icon: Receipt,
+    navSection: "finance",
+    items: [
+      {
+        name: "Chứng từ Thu/Chi",
+        href: PATHS.financeVouchers,
+        icon: Receipt,
+      },
+      {
+        name: "Báo cáo quản trị",
+        href: PATHS.reports,
+        icon: BarChart3,
       },
     ],
   },

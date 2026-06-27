@@ -52,10 +52,10 @@ export function FileUploadInput({
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!file.type.startsWith("image/")) return
+      if (accept === "image/*" && !file.type.startsWith("image/")) return
       onChange?.(file)
     },
-    [onChange],
+    [onChange, accept],
   )
 
   const handleFileChange = useCallback(
