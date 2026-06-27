@@ -17,6 +17,7 @@ import type {
   CreateInteractionPayload,
 } from "../types/sales"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 
 import { ContactTable } from "../components/ContactTable"
 import { ContactFormModal } from "../components/ContactFormModal"
@@ -31,9 +32,8 @@ export function CustomerDetailPage() {
   const customerId = parseInt(id || "0")
 
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isSales = user?.roles?.includes("sales") ?? false
-  const canEdit = isAdmin || isSales
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditCustomers)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteCustomers)
 
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -242,8 +242,9 @@ export function CustomerDetailPage() {
                   setSelectedContact(contact)
                   setContactModalOpen(true)
                 }}
+                canEdit={canEdit}
+                canDelete={canDelete}
                 onDelete={handleDeleteContact}
-                isAdmin={isAdmin}
               />
             </TabsContent>
 
@@ -262,7 +263,7 @@ export function CustomerDetailPage() {
               <InteractionList
                 interactions={interactions}
                 onDelete={handleDeleteInteraction}
-                isAdmin={isAdmin}
+                canDelete={canDelete}
               />
             </TabsContent>
           </Tabs>

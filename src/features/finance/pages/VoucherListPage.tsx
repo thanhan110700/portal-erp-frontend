@@ -7,6 +7,7 @@ import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPane
 import { TablePagination } from "@/components/common/TablePagination"
 import { RowActions } from "@/components/common/RowActions"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher, ListVouchersParams } from "../types/voucher"
 import { VoucherFormModal } from "../components/VoucherFormModal"
@@ -36,11 +37,10 @@ const STATUS_LABELS: Record<string, string> = {
 export function VoucherListPage() {
   const { t } = useTranslation(["finance", "common"])
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isDirector = user?.roles?.includes("director") ?? false
-  const isFinance = user?.roles?.includes("finance") ?? false
-  const canEdit = isAdmin || isFinance || isDirector
-  const canApprove = isAdmin || isDirector
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateVouchers)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditVouchers)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteVouchers)
+  const canApprove = hasPermission(user?.permissions, PermissionSlugs.ApproveVouchers)
 
   const [vouchers, setVouchers] = useState<Voucher[]>([])
   const [loading, setLoading] = useState(true)
@@ -369,6 +369,8 @@ export function VoucherListPage() {
                 setFormOpen(true)
               },
             })
+          }
+          if (canDelete && isDraftOrPending) {
             actions.push({
               label: t("finance:list.actions.delete", { defaultValue: "Xóa" }),
               icon: <Trash2 className="size-4" />,
@@ -396,7 +398,7 @@ export function VoucherListPage() {
         },
       },
     ],
-    [canApprove, canEdit, t],
+    [canApprove, canEdit, canDelete, t],
   )
 
   const table = useMantineReactTable({
@@ -438,7 +440,7 @@ export function VoucherListPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t("finance:list.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("finance:list.description")}</p>
         </div>
-        {canEdit && (
+        {canCreate && (
           <Button
             onClick={() => {
               setSelectedVoucher(null)

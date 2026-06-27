@@ -19,14 +19,15 @@ import { departmentApi, type CreateDepartmentPayload } from "../api/departmentAp
 import type { Department } from "../types/employee"
 import { DepartmentFormModal } from "../components/DepartmentFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { useTranslation } from "react-i18next"
 
 export function DepartmentListPage() {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isDirector = user?.roles?.includes("director") ?? false
-  const canEdit = isAdmin || isDirector
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateDepartments)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditDepartments)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteDepartments)
 
   const [departments, setDepartments] = useState<Department[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -121,34 +122,38 @@ export function DepartmentListPage() {
         header: "",
         size: 100,
         Cell: ({ row }) => {
-          if (!canEdit) return null
+          if (!canEdit && !canDelete) return null
           return (
             <div
               className="flex items-center justify-end gap-1"
               onClick={(e) => e.stopPropagation()}
             >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => handleOpenEdit(row.original)}
-              >
-                <Edit className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setDeleteTarget(row.original)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => handleOpenEdit(row.original)}
+                >
+                  <Edit className="size-4" />
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setDeleteTarget(row.original)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </div>
           )
         },
       },
     ],
-    [canEdit, t],
+    [canEdit, canDelete, t],
   )
 
   const table = useMantineReactTable({
@@ -207,7 +212,7 @@ export function DepartmentListPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          {canEdit && (
+          {canCreate && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2 min-h-11 md:min-h-9">
               <Plus className="size-4" />
               {t("hr:department.create")}

@@ -24,7 +24,8 @@ interface CustomerTableProps {
   isLoading?: boolean
   onEdit: (customer: Customer) => void
   onDelete: (id: number) => Promise<void>
-  isAdmin?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
 export function CustomerTable({
@@ -32,7 +33,8 @@ export function CustomerTable({
   isLoading = false,
   onEdit,
   onDelete,
-  isAdmin = false,
+  canEdit = false,
+  canDelete = false,
 }: CustomerTableProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -95,14 +97,16 @@ export function CustomerTable({
               onClick: () => navigate(`/sales/customers/${row.original.id}`),
               className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
             },
-            {
+          ]
+          if (canEdit) {
+            actions.push({
               label: t("common:actions.edit", { defaultValue: "Sửa" }),
               icon: <Edit className="size-4" />,
               onClick: () => onEdit(row.original),
               className: "text-muted-foreground hover:text-foreground",
-            },
-          ]
-          if (isAdmin) {
+            })
+          }
+          if (canDelete) {
             actions.push({
               label: t("common:actions.delete", { defaultValue: "Xóa" }),
               icon: <Trash2 className="size-4" />,
@@ -119,7 +123,7 @@ export function CustomerTable({
         },
       },
     ],
-    [isAdmin, onEdit, t, navigate],
+    [canEdit, canDelete, onEdit, t, navigate],
   )
 
   const table = useMantineReactTable({

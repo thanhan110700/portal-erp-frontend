@@ -11,6 +11,8 @@ import { useTranslation } from "react-i18next"
 interface ProjectTableProps {
   data: Project[]
   isLoading?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
   onEdit: (id: number) => void
   onDelete: (id: number) => void
   onView: (id: number) => void
@@ -26,6 +28,8 @@ interface ProjectTableProps {
 export function ProjectTable({
   data,
   isLoading,
+  canEdit = false,
+  canDelete = false,
   onEdit,
   onDelete,
   onView,
@@ -81,33 +85,36 @@ export function ProjectTable({
         id: "actions",
         header: t("common:table.actions"),
         size: 120,
-        Cell: ({ row }) => (
-          <RowActions
-            actions={[
-              {
-                label: t("common:actions.view", { defaultValue: "Xem" }),
-                icon: <Eye className="size-4" />,
-                onClick: () => onView(row.original.id),
-                className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
-              },
-              {
-                label: t("common:actions.edit", { defaultValue: "Sửa" }),
-                icon: <Edit className="size-4" />,
-                onClick: () => onEdit(row.original.id),
-                className: "text-amber-600 hover:text-amber-700 hover:bg-amber-50",
-              },
-              {
-                label: t("common:actions.delete", { defaultValue: "Xóa" }),
-                icon: <Trash2 className="size-4" />,
-                onClick: () => onDelete(row.original.id),
-                className: "text-red-600 hover:text-red-700 hover:bg-red-50",
-              },
-            ]}
-          />
-        ),
+        Cell: ({ row }) => {
+          const actions: import("@/components/common/RowActions").RowAction[] = [
+            {
+              label: t("common:actions.view", { defaultValue: "Xem" }),
+              icon: <Eye className="size-4" />,
+              onClick: () => onView(row.original.id),
+              className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
+            },
+          ]
+          if (canEdit) {
+            actions.push({
+              label: t("common:actions.edit", { defaultValue: "Sửa" }),
+              icon: <Edit className="size-4" />,
+              onClick: () => onEdit(row.original.id),
+              className: "text-amber-600 hover:text-amber-700 hover:bg-amber-50",
+            })
+          }
+          if (canDelete) {
+            actions.push({
+              label: t("common:actions.delete", { defaultValue: "Xóa" }),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => onDelete(row.original.id),
+              className: "text-red-600 hover:text-red-700 hover:bg-red-50",
+            })
+          }
+          return <RowActions actions={actions} />
+        },
       },
     ],
-    [onEdit, onDelete, onView, t],
+    [onEdit, onDelete, onView, canEdit, canDelete, t],
   )
 
   const table = useMantineReactTable({

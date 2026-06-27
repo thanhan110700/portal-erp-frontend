@@ -1,11 +1,13 @@
 import { lazy } from "react"
-import { createBrowserRouter, Navigate } from "react-router-dom"
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom"
 
 import { AppErrorPage } from "@/features/errors/pages/AppErrorPage"
 import { DashboardLayout } from "@/layouts/DashboardLayout"
 import { PATHS, routeSegment } from "@/constants/paths"
 import { PageLoader } from "@/components/common/PageLoader"
 import { ProtectedRoute } from "@/app/router/ProtectedRoute"
+import { RequirePermission } from "@/app/router/RequirePermission"
+import { PermissionSlugs } from "@/constants/permissions"
 
 const AuthLayout = lazy(() => import("@/layouts/AuthLayout"))
 const LoginPage = lazy(() =>
@@ -21,18 +23,6 @@ const ProjectDetailPage = lazy(() =>
     default: m.ProjectDetailPage,
   })),
 )
-
-// function withPermission(Page: ComponentType, permission?: string): ComponentType {
-//   if (!permission) return Page
-//   function PermissionGuard() {
-//     return (
-//       <RequirePermission permission={permission!}>
-//         <Page />
-//       </RequirePermission>
-//     )
-//   }
-//   return PermissionGuard
-// }
 
 export const router = createBrowserRouter([
   {
@@ -78,14 +68,23 @@ export const router = createBrowserRouter([
                 handle: { title: "common:routes.dashboard" },
               },
               {
-                path: routeSegment(PATHS.projects),
-                element: <ProjectListPage />,
-                handle: { title: "common:routes.projects" },
-              },
-              {
-                path: `${routeSegment(PATHS.projects)}/:id`,
-                element: <ProjectDetailPage />,
-                handle: { title: "common:routes.project_detail" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewProjects}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.projects),
+                    element: <ProjectListPage />,
+                    handle: { title: "common:routes.projects" },
+                  },
+                  {
+                    path: `${routeSegment(PATHS.projects)}/:id`,
+                    element: <ProjectDetailPage />,
+                    handle: { title: "common:routes.project_detail" },
+                  },
+                ],
               },
               {
                 path: routeSegment(PATHS.examples),
@@ -98,103 +97,186 @@ export const router = createBrowserRouter([
               },
               // ── HR Module ──────────────────────────────────────────────
               {
-                path: routeSegment(PATHS.hrEmployees),
-                lazy: async () => {
-                  const { EmployeeListPage } = await import("@/features/hr/pages/EmployeeListPage")
-                  return { Component: EmployeeListPage }
-                },
-                handle: { title: "common:routes.hr_employees" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewEmployees}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.hrEmployees),
+                    lazy: async () => {
+                      const { EmployeeListPage } =
+                        await import("@/features/hr/pages/EmployeeListPage")
+                      return { Component: EmployeeListPage }
+                    },
+                    handle: { title: "common:routes.hr_employees" },
+                  },
+                  {
+                    path: "hr/employees/:id",
+                    lazy: async () => {
+                      const { EmployeeDetailPage } =
+                        await import("@/features/hr/pages/EmployeeDetailPage")
+                      return { Component: EmployeeDetailPage }
+                    },
+                    handle: { title: "common:routes.hr_employee_detail" },
+                  },
+                ],
               },
               {
-                path: "hr/employees/:id",
-                lazy: async () => {
-                  const { EmployeeDetailPage } =
-                    await import("@/features/hr/pages/EmployeeDetailPage")
-                  return { Component: EmployeeDetailPage }
-                },
-                handle: { title: "common:routes.hr_employee_detail" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewDepartments}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.hrDepartments),
+                    lazy: async () => {
+                      const { DepartmentListPage } =
+                        await import("@/features/hr/pages/DepartmentListPage")
+                      return { Component: DepartmentListPage }
+                    },
+                    handle: { title: "common:routes.hr_departments" },
+                  },
+                ],
               },
               {
-                path: routeSegment(PATHS.hrDepartments),
-                lazy: async () => {
-                  const { DepartmentListPage } =
-                    await import("@/features/hr/pages/DepartmentListPage")
-                  return { Component: DepartmentListPage }
-                },
-                handle: { title: "common:routes.hr_departments" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewTimesheets}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.hrTimesheets),
+                    lazy: async () => {
+                      const { TimesheetListPage } =
+                        await import("@/features/hr/pages/TimesheetListPage")
+                      return { Component: TimesheetListPage }
+                    },
+                    handle: { title: "common:routes.hr_timesheets" },
+                  },
+                ],
               },
               {
-                path: routeSegment(PATHS.hrTimesheets),
-                lazy: async () => {
-                  const { TimesheetListPage } =
-                    await import("@/features/hr/pages/TimesheetListPage")
-                  return { Component: TimesheetListPage }
-                },
-                handle: { title: "common:routes.hr_timesheets" },
-              },
-              {
-                path: routeSegment(PATHS.hrKpi),
-                lazy: async () => {
-                  const { KpiDashboardPage } = await import("@/features/hr/pages/KpiDashboardPage")
-                  return { Component: KpiDashboardPage }
-                },
-                handle: { title: "common:routes.hr_kpi" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewKpis}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.hrKpi),
+                    lazy: async () => {
+                      const { KpiDashboardPage } =
+                        await import("@/features/hr/pages/KpiDashboardPage")
+                      return { Component: KpiDashboardPage }
+                    },
+                    handle: { title: "common:routes.hr_kpi" },
+                  },
+                ],
               },
               // ── Sales Module ───────────────────────────────────────────
               {
-                path: routeSegment(PATHS.salesCustomers),
-                lazy: async () => {
-                  const { CustomerListPage } =
-                    await import("@/features/sales/pages/CustomerListPage")
-                  return { Component: CustomerListPage }
-                },
-                handle: { title: "common:routes.sales_customers" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewCustomers}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.salesCustomers),
+                    lazy: async () => {
+                      const { CustomerListPage } =
+                        await import("@/features/sales/pages/CustomerListPage")
+                      return { Component: CustomerListPage }
+                    },
+                    handle: { title: "common:routes.sales_customers" },
+                  },
+                  {
+                    path: "sales/customers/:id",
+                    lazy: async () => {
+                      const { CustomerDetailPage } =
+                        await import("@/features/sales/pages/CustomerDetailPage")
+                      return { Component: CustomerDetailPage }
+                    },
+                    handle: { title: "common:routes.sales_customer_detail" },
+                  },
+                ],
               },
               {
-                path: "sales/customers/:id",
-                lazy: async () => {
-                  const { CustomerDetailPage } =
-                    await import("@/features/sales/pages/CustomerDetailPage")
-                  return { Component: CustomerDetailPage }
-                },
-                handle: { title: "common:routes.sales_customer_detail" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewQuotes}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.salesQuotes),
+                    lazy: async () => {
+                      const { QuoteListPage } = await import("@/features/sales/pages/QuoteListPage")
+                      return { Component: QuoteListPage }
+                    },
+                    handle: { title: "common:routes.sales_quotes" },
+                  },
+                ],
               },
               {
-                path: routeSegment(PATHS.salesQuotes),
-                lazy: async () => {
-                  const { QuoteListPage } = await import("@/features/sales/pages/QuoteListPage")
-                  return { Component: QuoteListPage }
-                },
-                handle: { title: "common:routes.sales_quotes" },
-              },
-              {
-                path: routeSegment(PATHS.salesContracts),
-                lazy: async () => {
-                  const { ContractListPage } =
-                    await import("@/features/sales/pages/ContractListPage")
-                  return { Component: ContractListPage }
-                },
-                handle: { title: "common:routes.sales_contracts" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewContracts}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.salesContracts),
+                    lazy: async () => {
+                      const { ContractListPage } =
+                        await import("@/features/sales/pages/ContractListPage")
+                      return { Component: ContractListPage }
+                    },
+                    handle: { title: "common:routes.sales_contracts" },
+                  },
+                ],
               },
               // ── Finance Module ──────────────────────────────────────────
               {
-                path: routeSegment(PATHS.financeVouchers),
-                lazy: async () => {
-                  const { VoucherListPage } =
-                    await import("@/features/finance/pages/VoucherListPage")
-                  return { Component: VoucherListPage }
-                },
-                handle: { title: "common:routes.finance_vouchers" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewVouchers}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.financeVouchers),
+                    lazy: async () => {
+                      const { VoucherListPage } =
+                        await import("@/features/finance/pages/VoucherListPage")
+                      return { Component: VoucherListPage }
+                    },
+                    handle: { title: "common:routes.finance_vouchers" },
+                  },
+                ],
               },
               // ── Reports Module ──────────────────────────────────────────
               {
-                path: routeSegment(PATHS.reports),
-                lazy: async () => {
-                  const { ReportDashboardPage } =
-                    await import("@/features/reports/pages/ReportDashboardPage")
-                  return { Component: ReportDashboardPage }
-                },
-                handle: { title: "common:routes.reports" },
+                element: (
+                  <RequirePermission permission={PermissionSlugs.ViewFinanceReports}>
+                    <Outlet />
+                  </RequirePermission>
+                ),
+                children: [
+                  {
+                    path: routeSegment(PATHS.reports),
+                    lazy: async () => {
+                      const { ReportDashboardPage } =
+                        await import("@/features/reports/pages/ReportDashboardPage")
+                      return { Component: ReportDashboardPage }
+                    },
+                    handle: { title: "common:routes.reports" },
+                  },
+                ],
               },
             ],
           },

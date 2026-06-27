@@ -10,12 +10,20 @@ import { ProjectFormModal } from "../components/ProjectFormModal"
 
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { projectApi, type ListProjectsParams } from "../api/projectApi"
+import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import type { Project } from "../types/project"
 import { useTranslation } from "react-i18next"
 
 export function ProjectListPage() {
   const { t } = useTranslation(["projects", "common"])
   const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
+
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateProjects)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditProjects)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteProjects)
+
   const [projects, setProjects] = useState<Project[]>([])
   const [totalRecords, setTotalRecords] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -111,15 +119,17 @@ export function ProjectListPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">{t("projects:list.title")}</h1>
-        <Button
-          onClick={() => {
-            setEditingId(null)
-            setModalOpen(true)
-          }}
-        >
-          <Plus className="mr-2 size-4" />
-          {t("projects:list.create")}
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={() => {
+              setEditingId(null)
+              setModalOpen(true)
+            }}
+          >
+            <Plus className="mr-2 size-4" />
+            {t("projects:list.create")}
+          </Button>
+        )}
       </div>
 
       <FilterPanel
@@ -134,6 +144,8 @@ export function ProjectListPage() {
           <ProjectTable
             data={projects}
             isLoading={isLoading}
+            canEdit={canEdit}
+            canDelete={canDelete}
             onEdit={(id) => {
               setEditingId(id)
               setModalOpen(true)

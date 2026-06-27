@@ -8,10 +8,17 @@ interface ContactTableProps {
   contacts: Contact[]
   onEdit: (contact: Contact) => void
   onDelete: (id: number) => Promise<void>
-  isAdmin?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
-export function ContactTable({ contacts, onEdit, onDelete, isAdmin = false }: ContactTableProps) {
+export function ContactTable({
+  contacts,
+  onEdit,
+  onDelete,
+  canEdit = false,
+  canDelete = false,
+}: ContactTableProps) {
   const { t } = useTranslation()
   const columns: MRT_ColumnDef<Contact>[] = [
     {
@@ -51,26 +58,30 @@ export function ContactTable({ contacts, onEdit, onDelete, isAdmin = false }: Co
       header: "",
       size: 80,
       Cell: ({ row }) => {
-        if (!isAdmin) return null
-        return (
-          <RowActions
-            actions={[
-              {
-                label: t("common:actions.edit", { defaultValue: "Sửa" }),
-                icon: <Pencil className="size-4" />,
-                onClick: () => onEdit(row.original),
-                className: "text-muted-foreground hover:text-primary hover:bg-primary/10",
-              },
-              {
-                label: t("common:actions.delete", { defaultValue: "Xóa" }),
-                icon: <Trash2 className="size-4" />,
-                onClick: () => void onDelete(row.original.id),
-                className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-                variant: "destructive",
-              },
-            ]}
-          />
-        )
+        if (!canEdit && !canDelete) return null
+
+        const actions: import("@/components/common/RowActions").RowAction[] = []
+
+        if (canEdit) {
+          actions.push({
+            label: t("common:actions.edit", { defaultValue: "Sửa" }),
+            icon: <Pencil className="size-4" />,
+            onClick: () => onEdit(row.original),
+            className: "text-muted-foreground hover:text-primary hover:bg-primary/10",
+          })
+        }
+
+        if (canDelete) {
+          actions.push({
+            label: t("common:actions.delete", { defaultValue: "Xóa" }),
+            icon: <Trash2 className="size-4" />,
+            onClick: () => void onDelete(row.original.id),
+            className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+            variant: "destructive",
+          })
+        }
+
+        return <RowActions actions={actions} />
       },
     },
   ]

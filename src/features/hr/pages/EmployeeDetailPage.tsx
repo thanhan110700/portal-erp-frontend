@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { PATHS } from "@/constants/paths"
 import { employeeApi } from "../api/employeeApi"
 import { departmentApi } from "../api/departmentApi"
@@ -68,8 +69,9 @@ export function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isHR = user?.roles?.includes("admin") || user?.roles?.includes("director") || false
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditEmployees)
+  const canAssignRole = hasPermission(user?.permissions, PermissionSlugs.EditPermissions)
+  const canAssignProjects = hasPermission(user?.permissions, PermissionSlugs.EditProjectMembers)
 
   const [employee, setEmployee] = useState<Employee | null>(null)
   const [departments, setDepartments] = useState<Department[]>([])
@@ -158,7 +160,7 @@ export function EmployeeDetailPage() {
         </Button>
 
         <div className="flex gap-2">
-          {isAdmin && (
+          {canAssignRole && (
             <Button
               id="btn-assign-role"
               variant="outline"
@@ -170,7 +172,7 @@ export function EmployeeDetailPage() {
               {t("hr:employees.actions.assign_role")}
             </Button>
           )}
-          {isHR && (
+          {canAssignProjects && (
             <>
               <Button
                 id="btn-assign-projects"
@@ -182,16 +184,18 @@ export function EmployeeDetailPage() {
                 <Briefcase className="size-4" />
                 {t("hr:employees.actions.assign_projects")}
               </Button>
-              <Button
-                id="btn-edit-employee"
-                size="sm"
-                onClick={() => setFormOpen(true)}
-                className="gap-2 min-h-11 md:min-h-9"
-              >
-                <Pencil className="size-4" />
-                {t("common:actions.edit")}
-              </Button>
             </>
+          )}
+          {canEdit && (
+            <Button
+              id="btn-edit-employee"
+              size="sm"
+              onClick={() => setFormOpen(true)}
+              className="gap-2 min-h-11 md:min-h-9"
+            >
+              <Pencil className="size-4" />
+              {t("common:actions.edit")}
+            </Button>
           )}
         </div>
       </div>

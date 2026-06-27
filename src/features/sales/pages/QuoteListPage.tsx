@@ -12,15 +12,16 @@ import type { Quote, CreateQuotePayload, UpdateQuotePayload } from "../types/sal
 import { QuoteTable } from "../components/QuoteTable"
 import { QuoteFormModal } from "../components/QuoteFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { useTranslation } from "react-i18next"
 
 export function QuoteListPage() {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isSales = user?.roles?.includes("sales") ?? false
-  const canEdit = isAdmin || isSales
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateQuotes)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditQuotes)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteQuotes)
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -228,7 +229,7 @@ export function QuoteListPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          {canEdit && (
+          {canCreate && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
               {t("sales:quote.create")}
@@ -250,7 +251,8 @@ export function QuoteListPage() {
         <QuoteTable
           quotes={quotes}
           isLoading={isLoading}
-          isAdmin={isAdmin}
+          canEdit={canEdit}
+          canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
           onRefresh={() => void loadData()}
