@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +11,46 @@ import type { Customer, CreateCustomerPayload } from "../types/sales"
 import { customerApi } from "../api/customerApi"
 import { type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+
+const customerSchema = z.object({
+  customer_name: z
+    .string()
+    .min(1, "Vui lòng nhập tên khách hàng")
+    .max(255, "Tên khách hàng không được quá 255 ký tự"),
+  phone: z
+    .string()
+    .min(1, "Vui lòng nhập số điện thoại")
+    .max(20, "Số điện thoại không được quá 20 ký tự"),
+  email: z
+    .string()
+    .max(150, "Email không được quá 150 ký tự")
+    .email("Email không hợp lệ")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  address: z
+    .string()
+    .max(1000, "Địa chỉ không được quá 1000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  tax_number: z
+    .string()
+    .max(50, "Mã số thuế không được quá 50 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  classification: z.string().optional().nullable().or(z.literal("")),
+  sales_rep_id: z.number().min(1, "Vui lòng chọn nhân viên sales"),
+  notes: z
+    .string()
+    .max(2000, "Ghi chú không được quá 2000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+})
+
+type CustomerFormData = z.infer<typeof customerSchema>
 
 interface CustomerFormModalProps {
   open: boolean
@@ -37,7 +79,8 @@ export function CustomerFormModal({
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<CreateCustomerPayload>({
+  } = useForm<CustomerFormData>({
+    resolver: zodResolver(customerSchema),
     defaultValues: {
       customer_name: "",
       phone: "",
@@ -94,7 +137,7 @@ export function CustomerFormModal({
     }
   }, [open, editData, reset, onClose])
 
-  const handleFormSubmit = async (data: CreateCustomerPayload) => {
+  const handleFormSubmit = async (data: CustomerFormData) => {
     try {
       const payload: CreateCustomerPayload = {
         customer_name: data.customer_name,
@@ -103,7 +146,7 @@ export function CustomerFormModal({
         address: data.address || null,
         tax_number: data.tax_number || null,
         classification: data.classification || null,
-        sales_rep_id: Number(data.sales_rep_id),
+        sales_rep_id: data.sales_rep_id,
         notes: data.notes || null,
       }
       await onSubmit(payload)
@@ -151,7 +194,7 @@ export function CustomerFormModal({
               <Input
                 id="cus-name"
                 placeholder="Công ty ABC"
-                {...register("customer_name", { required: "Vui lòng nhập tên khách hàng" })}
+                {...register("customer_name")}
                 aria-invalid={!!errors.customer_name}
               />
               {errors.customer_name && (
@@ -164,7 +207,7 @@ export function CustomerFormModal({
               <Input
                 id="cus-phone"
                 placeholder="0987654321"
-                {...register("phone", { required: "Vui lòng nhập SĐT" })}
+                {...register("phone")}
                 aria-invalid={!!errors.phone}
               />
               {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
@@ -177,13 +220,22 @@ export function CustomerFormModal({
                 type="email"
                 placeholder="email@example.com"
                 {...register("email")}
+                aria-invalid={!!errors.email}
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="cus-tax">Mã số thuế</Label>
-              <Input id="cus-tax" placeholder="0101234567" {...register("tax_number")} />
+              <Input
+                id="cus-tax"
+                placeholder="0101234567"
+                {...register("tax_number")}
+                aria-invalid={!!errors.tax_number}
+              />
+              {errors.tax_number && (
+                <p className="text-xs text-destructive">{errors.tax_number.message}</p>
+              )}
             </div>
           </div>
 
@@ -193,7 +245,9 @@ export function CustomerFormModal({
               id="cus-address"
               placeholder="123 Đường ABC, Phường X, Quận Y..."
               {...register("address")}
+              aria-invalid={!!errors.address}
             />
+            {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -206,10 +260,13 @@ export function CustomerFormModal({
                 onValueChange={(val) => setValue("classification", val || null)}
                 options={classifications.map((item) => ({
                   label: item.label,
-                  value: item.value?.toString() || "",
+                  value: item.value?.toString() || item.id?.toString() || "",
                 }))}
                 placeholder="Chọn phân loại..."
               />
+              {errors.classification && (
+                <p className="text-xs text-destructive">{errors.classification.message}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -221,12 +278,12 @@ export function CustomerFormModal({
                 onValueChange={(val) => setValue("sales_rep_id", val ? parseInt(val) : 0)}
                 options={salesReps.map((item) => ({
                   label: item.label,
-                  value: item.id?.toString() || "",
+                  value: item.value?.toString() || item.id?.toString() || "",
                 }))}
                 placeholder="Chọn nhân viên sales..."
               />
               {errors.sales_rep_id && (
-                <p className="text-xs text-destructive">Vui lòng chọn Sales</p>
+                <p className="text-xs text-destructive">{errors.sales_rep_id.message}</p>
               )}
             </div>
           </div>
@@ -239,7 +296,9 @@ export function CustomerFormModal({
               placeholder="Ghi chú thêm về khách hàng..."
               {...register("notes")}
               className="resize-none"
+              aria-invalid={!!errors.notes}
             />
+            {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
           </div>
         </form>
       )}

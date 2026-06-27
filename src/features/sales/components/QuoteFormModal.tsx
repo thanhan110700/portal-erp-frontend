@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { Input } from "@/components/ui/input"
@@ -9,6 +11,28 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { Quote, CreateQuotePayload } from "../types/sales"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+
+const quoteSchema = z.object({
+  customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
+  quote_date: z.string().min(1, "Vui lòng nhập ngày báo giá"),
+  quote_value: z
+    .number({ message: "Vui lòng nhập tổng giá trị" })
+    .gt(0, "Giá trị báo giá phải lớn hơn 0"),
+  description: z
+    .string()
+    .max(5000, "Mô tả không được quá 5000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  notes: z
+    .string()
+    .max(2000, "Ghi chú không được quá 2000 ký tự")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+})
+
+type QuoteFormData = z.infer<typeof quoteSchema>
 
 interface QuoteFormModalProps {
   open: boolean
@@ -28,7 +52,8 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
     reset,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<CreateQuotePayload>({
+  } = useForm<QuoteFormData>({
+    resolver: zodResolver(quoteSchema),
     defaultValues: {
       customer_id: 0,
       quote_date: new Date().toISOString().split("T")[0],
@@ -62,9 +87,16 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
     }
   }, [open, editData, reset])
 
-  const handleFormSubmit = async (data: CreateQuotePayload) => {
+  const handleFormSubmit = async (data: QuoteFormData) => {
     try {
-      await onSubmit(data)
+      const payload: CreateQuotePayload = {
+        customer_id: data.customer_id,
+        quote_date: data.quote_date,
+        quote_value: data.quote_value,
+        description: data.description || null,
+        notes: data.notes || null,
+      }
+      await onSubmit(payload)
     } catch (error) {
       console.error(error)
       toast.error("Đã xảy ra lỗi khi lưu báo giá")
@@ -95,10 +127,6 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
           <Controller
             name="customer_id"
             control={control}
-            rules={{
-              required: "Vui lòng chọn khách hàng",
-              min: { value: 1, message: "Vui lòng chọn khách hàng" },
-            }}
             render={({ field }) => (
               <SearchableSelect
                 value={field.value ? field.value.toString() : ""}
@@ -121,7 +149,6 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
             <Controller
               name="quote_date"
               control={control}
-              rules={{ required: "Vui lòng nhập ngày báo giá" }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
                   label="Ngày báo giá"
@@ -140,11 +167,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
               id="q-value"
               type="number"
               min="0"
-              {...register("quote_value", {
-                required: "Vui lòng nhập tổng giá trị",
-                valueAsNumber: true,
-                min: { value: 0, message: "Giá trị không hợp lệ" },
-              })}
+              {...register("quote_value", { valueAsNumber: true })}
               aria-invalid={!!errors.quote_value}
             />
             {errors.quote_value && (
@@ -161,7 +184,11 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
             placeholder="Ghi chú nội dung báo giá..."
             {...register("description")}
             className="resize-none"
+            aria-invalid={!!errors.description}
           />
+          {errors.description && (
+            <p className="text-xs text-destructive">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -172,7 +199,9 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
             placeholder="Ghi chú riêng biệt cho nội bộ..."
             {...register("notes")}
             className="resize-none"
+            aria-invalid={!!errors.notes}
           />
+          {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
         </div>
       </form>
     </CommonDialog>

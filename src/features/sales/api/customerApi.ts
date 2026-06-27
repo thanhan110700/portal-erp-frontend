@@ -67,7 +67,7 @@ export const customerApi = {
     contactId: number,
     payload: UpdateContactPayload,
   ): Promise<Contact> {
-    const response = await axiosInstance.put<ApiResponse<Contact>>(
+    const response = await axiosInstance.patch<ApiResponse<Contact>>(
       `/v1/customers/${customerId}/contacts/${contactId}`,
       payload,
     )

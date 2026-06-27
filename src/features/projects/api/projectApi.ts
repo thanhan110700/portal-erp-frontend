@@ -7,11 +7,14 @@ import type {
   UpdateProjectPayload,
   ProjectMember,
   CreateProjectMemberPayload,
+  UpdateProjectMemberPayload,
   ProjectMilestone,
   CreateProjectMilestonePayload,
+  UpdateProjectMilestonePayload,
   ProjectExpense,
   CreateProjectExpensePayload,
   UpdateProjectExpenseStatusPayload,
+  ProjectFile,
 } from "../types/project"
 
 export interface ListProjectsParams {
@@ -132,5 +135,71 @@ export const projectApi = {
 
   async removeExpense(projectId: number, expenseId: number): Promise<void> {
     await axiosInstance.delete(`/v1/projects/${projectId}/expenses/${expenseId}`)
+  },
+
+  // ── Member Edit ──────────────────────────────────────────────────────────
+  async updateMember(
+    projectId: number,
+    memberId: number,
+    payload: UpdateProjectMemberPayload,
+  ): Promise<ProjectMember> {
+    const response = await axiosInstance.patch<ApiResponse<ProjectMember>>(
+      `/v1/projects/${projectId}/members/${memberId}`,
+      payload,
+    )
+    return response.data.data
+  },
+
+  // ── Milestone Edit ────────────────────────────────────────────────────────
+  async updateMilestone(
+    projectId: number,
+    milestoneId: number,
+    payload: UpdateProjectMilestonePayload,
+  ): Promise<ProjectMilestone> {
+    const response = await axiosInstance.patch<ApiResponse<ProjectMilestone>>(
+      `/v1/projects/${projectId}/milestones/${milestoneId}`,
+      payload,
+    )
+    return response.data.data
+  },
+
+  // ── Project Files ────────────────────────────────────────────────────────
+  async uploadFile(
+    projectId: number,
+    file: File,
+    category?: string,
+    notes?: string,
+  ): Promise<ProjectFile> {
+    const formData = new FormData()
+    formData.append("file", file)
+    if (category) {
+      formData.append("file_category", category)
+    }
+    if (notes) {
+      formData.append("notes", notes)
+    }
+    const response = await axiosInstance.post<ApiResponse<ProjectFile>>(
+      `/v1/projects/${projectId}/files`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    )
+    return response.data.data
+  },
+
+  async deleteFile(projectId: number, fileId: number): Promise<void> {
+    await axiosInstance.delete(`/v1/projects/${projectId}/files/${fileId}`)
+  },
+
+  // ── Project Vouchers ─────────────────────────────────────────────────────
+  async listVouchers(projectId: number, params: Record<string, unknown> = {}): Promise<any[]> {
+    const response = await axiosInstance.get<ApiResponse<any[]>>(
+      `/v1/projects/${projectId}/vouchers`,
+      { params },
+    )
+    return response.data.data
   },
 }

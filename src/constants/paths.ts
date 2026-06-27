@@ -22,6 +22,12 @@ export const PATHS = {
 
   // Projects
   projects: "/projects",
+
+  // Finance
+  financeVouchers: "/finance/vouchers",
+
+  // Reports
+  reports: "/reports",
 } as const
 
 export type AppPath = (typeof PATHS)[keyof typeof PATHS]

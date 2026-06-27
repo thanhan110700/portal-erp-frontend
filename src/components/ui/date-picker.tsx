@@ -27,7 +27,7 @@ type DatePickerProps = {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder = "Chọn ngày",
   className,
 }: DatePickerProps) {
   const isMobile = useIsMobile()
@@ -79,7 +79,7 @@ export function DatePicker({
         <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
         <DrawerContent className="p-0 flex flex-col max-h-[85dvh] overflow-hidden">
           <DrawerHeader className="border-b border-border pb-3 shrink-0">
-            <DrawerTitle className="text-center text-sm font-medium">Select Date</DrawerTitle>
+            <DrawerTitle className="text-center text-sm font-medium">Chọn ngày</DrawerTitle>
           </DrawerHeader>
           <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 min-h-0">
             <Calendar
@@ -96,11 +96,11 @@ export function DatePicker({
               className="h-9 flex-1 text-sm"
               onClick={handleSelectToday}
             >
-              Today
+              Hôm nay
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" size="sm" className="h-9 flex-1 text-sm">
-                Cancel
+                Hủy
               </Button>
             </DrawerClose>
           </div>
@@ -121,7 +121,7 @@ export function DatePicker({
             className="h-7 w-full text-xs"
             onClick={handleSelectToday}
           >
-            Today
+            Hôm nay
           </Button>
         </div>
       </PopoverContent>
