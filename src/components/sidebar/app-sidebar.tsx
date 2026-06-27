@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { NAVIGATION_ITEMS } from "@/constants/header"
 import { hasPermission } from "@/constants/permissions"
+import { useTranslation } from "react-i18next"
 
 // Filter navigation items based on user permissions and roles
 function filterNavItemsForUser(
@@ -44,6 +45,8 @@ function AppSidebarInner({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, isMobile } = useSidebar()
   const isCollapsed = state === "collapsed" && !isMobile
 
+  const { t } = useTranslation()
+
   // Map user details to the structure NavUser expects
   // Priority: full_name (from login) → name (from /me) → username → email prefix
   const sidebarUser = React.useMemo(() => {
@@ -60,16 +63,16 @@ function AppSidebarInner({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const filteredNavItems = React.useMemo(() => {
     const rawItems = filterNavItemsForUser(NAVIGATION_ITEMS, user?.permissions)
     return rawItems.map((item) => ({
-      title: item.name,
+      title: item.translationKey ? t(item.translationKey) : item.name,
       url: item.href ?? "#",
       icon: item.icon ? React.createElement(item.icon, { className: "size-4" }) : undefined,
       items: item.items?.map((sub) => ({
-        title: sub.name,
+        title: sub.translationKey ? t(sub.translationKey) : sub.name,
         url: sub.href,
         icon: sub.icon ? React.createElement(sub.icon, { className: "size-4" }) : undefined,
       })),
     }))
-  }, [user])
+  }, [user, t])
 
   return (
     <Sidebar collapsible="icon" {...props}>

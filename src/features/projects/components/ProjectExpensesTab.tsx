@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { ProjectExpense } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
+import { useTranslation } from "react-i18next"
 
 interface ProjectExpensesTabProps {
   projectId: number
@@ -46,16 +47,17 @@ export function ProjectExpensesTab({
   canEdit,
   isAdmin,
 }: ProjectExpensesTabProps) {
+  const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
 
   const handleCreate = async (payload: any) => {
     try {
       await projectApi.addExpense(projectId, payload)
-      toast.success("Gửi yêu cầu chi phí thành công")
+      toast.success(t("projects:expenses.submit_success"))
       setModalOpen(false)
       onRefresh()
     } catch {
-      toast.error("Gửi yêu cầu chi phí thất bại")
+      toast.error(t("projects:expenses.submit_error"))
     }
   }
 
@@ -63,52 +65,52 @@ export function ProjectExpensesTab({
     async (expenseId: number) => {
       try {
         await projectApi.updateExpenseStatus(projectId, expenseId, { status: "approved" })
-        toast.success("Đã phê duyệt yêu cầu chi phí")
+        toast.success(t("projects:expenses.approve_success"))
         onRefresh()
       } catch {
-        toast.error("Phê duyệt thất bại")
+        toast.error(t("projects:expenses.approve_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   const handleReject = useCallback(
     async (expenseId: number) => {
-      const reason = window.prompt("Nhập lý do từ chối (tùy chọn):")
+      const reason = window.prompt(t("projects:expenses.reject_prompt"))
       if (reason === null) return // User cancelled prompt
       try {
         await projectApi.updateExpenseStatus(projectId, expenseId, {
           status: "rejected",
           notes: reason || undefined,
         })
-        toast.success("Đã từ chối yêu cầu chi phí")
+        toast.success(t("projects:expenses.reject_success"))
         onRefresh()
       } catch {
-        toast.error("Từ chối thất bại")
+        toast.error(t("projects:expenses.reject_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   const handleRemove = useCallback(
     async (expenseId: number) => {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa yêu cầu chi phí này?")) return
+      if (!window.confirm(t("projects:expenses.delete_confirm"))) return
       try {
         await projectApi.removeExpense(projectId, expenseId)
-        toast.success("Đã xóa khoản chi")
+        toast.success(t("projects:expenses.delete_success"))
         onRefresh()
       } catch {
-        toast.error("Xóa khoản chi thất bại")
+        toast.error(t("projects:expenses.delete_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   const columns = useMemo<MRT_ColumnDef<ProjectExpense>[]>(
     () => [
       {
         accessorKey: "expense_type",
-        header: "Phân loại",
+        header: t("projects:expenses.columns.type"),
         size: 150,
         Cell: ({ cell }) => (
           <span className="font-semibold text-foreground">
@@ -118,7 +120,7 @@ export function ProjectExpensesTab({
       },
       {
         accessorKey: "expense_date",
-        header: "Ngày chi",
+        header: t("projects:expenses.columns.date"),
         size: 130,
         Cell: ({ cell }) => (
           <span className="text-muted-foreground whitespace-nowrap">{cell.getValue<string>()}</span>
@@ -126,7 +128,7 @@ export function ProjectExpensesTab({
       },
       {
         accessorKey: "description",
-        header: "Lý do / Mô tả",
+        header: t("projects:expenses.columns.description"),
         size: 250,
         Cell: ({ cell }) => (
           <span
@@ -139,7 +141,7 @@ export function ProjectExpensesTab({
       },
       {
         accessorKey: "amount",
-        header: "Số tiền",
+        header: t("projects:expenses.columns.amount"),
         size: 160,
         Cell: ({ cell }) => (
           <div className="text-right font-mono font-semibold text-foreground">
@@ -149,14 +151,14 @@ export function ProjectExpensesTab({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("projects:expenses.columns.status"),
         size: 130,
         Cell: ({ cell }) => {
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
               <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {STATUS_LABELS[status] || status}
+                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
               </Badge>
             </div>
           )
@@ -164,21 +166,21 @@ export function ProjectExpensesTab({
       },
       {
         id: "approvers",
-        header: "Người yêu cầu / duyệt",
+        header: t("projects:expenses.columns.approvers"),
         size: 180,
         Cell: ({ row }) => {
           const expense = row.original
           return (
             <div className="text-xs space-y-1">
               <div className="text-muted-foreground">
-                Yêu cầu:{" "}
+                {t("projects:expenses.approvers.requester")}{" "}
                 <span className="font-medium text-foreground">
                   {expense.user?.full_name || "—"}
                 </span>
               </div>
               {expense.approver && (
                 <div className="text-muted-foreground">
-                  Duyệt:{" "}
+                  {t("projects:expenses.approvers.approver")}{" "}
                   <span className="font-medium text-foreground">{expense.approver.full_name}</span>
                 </div>
               )}
@@ -188,7 +190,7 @@ export function ProjectExpensesTab({
       },
       {
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 150,
         Cell: ({ row }) => {
           const expense = row.original
@@ -207,7 +209,7 @@ export function ProjectExpensesTab({
                     size="icon"
                     className="size-11 md:size-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                     onClick={() => handleApprove(expense.id)}
-                    title="Phê duyệt"
+                    title={t("projects:expenses.actions.approve")}
                   >
                     <Check className="size-4" />
                   </Button>
@@ -216,7 +218,7 @@ export function ProjectExpensesTab({
                     size="icon"
                     className="size-11 md:size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                     onClick={() => handleReject(expense.id)}
-                    title="Từ chối"
+                    title={t("projects:expenses.actions.reject")}
                   >
                     <X className="size-4" />
                   </Button>
@@ -228,7 +230,7 @@ export function ProjectExpensesTab({
                   size="icon"
                   className="size-11 md:size-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                   onClick={() => handleRemove(expense.id)}
-                  title="Xóa yêu cầu"
+                  title={t("projects:expenses.actions.delete")}
                 >
                   <Trash2 className="size-4" />
                 </Button>
@@ -238,7 +240,7 @@ export function ProjectExpensesTab({
         },
       },
     ],
-    [canEdit, isAdmin, handleApprove, handleReject, handleRemove],
+    [canEdit, isAdmin, handleApprove, handleReject, handleRemove, t],
   )
 
   const table = useMantineReactTable({
@@ -268,10 +270,12 @@ export function ProjectExpensesTab({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Chi phí dự án ({expenses.length})</h3>
+        <h3 className="text-lg font-semibold">
+          {t("projects:expenses.title")} ({expenses.length})
+        </h3>
         <Button size="sm" onClick={() => setModalOpen(true)} className="gap-2 min-h-11 md:min-h-9">
           <Plus className="size-4" />
-          Yêu cầu chi phí
+          {t("projects:expenses.add_expense")}
         </Button>
       </div>
 

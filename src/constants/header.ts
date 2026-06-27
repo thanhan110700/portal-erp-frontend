@@ -12,10 +12,12 @@ import {
   FolderKanban,
   Receipt,
   BarChart3,
+  Building2,
 } from "lucide-react"
 
 export type NavSubItem = {
   name: string
+  translationKey?: string
   href: string
   icon?: LucideIcon
   requiredPermission?: string
@@ -25,6 +27,7 @@ export type NavSubItem = {
 
 export type NavItem = {
   name: string
+  translationKey?: string
   href?: string
   icon?: LucideIcon
   items?: NavSubItem[]
@@ -32,24 +35,39 @@ export type NavItem = {
 }
 
 export const NAVIGATION_ITEMS: NavItem[] = [
-  { name: "Dashboard", href: PATHS.dashboard, icon: LayoutDashboard },
+  {
+    name: "Dashboard",
+    translationKey: "dashboard:title",
+    href: PATHS.dashboard,
+    icon: LayoutDashboard,
+  },
   {
     name: "Nhân sự",
+    translationKey: "hr:title",
     icon: Users,
     navSection: "hr",
     items: [
       {
+        name: "Phòng ban",
+        translationKey: "hr:department.title",
+        href: PATHS.hrDepartments,
+        icon: Building2,
+      },
+      {
         name: "Nhân viên",
+        translationKey: "hr:employee",
         href: PATHS.hrEmployees,
         icon: Users,
       },
       {
         name: "Chấm công",
+        translationKey: "hr:timesheet.title",
         href: PATHS.hrTimesheets,
         icon: Clock,
       },
       {
         name: "KPI",
+        translationKey: "hr:kpi.title",
         href: PATHS.hrKpi,
         icon: TrendingUp,
       },
@@ -57,21 +75,25 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     name: "Kinh doanh",
+    translationKey: "sales:title",
     icon: Briefcase,
     navSection: "sales",
     items: [
       {
         name: "Khách hàng",
+        translationKey: "sales:customer",
         href: PATHS.salesCustomers,
         icon: Users,
       },
       {
         name: "Báo giá",
+        translationKey: "sales:quote.title",
         href: PATHS.salesQuotes,
         icon: FileText,
       },
       {
         name: "Hợp đồng",
+        translationKey: "sales:contract.title",
         href: PATHS.salesContracts,
         icon: FileSignature,
       },
@@ -79,11 +101,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     name: "Dự án",
+    translationKey: "projects:title",
     icon: FolderKanban,
     navSection: "projects",
     items: [
       {
         name: "Quản lý Dự án",
+        translationKey: "projects:project",
         href: PATHS.projects,
         icon: FolderKanban,
       },
@@ -91,16 +115,19 @@ export const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     name: "Tài chính",
+    translationKey: "finance:title",
     icon: Receipt,
     navSection: "finance",
     items: [
       {
         name: "Chứng từ Thu/Chi",
+        translationKey: "finance:vouchers",
         href: PATHS.financeVouchers,
         icon: Receipt,
       },
       {
         name: "Báo cáo quản trị",
+        translationKey: "reports:title",
         href: PATHS.reports,
         icon: BarChart3,
       },

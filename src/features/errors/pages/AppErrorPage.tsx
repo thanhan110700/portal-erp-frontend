@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PATHS } from "@/constants/paths"
+import { useTranslation } from "react-i18next"
 
 /**
  * A lazy-import chunk error happens when the open tab is running an old build
@@ -36,6 +37,7 @@ async function clearCachesAndReload(): Promise<void> {
 }
 
 export function AppErrorPage() {
+  const { t } = useTranslation(["errors"])
   const error = useRouteError()
   const [reloading, setReloading] = useState(false)
   const isOutdated = isChunkLoadError(error)
@@ -53,12 +55,10 @@ export function AppErrorPage() {
 
       <div className="mt-8 space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {isOutdated ? "A new version is available" : "Something went wrong"}
+          {isOutdated ? t("errors:appError.title_outdated") : t("errors:appError.title_error")}
         </h1>
         <p className="max-w-md text-sm text-muted-foreground">
-          {isOutdated
-            ? "The app has just been updated. Please reload the page to use the latest version."
-            : "This page failed to load. Please reload the page, or try again in a few minutes if it persists."}
+          {isOutdated ? t("errors:appError.desc_outdated") : t("errors:appError.desc_error")}
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export function AppErrorPage() {
           disabled={reloading}
         >
           <RefreshCw className={`size-4 ${reloading ? "animate-spin" : ""}`} aria-hidden />
-          {reloading ? "Reloading…" : "Reload page"}
+          {reloading ? t("errors:appError.reloading") : t("errors:appError.reload")}
         </Button>
         {!isOutdated && (
           <Button
@@ -82,7 +82,7 @@ export function AppErrorPage() {
             }}
             disabled={reloading}
           >
-            Go to Dashboard
+            {t("errors:goHome")}
           </Button>
         )}
       </div>

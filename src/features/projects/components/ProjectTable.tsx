@@ -2,10 +2,11 @@ import { useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { Eye, Edit, Trash2 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { RowActions } from "@/components/common/RowActions"
 import { TablePagination } from "@/components/common/TablePagination"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Project } from "../types/project"
+import { useTranslation } from "react-i18next"
 
 interface ProjectTableProps {
   data: Project[]
@@ -22,23 +23,6 @@ interface ProjectTableProps {
   }
 }
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "planning":
-      return "bg-blue-100 text-blue-800"
-    case "in_progress":
-      return "bg-amber-100 text-amber-800"
-    case "completed":
-      return "bg-green-100 text-green-800"
-    case "on_hold":
-      return "bg-gray-100 text-gray-800"
-    case "cancelled":
-      return "bg-red-100 text-red-800"
-    default:
-      return "bg-gray-100 text-gray-800"
-  }
-}
-
 export function ProjectTable({
   data,
   isLoading,
@@ -47,11 +31,12 @@ export function ProjectTable({
   onView,
   pagination,
 }: ProjectTableProps) {
+  const { t } = useTranslation(["projects", "common"])
   const columns = useMemo<MRT_ColumnDef<Project>[]>(
     () => [
       {
         accessorKey: "project_code",
-        header: "Mã DA",
+        header: t("projects:columns.code"),
         size: 100,
         Cell: ({ cell }) => (
           <span className="font-semibold text-primary">{cell.getValue<string>()}</span>
@@ -59,18 +44,18 @@ export function ProjectTable({
       },
       {
         accessorKey: "project_name",
-        header: "Tên dự án",
+        header: t("projects:columns.name"),
         size: 200,
         Cell: ({ cell }) => <span className="font-medium">{cell.getValue<string>()}</span>,
       },
       {
         accessorKey: "customer.customer_name",
-        header: "Khách hàng",
+        header: t("projects:columns.customer"),
         size: 150,
       },
       {
         accessorKey: "contract_value",
-        header: "Giá trị (VNĐ)",
+        header: t("projects:columns.contract_value"),
         size: 150,
         Cell: ({ cell }) => {
           const val = cell.getValue<number | string>()
@@ -88,49 +73,41 @@ export function ProjectTable({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("projects:columns.status"),
         size: 120,
-        Cell: ({ cell }) => (
-          <Badge className={`${getStatusColor(cell.getValue<string>())} border-transparent`}>
-            {cell.getValue<string>()}
-          </Badge>
-        ),
+        Cell: ({ cell }) => <StatusBadge status={cell.getValue<string>()} />,
       },
       {
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 120,
         Cell: ({ row }) => (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onView(row.original.id)}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <Eye className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onEdit(row.original.id)}
-              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-            >
-              <Edit className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onDelete(row.original.id)}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <RowActions
+            actions={[
+              {
+                label: t("common:actions.view", { defaultValue: "Xem" }),
+                icon: <Eye className="size-4" />,
+                onClick: () => onView(row.original.id),
+                className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
+              },
+              {
+                label: t("common:actions.edit", { defaultValue: "Sửa" }),
+                icon: <Edit className="size-4" />,
+                onClick: () => onEdit(row.original.id),
+                className: "text-amber-600 hover:text-amber-700 hover:bg-amber-50",
+              },
+              {
+                label: t("common:actions.delete", { defaultValue: "Xóa" }),
+                icon: <Trash2 className="size-4" />,
+                onClick: () => onDelete(row.original.id),
+                className: "text-red-600 hover:text-red-700 hover:bg-red-50",
+              },
+            ]}
+          />
         ),
       },
     ],
-    [onEdit, onDelete, onView],
+    [onEdit, onDelete, onView, t],
   )
 
   const table = useMantineReactTable({
@@ -140,12 +117,20 @@ export function ProjectTable({
     enableColumnActions: false,
     enableColumnFilters: false,
     enablePagination: false,
-    enableSorting: false,
+    enableSorting: true,
     enableBottomToolbar: false,
     enableTopToolbar: false,
     mantineTableProps: {
       striped: true,
+      highlightOnHover: true,
       withBorder: false,
+      withColumnBorders: false,
+    },
+    mantineTableContainerProps: {
+      onScroll: (e: React.UIEvent<HTMLDivElement>) => {
+        e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
+      },
+      sx: { overflowX: "auto", WebkitOverflowScrolling: "touch" },
     },
   })
 

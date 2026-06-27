@@ -11,6 +11,7 @@ export const PATHS = {
   // HR Module
   hrEmployees: "/hr/employees",
   hrEmployeeDetail: "/hr/employees/:id",
+  hrDepartments: "/hr/departments",
   hrTimesheets: "/hr/timesheets",
   hrKpi: "/hr/kpi",
 

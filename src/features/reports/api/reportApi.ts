@@ -138,3 +138,29 @@ export const reportApi = {
     return response.data.data
   },
 }
+
+export interface EmployeeReportParams {
+  date_from?: string
+  date_to?: string
+}
+
+export const employeeReportApi = {
+  async getIncomeExpense(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
+    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/income-expense`, {
+      params,
+    })
+    return response.data.data.rows
+  },
+  async getReceivables(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
+    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/receivables`, {
+      params,
+    })
+    return response.data.data.rows
+  },
+  async getProjectProfit(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
+    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/project-profit`, {
+      params,
+    })
+    return response.data.data.rows
+  },
+}

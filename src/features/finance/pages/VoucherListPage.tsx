@@ -12,6 +12,7 @@ import { VoucherFormModal } from "../components/VoucherFormModal"
 import { VoucherHistoryDialog } from "../components/VoucherHistoryDialog"
 import { VoucherAttachmentsDialog } from "../components/VoucherAttachmentsDialog"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 const STATUS_VARIANTS: Record<string, any> = {
   draft: "secondary",
@@ -32,6 +33,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export function VoucherListPage() {
+  const { t } = useTranslation(["finance", "common"])
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isDirector = user?.roles?.includes("director") ?? false
@@ -76,11 +78,11 @@ export function VoucherListPage() {
       setVouchers(data.data || [])
       setTotalItems(data.meta?.total || 0)
     } catch {
-      toast.error("Không thể tải danh sách chứng từ")
+      toast.error(t("finance:list.fetch_error"))
     } finally {
       setLoading(false)
     }
-  }, [currentPage, pageSize, filters])
+  }, [currentPage, pageSize, filters, t])
 
   useEffect(() => {
     void fetchVouchers()
@@ -90,54 +92,56 @@ export function VoucherListPage() {
     try {
       if (selectedVoucher) {
         await voucherApi.update(selectedVoucher.id, payload)
-        toast.success("Cập nhật chứng từ thành công")
+        toast.success(t("finance:list.update_success"))
       } else {
         await voucherApi.create(payload)
-        toast.success("Lập chứng từ thành công")
+        toast.success(t("finance:list.create_success"))
       }
       setFormOpen(false)
       void fetchVouchers()
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Lỗi xử lý chứng từ"
+      const errMsg =
+        err.response?.data?.message ||
+        t("finance:list.update_error", { defaultValue: "Lỗi xử lý chứng từ" })
       toast.error(errMsg)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa chứng từ này?")) return
+    if (!window.confirm(t("finance:list.delete_confirm"))) return
     try {
       await voucherApi.delete(id)
-      toast.success("Đã xóa chứng từ")
+      toast.success(t("finance:list.delete_success"))
       void fetchVouchers()
     } catch {
-      toast.error("Xóa chứng từ thất bại")
+      toast.error(t("finance:list.delete_error"))
     }
   }
 
   const handleApprove = async (id: number) => {
     try {
       await voucherApi.approve(id, "approve")
-      toast.success("Đã phê duyệt chứng từ")
+      toast.success(t("finance:list.approve_success"))
       void fetchVouchers()
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Duyệt thất bại"
+      const errMsg = err.response?.data?.message || t("finance:list.approve_error")
       toast.error(errMsg)
     }
   }
 
   const handleReject = async (id: number) => {
-    const reason = window.prompt("Nhập lý do từ chối (bắt buộc):")
+    const reason = window.prompt(t("finance:list.reject_prompt"))
     if (reason === null) return
     if (!reason.trim()) {
-      toast.error("Lý do từ chối không được bỏ trống")
+      toast.error(t("finance:list.reject_reason_required"))
       return
     }
     try {
       await voucherApi.approve(id, "reject", reason)
-      toast.success("Đã từ chối chứng từ")
+      toast.success(t("finance:list.reject_success"))
       void fetchVouchers()
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Từ chối thất bại"
+      const errMsg = err.response?.data?.message || t("finance:list.reject_error")
       toast.error(errMsg)
     }
   }
@@ -151,57 +155,57 @@ export function VoucherListPage() {
     return [
       {
         field: "search",
-        label: "Tìm kiếm",
+        label: t("finance:list.filters.search"),
         type: "input",
-        placeholder: "Mã chứng từ, lý do...",
+        placeholder: t("finance:list.filters.search_placeholder"),
         value: filters.search || "",
       },
       {
         field: "voucher_type",
-        label: "Loại giao dịch",
+        label: t("finance:list.filters.type"),
         type: "select",
-        placeholder: "Tất cả",
-        value: filters.voucher_type || null,
+        placeholder: t("common:filter.all"),
+        value: filters.voucher_type || "",
         options: [
-          { label: "Thu tiền (Receipt)", value: "receipt" },
-          { label: "Chi tiền (Payment)", value: "payment" },
+          { label: t("finance:list.types.receipt"), value: "receipt" },
+          { label: t("finance:list.types.payment"), value: "payment" },
         ],
       },
       {
         field: "status",
-        label: "Trạng thái",
+        label: t("finance:list.filters.status"),
         type: "select",
-        placeholder: "Tất cả",
-        value: filters.status || null,
+        placeholder: t("common:filter.all"),
+        value: filters.status || "",
         options: [
-          { label: "Lưu nháp", value: "draft" },
-          { label: "Chờ duyệt", value: "pending" },
-          { label: "Đã duyệt", value: "approved" },
-          { label: "Đã chi/nhận", value: "paid" },
-          { label: "Từ chối", value: "rejected" },
-          { label: "Đã hủy", value: "cancelled" },
+          { label: t("common:status.draft", { defaultValue: "Lưu nháp" }), value: "draft" },
+          { label: t("common:status.pending", { defaultValue: "Chờ duyệt" }), value: "pending" },
+          { label: t("common:status.approved", { defaultValue: "Đã duyệt" }), value: "approved" },
+          { label: t("common:status.paid", { defaultValue: "Đã chi" }), value: "paid" },
+          { label: t("common:status.rejected", { defaultValue: "Từ chối" }), value: "rejected" },
+          { label: t("common:status.cancelled", { defaultValue: "Đã hủy" }), value: "cancelled" },
         ],
       },
       {
         field: "date_from",
-        label: "Từ ngày",
+        label: t("finance:list.filters.date_from"),
         type: "datepicker",
         value: filters.date_from || null,
       },
       {
         field: "date_to",
-        label: "Đến ngày",
+        label: t("finance:list.filters.date_to"),
         type: "datepicker",
         value: filters.date_to || null,
       },
     ]
-  }, [filters])
+  }, [filters, t])
 
   const columns = useMemo<MRT_ColumnDef<Voucher>[]>(
     () => [
       {
         accessorKey: "voucher_code",
-        header: "Mã chứng từ",
+        header: t("finance:list.columns.code"),
         size: 140,
         Cell: ({ cell }) => (
           <span className="font-semibold text-foreground">{cell.getValue<string>()}</span>
@@ -209,7 +213,7 @@ export function VoucherListPage() {
       },
       {
         accessorKey: "voucher_type",
-        header: "Loại",
+        header: t("finance:list.columns.type"),
         size: 120,
         Cell: ({ cell }) => {
           const type = cell.getValue<string>()
@@ -220,14 +224,16 @@ export function VoucherListPage() {
                 isReceipt ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"
               }
             >
-              {isReceipt ? "Thu tiền" : "Chi tiền"}
+              {isReceipt
+                ? t("finance:list.types.receipt_short")
+                : t("finance:list.types.payment_short")}
             </span>
           )
         },
       },
       {
         accessorKey: "voucher_date",
-        header: "Ngày",
+        header: t("finance:list.columns.date"),
         size: 120,
         Cell: ({ cell }) => (
           <span className="text-muted-foreground whitespace-nowrap">{cell.getValue<string>()}</span>
@@ -235,7 +241,7 @@ export function VoucherListPage() {
       },
       {
         accessorKey: "amount",
-        header: "Số tiền",
+        header: t("finance:list.columns.amount"),
         size: 150,
         Cell: ({ row }) => {
           const isReceipt = row.original.voucher_type === "receipt"
@@ -251,14 +257,14 @@ export function VoucherListPage() {
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("finance:list.columns.status"),
         size: 130,
         Cell: ({ cell }) => {
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
               <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {STATUS_LABELS[status] || status}
+                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
               </Badge>
             </div>
           )
@@ -266,7 +272,7 @@ export function VoucherListPage() {
       },
       {
         id: "description",
-        header: "Diễn giải / Liên kết",
+        header: t("finance:list.columns.description"),
         size: 250,
         Cell: ({ row }) => {
           const voucher = row.original
@@ -277,13 +283,13 @@ export function VoucherListPage() {
             voucher.department?.name ||
             "—"
           const linkedType = voucher.project
-            ? "Dự án"
+            ? t("finance:list.linked.project")
             : voucher.contract
-              ? "Hợp đồng"
+              ? t("finance:list.linked.contract")
               : voucher.customer
-                ? "Khách hàng"
+                ? t("finance:list.linked.customer")
                 : voucher.department
-                  ? "Phòng ban"
+                  ? t("finance:list.linked.department")
                   : ""
 
           return (
@@ -305,7 +311,7 @@ export function VoucherListPage() {
       },
       {
         id: "attachments",
-        header: "Tài liệu",
+        header: t("finance:list.columns.attachments"),
         size: 100,
         Cell: ({ row }) => {
           const voucher = row.original
@@ -329,7 +335,7 @@ export function VoucherListPage() {
       },
       {
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 200,
         Cell: ({ row }) => {
           const voucher = row.original
@@ -348,7 +354,7 @@ export function VoucherListPage() {
                     size="icon"
                     className="size-11 md:size-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                     onClick={() => handleApprove(voucher.id)}
-                    title="Duyệt"
+                    title={t("finance:list.actions.approve")}
                   >
                     <Check className="size-4" />
                   </Button>
@@ -357,7 +363,7 @@ export function VoucherListPage() {
                     size="icon"
                     className="size-11 md:size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                     onClick={() => handleReject(voucher.id)}
-                    title="Từ chối"
+                    title={t("finance:list.actions.reject")}
                   >
                     <X className="size-4" />
                   </Button>
@@ -373,7 +379,7 @@ export function VoucherListPage() {
                     setSelectedVoucher(voucher)
                     setFormOpen(true)
                   }}
-                  title="Chỉnh sửa"
+                  title={t("finance:list.actions.edit")}
                 >
                   <Edit2 className="size-4" />
                 </Button>
@@ -385,7 +391,7 @@ export function VoucherListPage() {
                   size="icon"
                   className="size-11 md:size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   onClick={() => handleDelete(voucher.id)}
-                  title="Xóa"
+                  title={t("finance:list.actions.delete")}
                 >
                   <Trash2 className="size-4" />
                 </Button>
@@ -399,7 +405,7 @@ export function VoucherListPage() {
                   setSelectedVoucher(voucher)
                   setHistoryOpen(true)
                 }}
-                title="Lịch sử duyệt"
+                title={t("finance:list.actions.history")}
               >
                 <History className="size-4" />
               </Button>
@@ -408,7 +414,7 @@ export function VoucherListPage() {
         },
       },
     ],
-    [canApprove, canEdit],
+    [canApprove, canEdit, t],
   )
 
   const table = useMantineReactTable({
@@ -442,10 +448,8 @@ export function VoucherListPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Quản lý Chứng từ Thu/Chi</h1>
-          <p className="text-sm text-muted-foreground">
-            Lập kế hoạch thu, chi, phê duyệt hóa đơn, quyết toán tài chính phòng ban và dự án.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("finance:list.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("finance:list.description")}</p>
         </div>
         {canEdit && (
           <Button
@@ -456,7 +460,7 @@ export function VoucherListPage() {
             className="gap-2 min-h-11 md:min-h-9"
           >
             <Plus className="size-4" />
-            Lập chứng từ mới
+            {t("finance:list.create")}
           </Button>
         )}
       </div>

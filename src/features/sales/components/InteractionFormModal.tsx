@@ -8,6 +8,7 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { CreateInteractionPayload } from "../types/sales"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { useTranslation } from "react-i18next"
 
 interface InteractionFormModalProps {
   open: boolean
@@ -16,6 +17,7 @@ interface InteractionFormModalProps {
 }
 
 export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFormModalProps) {
+  const { t } = useTranslation()
   const [types, setTypes] = useState<OptionItem[]>([])
   const user = useAuthStore((s) => s.user)
 
@@ -43,16 +45,16 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
     <CommonDialog
       open={open}
       onClose={onClose}
-      title="Thêm Lịch sử Tương tác"
+      title={t("sales:interaction.add_title")}
       size="md"
       primaryAction={{
-        label: "Lưu tương tác",
+        label: t("sales:interaction.save"),
         type: "submit",
         form: "interaction-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -60,11 +62,11 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
       <form id="interaction-form" onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-2">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="i-type">Hình thức *</Label>
+            <Label htmlFor="i-type">{t("sales:interaction.fields.type")} *</Label>
             <Controller
               name="type"
               control={control}
-              rules={{ required: "Vui lòng chọn hình thức" }}
+              rules={{ required: t("sales:interaction.validation.type_required") }}
               render={({ field }) => (
                 <SearchableSelect
                   value={field.value || ""}
@@ -76,13 +78,13 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
                           value: item.value.toString(),
                         }))
                       : [
-                          { label: "Gọi điện", value: "Call" },
-                          { label: "Email", value: "Email" },
-                          { label: "Gặp mặt", value: "Meeting" },
-                          { label: "Zalo/Chat", value: "Zalo" },
+                          { label: t("sales:interaction.default_types.call"), value: "Call" },
+                          { label: t("sales:interaction.default_types.email"), value: "Email" },
+                          { label: t("sales:interaction.default_types.meeting"), value: "Meeting" },
+                          { label: t("sales:interaction.default_types.zalo"), value: "Zalo" },
                         ]
                   }
-                  placeholder="Chọn..."
+                  placeholder={t("sales:interaction.fields.type_placeholder")}
                 />
               )}
             />
@@ -92,10 +94,10 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
             <Controller
               name="interaction_date"
               control={control}
-              rules={{ required: "Vui lòng chọn ngày" }}
+              rules={{ required: t("sales:interaction.validation.date_required") }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày thực hiện"
+                  label={t("sales:interaction.fields.date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -107,12 +109,14 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="i-content">Nội dung trao đổi *</Label>
+          <Label htmlFor="i-content">{t("sales:interaction.fields.content")} *</Label>
           <Textarea
             id="i-content"
             rows={4}
-            placeholder="Ghi chú chi tiết nội dung đã trao đổi với khách hàng..."
-            {...register("content", { required: "Vui lòng nhập nội dung" })}
+            placeholder={t("sales:interaction.fields.content_placeholder")}
+            {...register("content", {
+              required: t("sales:interaction.validation.content_required"),
+            })}
             aria-invalid={!!errors.content}
           />
           {errors.content && <p className="text-xs text-destructive">{errors.content.message}</p>}

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface TablePaginationProps {
   page: number
@@ -47,6 +48,8 @@ export function TablePagination({
   onPageChange,
   className,
 }: TablePaginationProps) {
+  const { t } = useTranslation()
+
   if (totalPages <= 1) return null
 
   const pages = buildPages(page, totalPages)
@@ -59,7 +62,7 @@ export function TablePagination({
     >
       {/* Info text */}
       <p className="text-xs text-muted-foreground">
-        {from}–{to} / {total} kết quả
+        {t("common:pagination.results_count", { from, to, total })}
       </p>
 
       {/* Page buttons */}
@@ -70,7 +73,7 @@ export function TablePagination({
           size="icon-sm"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          aria-label="Trang trước"
+          aria-label={t("common:pagination.prev_page")}
         >
           <ChevronLeft className="size-3.5" />
         </Button>
@@ -90,7 +93,7 @@ export function TablePagination({
               variant={p === page ? "default" : "outline"}
               size="icon-sm"
               onClick={() => onPageChange(p)}
-              aria-label={`Trang ${p}`}
+              aria-label={t("common:pagination.page_n", { page: p })}
               aria-current={p === page ? "page" : undefined}
               className={cn("text-xs font-medium", p === page && "pointer-events-none")}
             >
@@ -105,7 +108,7 @@ export function TablePagination({
           size="icon-sm"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          aria-label="Trang sau"
+          aria-label={t("common:pagination.next_page")}
         >
           <ChevronRight className="size-3.5" />
         </Button>

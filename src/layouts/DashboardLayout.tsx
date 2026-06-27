@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { Outlet, useMatches, useNavigation } from "react-router-dom"
+import { Outlet, useNavigation } from "react-router-dom"
 
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
@@ -7,21 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/common/ThemeToggle"
 import { MobileBottomNav } from "@/components/common/MobileBottomNav"
+import { MobileSubNav } from "@/components/common/MobileSubNav"
 import { useIsMobile } from "@/hooks/useMobile"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
-
-type RouteTitleHandle = { title?: string }
-
-function useRouteTitle() {
-  const matches = useMatches()
-  const leaf = matches[matches.length - 1]
-  return (leaf?.handle as RouteTitleHandle | undefined)?.title?.trim() ?? ""
-}
 
 function NavigationProgress() {
   const { state } = useNavigation()
@@ -37,7 +24,6 @@ function NavigationProgress() {
 }
 
 function DashboardLayoutInner() {
-  const title = useRouteTitle()
   const isMobile = useIsMobile()
 
   return (
@@ -56,20 +42,13 @@ function DashboardLayoutInner() {
               {/* On mobile: hamburger opens full sidebar Sheet */}
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-1 h-4" />
-              {title && (
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="font-medium text-sm">{title}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-              )}
             </div>
             <div className="flex items-center gap-1">
               <ThemeToggle />
             </div>
           </header>
+
+          <MobileSubNav />
 
           {/* Main content — extra bottom padding on mobile for bottom nav */}
           <main className={`flex-1 min-w-0 px-3 py-4 md:px-6 md:py-6 ${isMobile ? "pb-20" : ""}`}>

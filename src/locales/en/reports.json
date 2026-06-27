@@ -1,0 +1,109 @@
+{
+  "title": "Management Analysis Report",
+  "subtitle": "Visual overview of cash flow, receivables, sales performance, and project profitability.",
+  "fetch_error": "Failed to load report data",
+  "tabs": {
+    "incomeExpense": "Income & Expense",
+    "receivables": "Receivables",
+    "projectProfit": "Project Profit",
+    "salesPerformance": "Sales Performance",
+    "pipeline": "Opportunity Pipeline"
+  },
+  "filters": {
+    "title": "Report Filters",
+    "dateFrom": "Date From",
+    "dateTo": "Date To",
+    "customer": "Customer",
+    "customer_placeholder": "Select customer...",
+    "salesRep": "Sales Representative",
+    "salesRep_placeholder": "Select representative...",
+    "year": "Year",
+    "year_placeholder": "Enter year...",
+    "month": "Month",
+    "month_all": "All Year",
+    "month_placeholder": "Select month..."
+  },
+  "incomeExpense": {
+    "columns": {
+      "period": "Period",
+      "income": "Total Income",
+      "expense": "Total Expense",
+      "net": "Net Cash Flow",
+      "month": "Month {{month}} / {{year}}"
+    },
+    "chart": {
+      "title": "Income - Expense Monthly Comparison",
+      "no_data": "No data available in this period.",
+      "income": "Income",
+      "expense": "Expense",
+      "net": "Net Cash Flow",
+      "period": "M.{{month}}/{{year}}"
+    },
+    "summary": {
+      "title": "Cash Flow Summary",
+      "total_income": "TOTAL INCOME",
+      "total_expense": "TOTAL EXPENSE",
+      "total_net": "TOTAL NET CASH FLOW"
+    }
+  },
+  "receivables": {
+    "columns": {
+      "contract": "Contract",
+      "customer": "Customer",
+      "salesRep": "Sales Rep",
+      "date": "Signed Date",
+      "value": "Total Value",
+      "received": "Received",
+      "outstanding": "Outstanding to Receive"
+    },
+    "summary": {
+      "outstanding": "TOTAL OUTSTANDING CONTRACT VALUE",
+      "received": "RECEIVED",
+      "unpaid": "UNPAID RECEIVABLES (OUTSTANDING DEBT)"
+    }
+  },
+  "projectProfit": {
+    "columns": {
+      "code": "Project Code",
+      "name": "Project Name",
+      "contractValue": "Contract Value",
+      "received": "Actual Revenue Received",
+      "spent": "Actual Expense",
+      "profit": "Net Profit",
+      "margin": "Profit Margin"
+    }
+  },
+  "salesPerformance": {
+    "chart": {
+      "title": "Signed Contracts Sales Comparison by Rep",
+      "no_data": "No new signed contracts in this period.",
+      "signed": "Signed Contracts",
+      "received": "Received Payment",
+      "rep_code": "ID: {{id}}"
+    },
+    "conversion": {
+      "title": "Quote Conversion Rate",
+      "description": "Successful conversion rate from Quote to Signed Contract.",
+      "quotes_created": "Total Quotes Created:",
+      "quotes_signed": "Total Quotes Signed:",
+      "no_data": "No quote report found."
+    }
+  },
+  "pipeline": {
+    "summary": {
+      "active_projects": "ACTIVE PROJECTS",
+      "pending_quotes": "PENDING QUOTES",
+      "signed_contracts": "SUCCESSFULLY SIGNED CONTRACTS"
+    },
+    "charts": {
+      "project_title": "Project Distribution by Status",
+      "project_no_data": "No projects.",
+      "project_tooltip": "{{count}} projects",
+      "quote_title": "Quote Distribution by Status",
+      "quote_no_data": "No quotes.",
+      "quote_tooltip": "{{count}} quotes",
+      "quantity": "Quantity"
+    },
+    "no_data": "No opportunity pipeline report found."
+  }
+}

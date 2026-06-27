@@ -1,9 +1,10 @@
 import { useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Edit } from "lucide-react"
+import { Edit3 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { RowActions } from "@/components/common/RowActions"
 import type { EmployeeKpi } from "../types/kpi"
+import { useTranslation } from "react-i18next"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -39,16 +40,17 @@ function getKpiBadgeVariant(pct: number | null): "success" | "warning" | "destru
 interface KpiTableProps {
   kpis: EmployeeKpi[]
   isLoading?: boolean
-  onEdit?: (kpi: EmployeeKpi) => void
   isAdmin?: boolean
+  onEdit: (kpi: EmployeeKpi) => void
 }
 
-export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: KpiTableProps) {
+export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: KpiTableProps) {
+  const { t } = useTranslation(["hr", "common"])
   const columns = useMemo<MRT_ColumnDef<EmployeeKpi>[]>(
     () => [
       {
         accessorKey: "user.full_name",
-        header: "Nhân viên",
+        header: t("hr:kpi.columns.employee"),
         size: 180,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
@@ -63,16 +65,16 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
       },
       {
         accessorKey: "target_revenue",
-        header: "Mục tiêu (Target)",
-        size: 140,
+        header: t("hr:kpi.columns.target"),
+        size: 130,
         Cell: ({ cell }) => (
           <span className="text-sm font-medium">{formatCurrency(cell.getValue<string>())}</span>
         ),
       },
       {
         accessorKey: "actual_revenue",
-        header: "Thực tế đạt",
-        size: 140,
+        header: t("hr:kpi.columns.actual"),
+        size: 130,
         Cell: ({ cell }) => (
           <span className="text-sm font-medium text-primary">
             {formatCurrency(cell.getValue<string>())}
@@ -80,9 +82,9 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
         ),
       },
       {
-        accessorKey: "kpi_percent",
-        header: "Tiến độ KPI",
-        size: 220,
+        id: "progress",
+        header: t("hr:kpi.columns.progress"),
+        size: 180,
         Cell: ({ row }) => {
           const pct = toNum(row.original.kpi_percent)
           const barWidth = pct != null ? Math.min(pct, 100) : 0
@@ -97,10 +99,10 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
                   className="text-[10px] py-0 font-bold shrink-0"
                 >
                   {pct != null && pct >= 100
-                    ? "Đạt"
+                    ? t("hr:kpi.status.excellent")
                     : pct != null && pct >= 70
-                      ? "Khá"
-                      : "Chưa đạt"}
+                      ? t("hr:kpi.status.good")
+                      : t("hr:kpi.status.poor")}
                 </Badge>
               </div>
               <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
@@ -114,8 +116,8 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
         },
       },
       {
-        accessorKey: "quote_count",
-        header: "Báo giá",
+        accessorKey: "quotes_count",
+        header: t("hr:kpi.columns.quotes"),
         size: 90,
         Cell: ({ cell }) => (
           <span className="text-sm font-mono text-center block w-full">
@@ -124,8 +126,8 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
         ),
       },
       {
-        accessorKey: "contract_count",
-        header: "Hợp đồng",
+        accessorKey: "contracts_count",
+        header: t("hr:kpi.columns.contracts"),
         size: 90,
         Cell: ({ cell }) => (
           <span className="text-sm font-mono text-center block w-full font-semibold">
@@ -135,37 +137,41 @@ export function KpiTable({ kpis, isLoading = false, onEdit, isAdmin = false }: K
       },
       {
         accessorKey: "notes",
-        header: "Ghi chú",
-        size: 180,
+        header: t("hr:kpi.columns.notes"),
+        size: 200,
         Cell: ({ cell }) => (
           <span className="text-xs text-muted-foreground line-clamp-1">
             {cell.getValue<string>() || "—"}
           </span>
         ),
       },
-      ...(isAdmin && onEdit
+      ...(isAdmin
         ? [
             {
               id: "actions",
               header: "",
               size: 80,
               Cell: ({ row }: { row: { original: EmployeeKpi } }) => (
-                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-foreground"
-                    onClick={() => onEdit(row.original)}
-                  >
-                    <Edit className="size-4" />
-                  </Button>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <RowActions
+                    actions={
+                      [
+                        {
+                          label: t("common:actions.edit", { defaultValue: "Sửa" }),
+                          icon: <Edit3 className="size-4" />,
+                          onClick: () => onEdit(row.original),
+                          className: "text-primary hover:text-primary hover:bg-primary/10",
+                        },
+                      ] as import("@/components/common/RowActions").RowAction[]
+                    }
+                  />
                 </div>
               ),
             },
           ]
         : []),
     ],
-    [isAdmin, onEdit],
+    [isAdmin, onEdit, t],
   )
 
   const table = useMantineReactTable({

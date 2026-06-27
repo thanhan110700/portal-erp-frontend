@@ -12,6 +12,7 @@ import { useAuthStore } from "@/hooks/useAuthStore"
 import { useSessionStore } from "@/hooks/useSessionStore"
 import { siteName } from "@/config"
 import type { User } from "@/shared/types"
+import { useTranslation } from "react-i18next"
 
 function LoginLogo({ theme, showTripLogo }: { theme: string; showTripLogo: boolean }) {
   const primaryLogo = theme === "dark" ? logoWhite : logoRed
@@ -38,6 +39,7 @@ function LoginLogo({ theme, showTripLogo }: { theme: string; showTripLogo: boole
 }
 
 export function LoginPage() {
+  const { t } = useTranslation(["auth"])
   const navigate = useNavigate()
   const setUser = useAuthStore((s) => s.setUser)
   const showTripLogo = true
@@ -78,35 +80,34 @@ export function LoginPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-8 shadow-sm">
             <LockKeyhole className="h-4 w-4 text-emerald-400" />
             <span className="text-xs font-semibold tracking-wide text-zinc-100 uppercase">
-              System Access
+              {t("auth:login.system_access")}
             </span>
           </div>
 
           <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white mb-6 leading-tight">
-            Your unified management workspace.
+            {t("auth:login.hero_title")}
           </h1>
           <p className="text-lg text-zinc-300 font-medium leading-relaxed mb-10">
-            Connect to your workspace to analyze real-time performance, manage resources, and
-            orchestrate daily operations seamlessly.
+            {t("auth:login.hero_subtitle")}
           </p>
 
           <div className="flex gap-4">
             <div className="flex flex-col gap-2 p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl transition-transform hover:-translate-y-1">
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-emerald-400" />
-                <span className="text-xl font-bold text-white">Protected</span>
+                <span className="text-xl font-bold text-white">{t("auth:login.protected")}</span>
               </div>
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-                Secure Connection
+                {t("auth:login.secure_connection")}
               </span>
             </div>
             <div className="flex flex-col gap-2 p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl transition-transform hover:-translate-y-1">
               <div className="flex items-center gap-2">
                 <Server className="h-5 w-5 text-blue-400" />
-                <span className="text-xl font-bold text-white">Online</span>
+                <span className="text-xl font-bold text-white">{t("auth:login.online")}</span>
               </div>
               <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-                System Status
+                {t("auth:login.system_status")}
               </span>
             </div>
           </div>
@@ -125,17 +126,19 @@ export function LoginPage() {
           </div>
 
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Login</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              {t("auth:login.welcome_title")}
+            </h2>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Welcome back. Please enter your details to access your dashboard.
+              {t("auth:login.welcome_subtitle")}
             </p>
           </div>
 
-          <LoginForm onSuccess={handleSuccess} submitLabel="Continue to Dashboard" />
+          <LoginForm onSuccess={handleSuccess} />
 
           <div className="mt-10 text-center">
             <p className="text-sm text-muted-foreground font-medium">
-              Provided by {siteName} Systems.
+              {t("auth:login.provided_by", { name: siteName })}
             </p>
           </div>
         </div>

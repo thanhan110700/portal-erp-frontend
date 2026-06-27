@@ -1,4 +1,5 @@
 import { X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export type ActiveFilterChip = {
   key: string
@@ -13,12 +14,14 @@ type ActiveFilterChipsProps = {
 }
 
 export function ActiveFilterChips({ chips, onRemove, onClearAll }: ActiveFilterChipsProps) {
+  const { t } = useTranslation()
+
   if (chips.length === 0) return null
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-t border-border/60 bg-muted/30 px-4 py-2">
       <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-        Filtered by:
+        {t("common:filter.filtered_by", { defaultValue: "Filtered by:" })}
       </span>
       {chips.map((chip) => (
         <span
@@ -43,7 +46,7 @@ export function ActiveFilterChips({ chips, onRemove, onClearAll }: ActiveFilterC
           onClick={onClearAll}
           className="text-[11px] font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
         >
-          Clear all
+          {t("common:filter.clear_all", { defaultValue: "Clear all" })}
         </button>
       ) : null}
     </div>

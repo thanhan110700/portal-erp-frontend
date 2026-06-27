@@ -1,0 +1,310 @@
+{
+  "title": "Human Resources",
+  "employee": "Employee",
+  "employees": "Employees List",
+  "department": {
+    "title": "Departments",
+    "description": "Manage department list and structure",
+    "create": "Add Department",
+    "fetch_error": "Failed to load departments list",
+    "delete_success": "Department deleted",
+    "delete_error": "Failed to delete department",
+    "update_success": "Department updated",
+    "create_success": "New department created",
+    "save_error": "An error occurred while saving information",
+    "columns": {
+      "code": "Dept Code",
+      "name": "Department Name",
+      "description": "Description"
+    },
+    "actions": {
+      "delete_title": "Delete department?",
+      "delete_confirm": "Are you sure you want to delete department",
+      "delete_warning": "? This action cannot be undone.",
+      "delete": "Delete"
+    },
+    "form": {
+      "edit_title": "Update Department",
+      "add_title": "Add New Department",
+      "update": "Update",
+      "create": "Create",
+      "fields": {
+        "code": "Department Code",
+        "code_placeholder": "Enter department code...",
+        "name": "Department Name",
+        "name_placeholder": "Enter department name...",
+        "description": "Description",
+        "description_placeholder": "Enter department description..."
+      },
+      "validation": {
+        "name_required": "Department name is required",
+        "code_required": "Department code is required"
+      }
+    }
+  },
+  "employees": {
+    "title": "Employees List",
+    "create": "Add Employee",
+    "fetch_error": "Employee not found",
+    "assign_role_success": "Assigned role \"{{role}}\"",
+    "assign_role_error": "Failed to assign role",
+    "details_title": "Details Information",
+    "delete_title": "Delete employee?",
+    "delete_confirm": "Are you sure you want to delete employee",
+    "delete_warning": "? This action cannot be undone.",
+    "columns": {
+      "user_code": "Emp Code",
+      "full_name": "Full Name",
+      "department": "Department",
+      "position": "Position",
+      "hire_date": "Hire Date",
+      "roles": "Roles"
+    },
+    "actions": {
+      "view_detail": "View Details",
+      "assign_role": "Assign Role",
+      "assign_projects": "Assign Projects",
+      "delete": "Delete Employee"
+    },
+    "form": {
+      "add_title": "Add New Employee",
+      "edit_title": "Edit Info — {{name}}",
+      "create": "Create Employee",
+      "update": "Update",
+      "saving": "Saving...",
+      "fields": {
+        "full_name": "Full Name",
+        "full_name_placeholder": "John Doe",
+        "email": "Email",
+        "email_placeholder": "john@company.com",
+        "phone": "Phone Number",
+        "phone_placeholder": "0901234567",
+        "position": "Position",
+        "position_placeholder": "Accountant",
+        "department": "Department",
+        "department_placeholder": "Select department",
+        "manager": "Direct Manager",
+        "manager_none": "None",
+        "hire_date": "Hire Date",
+        "resign_date": "Resign Date",
+        "social_insurance": "Social Insurance",
+        "social_insurance_placeholder": "0123456789",
+        "national_id": "National ID",
+        "national_id_placeholder": "079201012345",
+        "address": "Address",
+        "address_placeholder": "123 Le Loi, D1, HCMC",
+        "password": "Initial Password",
+        "password_placeholder": "Default: Password@123",
+        "password_hint": "Leave blank to use default password <1>Password@123</1>"
+      },
+      "validation": {
+        "full_name_required": "Please enter full name",
+        "full_name_max": "Full name cannot exceed 150 characters",
+        "email_required": "Please enter email",
+        "email_invalid": "Invalid email",
+        "phone_max": "Phone cannot exceed 20 characters",
+        "department_required": "Please select a department",
+        "position_required": "Please enter position",
+        "position_max": "Position cannot exceed 100 characters",
+        "hire_date_required": "Please enter hire date",
+        "address_max": "Address cannot exceed 500 characters",
+        "social_insurance_max": "Social insurance cannot exceed 20 characters",
+        "national_id_max": "National ID cannot exceed 20 characters",
+        "resign_date_invalid": "Resign date must be after hire date",
+        "password_min": "Password must be at least 8 characters"
+      }
+    },
+    "assign_role": {
+      "title": "Assign Role — {{name}}",
+      "submit": "Assign Role",
+      "current_roles": "Current Roles",
+      "no_roles": "No roles assigned",
+      "assign_new": "Assign New Role",
+      "placeholder": "Select role...",
+      "warning": "Assigning a role will replace the employee's current roles.",
+      "roles": {
+        "admin": "Manage entire system",
+        "director": "Approve expenses, view all reports",
+        "accountant": "Create/edit vouchers, approve documents",
+        "sales": "Manage customers, quotes, contracts",
+        "technician": "Manage projects, update progress",
+        "employee": "Timesheet, view personal data"
+      }
+    },
+    "assign_projects": {
+      "title": "Assign Projects: {{name}}",
+      "submit": "Save Assignments",
+      "add_project": "Add Project",
+      "update_success": "Projects updated successfully",
+      "update_error": "Error updating projects",
+      "fields": {
+        "project": "Project",
+        "project_placeholder": "Select project...",
+        "role": "Role",
+        "role_placeholder": "e.g., Technician",
+        "labor_cost": "Labor Cost (VND)",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "notes": "Notes",
+        "notes_placeholder": "Assignment notes..."
+      },
+      "validation": {
+        "project_required": "Project is required",
+        "role_max": "Role cannot exceed 100 characters",
+        "labor_cost_min": "Labor cost cannot be negative",
+        "notes_max": "Notes cannot exceed 1000 characters",
+        "min_one_project": "Must select at least one project",
+        "date_invalid": "End date must be after or equal to start date for projects"
+      }
+    },
+    "reports": {
+      "title": "Personal Financial Report",
+      "tabs": {
+        "income": "Income / Expense",
+        "projects": "Project Profit",
+        "receivables": "Receivables"
+      },
+      "income_expense": {
+        "income": "Income",
+        "expense": "Expense",
+        "net": "Profit",
+        "no_data": "No income/expense data",
+        "month_format": "M{{month}}/{{year}}"
+      },
+      "projects": {
+        "project_code": "Project Code",
+        "project_name": "Project Name",
+        "contract_value": "Contract Value",
+        "total_received": "Received",
+        "total_spent": "Spent",
+        "profit": "Profit"
+      },
+      "receivables": {
+        "contract_code": "Contract Code",
+        "customer_name": "Customer",
+        "contract_value": "Contract Value",
+        "payment_received": "Payment Received",
+        "payment_outstanding": "Outstanding"
+      }
+    }
+  },
+  "timesheet": {
+    "title": "Timesheet Management",
+    "create": "Submit Timesheet",
+    "fetch_error": "Failed to fetch timesheet data",
+    "create_success": "Timesheet submitted — waiting for manager approval",
+    "create_error": "A timesheet already exists for this date or an error occurred",
+    "approve_error": "Failed to approve timesheet",
+    "reject_error": "Failed to reject timesheet",
+    "mode_manager": "Manager Mode",
+    "mode_my": "My Timesheets",
+    "summary_hours": "Total Working Hours",
+    "filter_title": "Filter Timesheets",
+    "filter_employee": "Employee",
+    "filter_employee_all": "All Employees",
+    "filter_status": "Status",
+    "filter_status_all": "All Statuses",
+    "filter_date_range": "Time Range",
+    "filter_date_range_placeholder": "Select date range",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "columns": {
+      "employee": "Employee",
+      "date": "Date",
+      "check_in": "Check-in Time",
+      "check_out": "Check-out Time",
+      "hours": "Hours",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "actions": {
+      "approve_confirm_title": "Confirm approval?",
+      "reject_confirm_title": "Confirm rejection?",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "form": {
+      "title": "Submit Timesheet",
+      "submit": "Submit",
+      "date": "Working Date",
+      "date_required": "Please select a date",
+      "check_in": "Check-in Time",
+      "check_out": "Check-out Time",
+      "notes": "Notes",
+      "notes_placeholder": "E.g., Working from home, client meeting...",
+      "policy_notice": "Timesheet will be in <1>Pending</1> status until approved by a manager."
+    }
+  },
+  "kpi": {
+    "title": "KPI & Evaluation",
+    "filter_employee": "Employee",
+    "filter_employee_all": "All Employees",
+    "filter_month": "Month/Year",
+    "filter_month_placeholder": "Select month...",
+    "columns": {
+      "employee": "Employee",
+      "target": "Target",
+      "actual": "Actual",
+      "progress": "KPI Progress",
+      "quotes": "Quotes",
+      "contracts": "Contracts",
+      "notes": "Notes"
+    },
+    "status": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "poor": "Poor"
+    },
+    "dashboard": {
+      "title": "Business KPI",
+      "subtitle": "{{count}} employees have data",
+      "top_performers": "Top Performers",
+      "no_data": "No data available",
+      "filter_time": "Time Filter",
+      "month": "Month",
+      "select_month": "Select month",
+      "year": "Year",
+      "select_year": "Select year",
+      "stats": {
+        "avg": "Avg KPI",
+        "target": "Total Target",
+        "actual": "Actual",
+        "achieved": "Achieved Target"
+      },
+      "table_title": "KPI Table for {{month}}/{{year}}",
+      "fetch_error": "Failed to fetch KPI data",
+      "upsert_success": "KPI updated successfully",
+      "upsert_error": "Failed to save KPI",
+      "actions": {
+        "set_target": "Set Target"
+      }
+    },
+    "form": {
+      "update_title": "Update KPI Target",
+      "create_title": "Set KPI Target",
+      "submit": "Save KPI",
+      "employee": "Employee *",
+      "employee_placeholder": "Select sales employee...",
+      "month": "Month *",
+      "year": "Year *",
+      "target": "Target Revenue (VND) *",
+      "actual": "Actual Revenue (VND)",
+      "actual_placeholder": "Calculated automatically from contracts",
+      "notes": "Notes",
+      "validation": {
+        "employee_required": "Please select an employee",
+        "month_required": "Please enter a month",
+        "month_invalid": "Month must be between 1 and 12",
+        "year_required": "Please enter a year",
+        "year_invalid": "Year must be between 2020 and 2100",
+        "target_required": "Please enter target revenue",
+        "target_invalid": "Target revenue must be greater than or equal to 0",
+        "actual_invalid": "Actual revenue must be greater than or equal to 0",
+        "notes_max": "Notes cannot exceed 1000 characters"
+      }
+    }
+  }
+}

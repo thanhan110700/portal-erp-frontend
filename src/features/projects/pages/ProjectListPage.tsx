@@ -11,8 +11,10 @@ import { ProjectFormModal } from "../components/ProjectFormModal"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { projectApi, type ListProjectsParams } from "../api/projectApi"
 import type { Project } from "../types/project"
+import { useTranslation } from "react-i18next"
 
 export function ProjectListPage() {
+  const { t } = useTranslation(["projects", "common"])
   const navigate = useNavigate()
   const [projects, setProjects] = useState<Project[]>([])
   const [totalRecords, setTotalRecords] = useState(0)
@@ -29,7 +31,6 @@ export function ProjectListPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const [statuses, setStatuses] = useState<OptionItem[]>([])
-  console.log("🚀 ~ ProjectListPage ~ statuses:", statuses)
 
   const loadProjects = async () => {
     setIsLoading(true)
@@ -38,7 +39,7 @@ export function ProjectListPage() {
       setProjects(res.data)
       setTotalRecords(res.meta?.total || 0)
     } catch {
-      toast.error("Không thể tải danh sách dự án")
+      toast.error(t("projects:list.fetch_error"))
     } finally {
       setIsLoading(false)
     }
@@ -76,26 +77,27 @@ export function ProjectListPage() {
   const handleDelete = async (id: number) => {
     try {
       await projectApi.delete(id)
-      toast.success("Xóa dự án thành công")
+      toast.success(t("projects:list.delete_success"))
       void loadProjects()
     } catch {
-      toast.error("Xóa thất bại")
+      toast.error(t("projects:list.delete_error"))
     }
   }
 
   const filterFields: FilterFieldDef[] = [
     {
       field: "search",
-      label: "Tìm kiếm dự án",
+      label: t("projects:list.search"),
       type: "input",
-      placeholder: "Tên hoặc mã dự án...",
+      placeholder: t("projects:list.search_placeholder"),
       value: queryParams.search || "",
     },
     {
       field: "status",
-      label: "Trạng thái",
+      label: t("projects:list.filter_status"),
       type: "select",
-      value: queryParams.status || null,
+      placeholder: t("common:filter.all"),
+      value: queryParams.status || "",
       options: [
         ...statuses.map((s) => ({
           label: s.label,
@@ -108,7 +110,7 @@ export function ProjectListPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý Dự án</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("projects:list.title")}</h1>
         <Button
           onClick={() => {
             setEditingId(null)
@@ -116,7 +118,7 @@ export function ProjectListPage() {
           }}
         >
           <Plus className="mr-2 size-4" />
-          Tạo dự án mới
+          {t("projects:list.create")}
         </Button>
       </div>
 

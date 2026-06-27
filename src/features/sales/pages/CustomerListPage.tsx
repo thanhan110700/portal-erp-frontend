@@ -12,12 +12,15 @@ import { CustomerTable } from "../components/CustomerTable"
 import { CustomerFormModal } from "../components/CustomerFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
+import { useTranslation } from "react-i18next"
 
 export function CustomerListPage() {
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isSales = user?.roles?.includes("sales") ?? false
   const canEdit = isAdmin || isSales
+
+  const { t } = useTranslation()
 
   const [customers, setCustomers] = useState<Customer[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -54,7 +57,7 @@ export function CustomerListPage() {
       setCustomers(res.data)
       setTotalCount(res.meta.total)
     } catch {
-      toast.error("Không thể tải danh sách khách hàng")
+      toast.error(t("sales:customer_list.fetch_error"))
     } finally {
       setIsLoading(false)
     }
@@ -70,16 +73,16 @@ export function CustomerListPage() {
       {
         field: "search",
         type: "input",
-        label: "Tìm kiếm",
-        placeholder: "Tên, SĐT, Email...",
+        label: t("sales:customer_list.search"),
+        placeholder: t("sales:customer_list.search_placeholder"),
         value: params.search || "",
       },
       {
         field: "classification",
         type: "select",
-        label: "Phân loại",
-        placeholder: "Tất cả",
-        value: params.classification || null,
+        label: t("sales:customer_list.classification"),
+        placeholder: t("common:filter.all"),
+        value: params.classification || "",
         options: classifications.map((c) => ({
           label: c.label,
           value: c.value.toString(),
@@ -88,16 +91,16 @@ export function CustomerListPage() {
       {
         field: "sales_rep_id",
         type: "select",
-        label: "Sale phụ trách",
-        placeholder: "Tất cả",
-        value: params.sales_rep_id?.toString() || null,
+        label: t("sales:customer_list.sales_rep"),
+        placeholder: t("common:filter.all"),
+        value: params.sales_rep_id?.toString() || "",
         options: salesReps.map((e) => ({
           label: e.label,
           value: e.id?.toString() || "",
         })),
       },
     ]
-  }, [params.search, params.classification, params.sales_rep_id, classifications, salesReps])
+  }, [params.search, params.classification, params.sales_rep_id, classifications, salesReps, t])
 
   const handleApplyFilters = (values: Record<string, unknown>) => {
     setParams((prev) => ({
@@ -137,10 +140,10 @@ export function CustomerListPage() {
   const handleDelete = async (id: number) => {
     try {
       await customerApi.delete(id)
-      toast.success("Đã xóa khách hàng")
+      toast.success(t("sales:customer_list.delete_success"))
       void loadData()
     } catch {
-      toast.error("Xóa thất bại")
+      toast.error(t("sales:customer_list.delete_error"))
     }
   }
 
@@ -148,10 +151,10 @@ export function CustomerListPage() {
     try {
       if (editTarget) {
         await customerApi.update(editTarget.id, payload as UpdateCustomerPayload)
-        toast.success("Đã cập nhật khách hàng")
+        toast.success(t("sales:customer_list.update_success"))
       } else {
         await customerApi.create(payload as CreateCustomerPayload)
-        toast.success("Đã thêm khách hàng mới")
+        toast.success(t("sales:customer_list.create_success"))
       }
       setModalOpen(false)
       void loadData()
@@ -169,8 +172,8 @@ export function CustomerListPage() {
             <Users className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Khách Hàng</h1>
-            <p className="text-sm text-muted-foreground">Quản lý hồ sơ khách hàng & đối tác</p>
+            <h1 className="text-xl font-semibold">{t("sales:customer_list.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("sales:customer_list.subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2 self-start sm:self-auto">
@@ -182,12 +185,12 @@ export function CustomerListPage() {
             className="gap-1.5"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("common:actions.refresh")}
           </Button>
           {canEdit && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
-              Thêm khách hàng
+              {t("sales:customer_list.add_new")}
             </Button>
           )}
         </div>

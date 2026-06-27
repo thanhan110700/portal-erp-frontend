@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
-import { projectApi } from "../api/projectApi"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import type { CreateProjectPayload, UpdateProjectPayload } from "../types/project"
+import { projectApi } from "../api/projectApi"
+import { useTranslation } from "react-i18next"
 
 interface ProjectFormModalProps {
   open: boolean
@@ -19,6 +20,7 @@ interface ProjectFormModalProps {
 }
 
 export function ProjectFormModal({ open, onClose, onSuccess, editingId }: ProjectFormModalProps) {
+  const { t } = useTranslation(["projects", "common"])
   const isEdit = !!editingId
 
   const [customers, setCustomers] = useState<OptionItem[]>([])
@@ -73,7 +75,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
             description: data.description || "",
           })
         })
-        .catch(() => toast.error("Không thể tải thông tin dự án"))
+        .catch(() => toast.error(t("projects:form.fetch_error")))
     } else if (open && !isEdit) {
       reset({
         project_name: "",
@@ -92,15 +94,15 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
     try {
       if (isEdit && editingId) {
         await projectApi.update(editingId, data as UpdateProjectPayload)
-        toast.success("Cập nhật dự án thành công")
+        toast.success(t("projects:form.update_success"))
       } else {
         await projectApi.create(data)
-        toast.success("Tạo dự án thành công")
+        toast.success(t("projects:form.create_success"))
       }
       onSuccess()
       onClose()
     } catch {
-      toast.error(isEdit ? "Lỗi khi cập nhật" : "Lỗi khi tạo mới")
+      toast.error(isEdit ? t("projects:form.update_error") : t("projects:form.create_error"))
     }
   }
 
@@ -108,16 +110,20 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEdit ? "Cập nhật Dự án" : "Tạo Dự án mới"}
+      title={isEdit ? t("projects:form.update_title") : t("projects:form.create_title")}
       size="2xl"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : isEdit ? "Cập nhật" : "Tạo dự án",
+        label: isSubmitting
+          ? t("common:table.loading")
+          : isEdit
+            ? t("projects:form.submit_update")
+            : t("projects:form.submit_create"),
         type: "submit",
         form: "project-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -125,10 +131,12 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
       <form id="project-form" onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 flex flex-col gap-1.5">
-            <Label htmlFor="p-name">Tên dự án *</Label>
+            <Label htmlFor="p-name">{t("projects:form.name")}</Label>
             <Input
               id="p-name"
-              {...register("project_name", { required: "Vui lòng nhập tên" })}
+              {...register("project_name", {
+                required: t("projects:form.validation.name_required"),
+              })}
               aria-invalid={!!errors.project_name}
             />
             {errors.project_name && (
@@ -137,7 +145,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-customer">Khách hàng</Label>
+            <Label htmlFor="p-customer">{t("projects:form.customer")}</Label>
             <Controller
               name="customer_id"
               control={control}
@@ -149,14 +157,14 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                     label: c.label,
                     value: (c.value ?? c.id)?.toString() || "",
                   }))}
-                  placeholder="Chọn khách hàng"
+                  placeholder={t("projects:form.customer_placeholder")}
                 />
               )}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-contract">Hợp đồng (Tùy chọn)</Label>
+            <Label htmlFor="p-contract">{t("projects:form.contract")}</Label>
             <Controller
               name="contract_id"
               control={control}
@@ -165,13 +173,13 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                   value={field.value != null ? field.value.toString() : ""}
                   onValueChange={(val) => field.onChange(parseInt(val))}
                   options={[
-                    { label: "--- Không liên kết ---", value: "0" },
+                    { label: t("projects:form.contract_none"), value: "0" },
                     ...contracts.map((c) => ({
                       label: c.label,
                       value: (c.value ?? c.id)?.toString() || "",
                     })),
                   ]}
-                  placeholder="Chọn hợp đồng"
+                  placeholder={t("projects:form.contract_placeholder")}
                 />
               )}
             />
@@ -181,10 +189,10 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
             <Controller
               name="start_date"
               control={control}
-              rules={{ required: "Vui lòng chọn ngày" }}
+              rules={{ required: t("projects:form.validation.date_required") }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày bắt đầu"
+                  label={t("projects:form.start_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -200,7 +208,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày kết thúc (dự kiến)"
+                  label={t("projects:form.end_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -210,31 +218,34 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-value">Giá trị hợp đồng (VNĐ) *</Label>
+            <Label htmlFor="p-value">{t("projects:form.value")}</Label>
             <Input
               id="p-value"
               type="number"
+              inputMode="decimal"
               {...register("contract_value", {
                 valueAsNumber: true,
-                required: "Vui lòng nhập giá trị",
+                required: t("projects:form.validation.value_required"),
               })}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-status">Trạng thái</Label>
+            <Label htmlFor="p-status">{t("projects:form.status")}</Label>
             <Controller
               name="status"
               control={control}
               render={({ field }) => {
                 const defaultStatusOptions = [
-                  { value: "planning", label: "Kế hoạch (Planning)" },
-                  { value: "quoting", label: "Báo giá (Quoting)" },
-                  { value: "signed", label: "Đã ký (Signed)" },
-                  { value: "ongoing", label: "Đang thực hiện (Ongoing)" },
-                  { value: "testing", label: "Thử nghiệm (Testing)" },
-                  { value: "settled", label: "Quyết toán (Settled)" },
-                  { value: "completed", label: "Hoàn thành (Completed)" },
+                  { value: "planning", label: t("common:status.planning") },
+                  { value: "quoting", label: t("common:status.quoting") },
+                  { value: "signed", label: t("common:status.signed") },
+                  { value: "ongoing", label: t("common:status.ongoing") },
+                  { value: "testing", label: t("common:status.testing") },
+                  { value: "settled", label: t("common:status.settled") },
+                  { value: "completed", label: t("common:status.completed") },
+                  { value: "on_hold", label: t("common:status.on_hold") },
+                  { value: "cancelled", label: t("common:status.cancelled") },
                 ]
 
                 const statusOptions =
@@ -245,15 +256,10 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                         )
                         .map((s) => {
                           const val = s.value.toString()
-                          let label = s.label
-                          if (val === "planning") label = "Kế hoạch (Planning)"
-                          else if (val === "quoting") label = "Báo giá (Quoting)"
-                          else if (val === "signed") label = "Đã ký (Signed)"
-                          else if (val === "ongoing") label = "Đang thực hiện (Ongoing)"
-                          else if (val === "testing") label = "Thử nghiệm (Testing)"
-                          else if (val === "settled") label = "Quyết toán (Settled)"
-                          else if (val === "completed") label = "Hoàn thành (Completed)"
-                          return { label, value: val }
+                          const translatedLabel = t(`common:status.${val}`, {
+                            defaultValue: s.label,
+                          })
+                          return { label: translatedLabel, value: val }
                         })
                     : defaultStatusOptions
 
@@ -262,7 +268,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                     value={field.value || ""}
                     onValueChange={field.onChange}
                     options={statusOptions}
-                    placeholder="Chọn..."
+                    placeholder={t("projects:form.status_placeholder")}
                   />
                 )
               }}
@@ -270,7 +276,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
           </div>
 
           <div className="col-span-2 flex flex-col gap-1.5">
-            <Label htmlFor="p-desc">Mô tả dự án</Label>
+            <Label htmlFor="p-desc">{t("projects:form.description")}</Label>
             <Textarea id="p-desc" rows={3} {...register("description")} />
           </div>
         </div>

@@ -12,8 +12,10 @@ import { ContractTable } from "../components/ContractTable"
 import { ContractFormModal } from "../components/ContractFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
+import { useTranslation } from "react-i18next"
 
 export function ContractListPage() {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isSales = user?.roles?.includes("sales") ?? false
@@ -64,11 +66,11 @@ export function ContractListPage() {
       setContracts(res.data)
       setTotalCount(res.meta.total)
     } catch {
-      toast.error("Không thể tải danh sách hợp đồng")
+      toast.error(t("sales:contract.fetch_error"))
     } finally {
       setIsLoading(false)
     }
-  }, [params])
+  }, [params, t])
 
   useEffect(() => {
     void loadData()
@@ -80,15 +82,15 @@ export function ContractListPage() {
       {
         field: "search",
         type: "input",
-        label: "Tìm kiếm",
-        placeholder: "Mã HĐ, Khách hàng...",
+        label: t("common:actions.search"),
+        placeholder: t("sales:contract.filters.search_placeholder"),
         value: params.search || "",
       },
       {
         field: "status",
         type: "select",
-        label: "Trạng thái",
-        placeholder: "Tất cả",
+        label: t("common:status.status"),
+        placeholder: t("common:filters.all"),
         value: params.status || "",
         options: statuses.map((c) => ({
           label: c.label,
@@ -96,7 +98,7 @@ export function ContractListPage() {
         })),
       },
     ],
-    [params.search, params.status, statuses],
+    [params.search, params.status, statuses, t],
   )
 
   const handleApplyFilters = (values: Record<string, unknown>) => {
@@ -134,17 +136,17 @@ export function ContractListPage() {
       setEditTarget(fullContract)
       setModalOpen(true)
     } catch {
-      toast.error("Không thể tải chi tiết hợp đồng")
+      toast.error(t("sales:contract.fetch_detail_error"))
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
       await contractApi.delete(id)
-      toast.success("Đã xóa hợp đồng")
+      toast.success(t("sales:contract.delete_success"))
       void loadData()
     } catch {
-      toast.error("Xóa thất bại")
+      toast.error(t("sales:contract.delete_error"))
     }
   }
 
@@ -152,10 +154,10 @@ export function ContractListPage() {
     try {
       if (editTarget) {
         await contractApi.update(editTarget.id, payload as UpdateContractPayload)
-        toast.success("Đã cập nhật hợp đồng")
+        toast.success(t("sales:contract.update_success"))
       } else {
         await contractApi.create(payload)
-        toast.success("Đã tạo hợp đồng mới")
+        toast.success(t("sales:contract.create_success"))
       }
       setModalOpen(false)
       void loadData()
@@ -173,8 +175,8 @@ export function ContractListPage() {
             <FileSignature className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Hợp Đồng</h1>
-            <p className="text-sm text-muted-foreground">Quản lý danh sách hợp đồng đã ký kết</p>
+            <h1 className="text-xl font-semibold">{t("sales:contract.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("sales:contract.description")}</p>
           </div>
         </div>
         <div className="flex gap-2 self-start sm:self-auto">
@@ -186,12 +188,12 @@ export function ContractListPage() {
             className="gap-1.5"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("common:actions.refresh")}
           </Button>
           {canEdit && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
-              Tạo hợp đồng
+              {t("sales:contract.create")}
             </Button>
           )}
         </div>
@@ -213,6 +215,7 @@ export function ContractListPage() {
           isAdmin={isAdmin}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
+          onRefresh={() => void loadData()}
         />
 
         <TablePagination

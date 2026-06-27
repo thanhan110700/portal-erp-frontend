@@ -3,11 +3,21 @@ import type { ApiResponse } from "@/shared/types"
 import type {
   AssignRolePayload,
   CreateEmployeePayload,
-  Department,
   Employee,
   EmployeePaginatedResponse,
   UpdateEmployeePayload,
 } from "../types/employee"
+
+export interface AssignEmployeeProjectsPayload {
+  projects: Array<{
+    project_id: number
+    role?: string | null
+    start_date?: string | null
+    end_date?: string | null
+    labor_cost?: number | null
+    notes?: string | null
+  }>
+}
 
 export interface ListEmployeesParams {
   search?: string
@@ -73,14 +83,15 @@ export const employeeApi = {
     )
     return response.data.data
   },
-}
 
-export const departmentApi = {
   /**
-   * GET /v1/options/departments — list all departments (reference data, no permission required)
+   * POST /v1/employees/:id/projects — assign projects to employee
    */
-  async list(): Promise<Department[]> {
-    const response = await axiosInstance.get<ApiResponse<Department[]>>("/v1/options/departments")
+  async assignProjects(id: number, payload: AssignEmployeeProjectsPayload): Promise<any> {
+    const response = await axiosInstance.post<ApiResponse<any>>(
+      `/v1/employees/${id}/projects`,
+      payload,
+    )
     return response.data.data
   },
 }

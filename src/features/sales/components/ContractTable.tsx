@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit, FileSignature, Download } from "lucide-react"
+import { Trash2, Edit, FileSignature, Download, Paperclip } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { ContractFilesDialog } from "./ContractFilesDialog"
+import { useTranslation } from "react-i18next"
+
+import { RowActions } from "@/components/common/RowActions"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,26 +25,8 @@ interface ContractTableProps {
   isLoading?: boolean
   onEdit: (contract: Contract) => void
   onDelete: (id: number) => Promise<void>
+  onRefresh: () => void
   isAdmin?: boolean
-}
-
-function getContractStatusBadge(status: string) {
-  switch (status.toLowerCase()) {
-    case "draft":
-      return (
-        <Badge variant="outline" className="text-muted-foreground">
-          Draft
-        </Badge>
-      )
-    case "signed":
-      return <Badge className="bg-blue-500 hover:bg-blue-600">Signed</Badge>
-    case "ongoing":
-      return <Badge className="bg-amber-500 hover:bg-amber-600">Ongoing</Badge>
-    case "completed":
-      return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>
-    default:
-      return <Badge variant="outline">{status}</Badge>
-  }
 }
 
 export function ContractTable({
@@ -50,14 +35,17 @@ export function ContractTable({
   onEdit,
   onDelete,
   isAdmin = false,
+  onRefresh,
 }: ContractTableProps) {
+  const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Contract | null>(null)
+  const [fileTarget, setFileTarget] = useState<Contract | null>(null)
 
   const columns = useMemo<MRT_ColumnDef<Contract>[]>(
     () => [
       {
         accessorKey: "contract_code",
-        header: "Mã Hợp đồng",
+        header: t("sales:contract.columns.contract_code"),
         size: 140,
         Cell: ({ cell }) => (
           <div className="flex items-center gap-2 font-mono text-sm">
@@ -68,7 +56,7 @@ export function ContractTable({
       },
       {
         accessorKey: "customer.name",
-        header: "Khách hàng",
+        header: t("sales:contract.columns.customer"),
         size: 200,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
@@ -83,13 +71,13 @@ export function ContractTable({
       },
       {
         accessorKey: "contract_date",
-        header: "Ngày Hợp đồng",
+        header: t("sales:contract.columns.contract_date"),
         size: 120,
         Cell: ({ cell }) => <span className="text-sm">{cell.getValue<string>()}</span>,
       },
       {
         accessorKey: "contract_value",
-        header: "Giá trị HĐ (VNĐ)",
+        header: t("sales:contract.columns.value"),
         size: 150,
         Cell: ({ cell }) => {
           const val = cell.getValue<number | string>()
@@ -107,7 +95,7 @@ export function ContractTable({
       },
       {
         accessorKey: "sales_rep.full_name",
-        header: "Sales phụ trách",
+        header: t("sales:contract.columns.sales_rep"),
         size: 150,
         Cell: ({ row }) => (
           <span className="text-sm font-medium">{row.original.sales_rep?.full_name ?? "—"}</span>
@@ -115,52 +103,62 @@ export function ContractTable({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("common:status.status"),
         size: 110,
-        Cell: ({ cell }) => getContractStatusBadge(cell.getValue<string>()),
+        Cell: ({ cell }) => <StatusBadge status={cell.getValue<string>()} />,
       },
       {
         id: "actions",
         header: "",
         size: 100,
         Cell: ({ row }) => {
+          const actions: import("@/components/common/RowActions").RowAction[] = [
+            {
+              label: t("sales:contract.actions.attachments", { defaultValue: "Đính kèm" }),
+              icon: (
+                <div className="relative">
+                  <Paperclip className="size-4" />
+                  {row.original.files && row.original.files.length > 0 && (
+                    <span className="absolute -top-1 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                      {row.original.files.length}
+                    </span>
+                  )}
+                </div>
+              ),
+              onClick: () => setFileTarget(row.original),
+              className: "text-muted-foreground hover:text-foreground",
+            },
+            {
+              label: t("sales:contract.actions.download_file", { defaultValue: "Tải file" }),
+              icon: <Download className="size-4" />,
+              onClick: () => {},
+              className: "text-muted-foreground hover:text-foreground",
+            },
+            {
+              label: t("common:actions.edit", { defaultValue: "Sửa" }),
+              icon: <Edit className="size-4" />,
+              onClick: () => onEdit(row.original),
+              className: "text-muted-foreground hover:text-foreground",
+            },
+          ]
+          if (isAdmin) {
+            actions.push({
+              label: t("common:actions.delete", { defaultValue: "Xóa" }),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => setDeleteTarget(row.original),
+              className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+              variant: "destructive" as const,
+            })
+          }
           return (
-            <div
-              className="flex items-center justify-end gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                title="Tải File"
-              >
-                <Download className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit(row.original)}
-              >
-                <Edit className="size-4" />
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteTarget(row.original)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <RowActions actions={actions} />
             </div>
           )
         },
       },
     ],
-    [isAdmin, onEdit],
+    [isAdmin, onEdit, t],
   )
 
   const table = useMantineReactTable({
@@ -199,15 +197,15 @@ export function ContractTable({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa hợp đồng?</AlertDialogTitle>
+            <AlertDialogTitle>{t("sales:contract.actions.delete_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hợp đồng{" "}
+              {t("sales:contract.actions.delete_confirm")}{" "}
               <span className="font-semibold text-foreground">{deleteTarget?.contract_code}</span>{" "}
-              không? Hành động này không thể hoàn tác.
+              {t("sales:contract.actions.delete_warning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={async () => {
@@ -217,11 +215,19 @@ export function ContractTable({
                 }
               }}
             >
-              Xóa
+              {t("sales:contract.actions.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ContractFilesDialog
+        open={!!fileTarget}
+        onClose={() => setFileTarget(null)}
+        contractId={fileTarget?.id ?? 0}
+        contractTitle={fileTarget?.contract_code ?? ""}
+        onRefresh={onRefresh}
+      />
     </>
   )
 }

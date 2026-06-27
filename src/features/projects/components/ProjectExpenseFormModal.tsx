@@ -10,16 +10,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
-const expenseSchema = z.object({
-  expense_type: z.string().min(1, "Vui lòng chọn phân loại chi phí"),
-  amount: z.number({ message: "Vui lòng nhập số tiền hợp lệ" }).gt(0, "Số tiền phải lớn hơn 0"),
-  expense_date: z.string().min(1, "Vui lòng chọn ngày chi"),
-  description: z
-    .string()
-    .min(1, "Vui lòng nhập lý do / mô tả khoản chi")
-    .max(1000, "Mô tả tối đa 1000 ký tự"),
-})
+const getExpenseSchema = (t: any) =>
+  z.object({
+    expense_type: z.string().min(1, t("projects:expenses.form.validation.type_required")),
+    amount: z
+      .number({ message: t("projects:expenses.form.validation.amount_invalid") })
+      .gt(0, t("projects:expenses.form.validation.amount_gt0")),
+    expense_date: z.string().min(1, t("projects:expenses.form.validation.date_required")),
+    description: z
+      .string()
+      .min(1, t("projects:expenses.form.validation.description_required"))
+      .max(1000, t("projects:expenses.form.validation.description_max")),
+  })
 
 interface ProjectExpenseFormModalProps {
   open: boolean
@@ -28,6 +32,7 @@ interface ProjectExpenseFormModalProps {
 }
 
 export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpenseFormModalProps) {
+  const { t } = useTranslation(["projects", "common"])
   const [expenseTypes, setExpenseTypes] = useState<OptionItem[]>([])
 
   const {
@@ -37,7 +42,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
     control,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(expenseSchema),
+    resolver: zodResolver(getExpenseSchema(t)),
     defaultValues: {
       expense_type: "",
       amount: 0,
@@ -70,7 +75,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Lỗi khi gửi yêu cầu chi phí")
+      toast.error(t("projects:expenses.form.validation.save_error"))
     }
   }
 
@@ -78,16 +83,18 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
     <CommonDialog
       open={open}
       onClose={onClose}
-      title="Yêu cầu Chi phí dự án"
+      title={t("projects:expenses.form.title")}
       size="lg"
       primaryAction={{
-        label: isSubmitting ? "Đang gửi..." : "Gửi yêu cầu",
+        label: isSubmitting
+          ? t("projects:expenses.form.submitting")
+          : t("projects:expenses.form.submit"),
         type: "submit",
         form: "project-expense-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:action.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -99,7 +106,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Phân loại chi phí *</Label>
+            <Label>{t("projects:expenses.form.type")}</Label>
             <Controller
               name="expense_type"
               control={control}
@@ -111,25 +118,28 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
                     label: t.label,
                     value: t.value?.toString() || t.id?.toString() || "",
                   }))}
-                  placeholder="Chọn phân loại chi..."
+                  placeholder={t("projects:expenses.form.type_placeholder")}
                 />
               )}
             />
             {errors.expense_type && (
-              <p className="text-xs text-destructive">{errors.expense_type.message}</p>
+              <p className="text-xs text-destructive">{errors.expense_type.message as string}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-amount">Số tiền (VNĐ) *</Label>
+            <Label htmlFor="ex-amount">{t("projects:expenses.form.amount")}</Label>
             <Input
               id="ex-amount"
               type="number"
+              inputMode="decimal"
               min="0"
-              placeholder="Nhập số tiền..."
+              placeholder={t("projects:expenses.form.amount_placeholder")}
               {...register("amount", { valueAsNumber: true })}
             />
-            {errors.amount && <p className="text-xs text-destructive">{errors.amount.message}</p>}
+            {errors.amount && (
+              <p className="text-xs text-destructive">{errors.amount.message as string}</p>
+            )}
           </div>
         </div>
 
@@ -140,7 +150,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày chi *"
+                  label={t("projects:expenses.form.date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -152,16 +162,16 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ex-desc">Lý do chi / Mô tả chi tiết *</Label>
+          <Label htmlFor="ex-desc">{t("projects:expenses.form.description")}</Label>
           <Textarea
             id="ex-desc"
             rows={3}
-            placeholder="Mô tả cụ thể lý do chi và nội dung chi tiêu..."
+            placeholder={t("projects:expenses.form.description_placeholder")}
             {...register("description")}
             className="resize-none"
           />
           {errors.description && (
-            <p className="text-xs text-destructive">{errors.description.message}</p>
+            <p className="text-xs text-destructive">{errors.description.message as string}</p>
           )}
         </div>
       </form>

@@ -124,6 +124,7 @@ export interface Contract {
   sales_rep?: { id: number; full_name: string }
   content: string | null
   terms: string | null
+  files?: { id: number; name: string; url: string }[]
   created_at: string
   updated_at: string
 }

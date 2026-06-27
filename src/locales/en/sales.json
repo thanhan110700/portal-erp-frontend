@@ -1,0 +1,304 @@
+{
+  "title": "Sales Management",
+  "customer": "Customer",
+  "customersList": "Customers List",
+  "contact": "Contact",
+  "quote": "Quote",
+  "contract": "Contract",
+  "interaction": "Interaction History",
+  "value": "Value",
+  "pipeline": "Sales Pipeline",
+  "revenue": "Expected Revenue",
+  "customer_list": {
+    "title": "Customers",
+    "subtitle": "Manage customer and partner profiles",
+    "add_new": "Add Customer",
+    "search": "Search",
+    "search_placeholder": "Name, Phone, Email...",
+    "classification": "Classification",
+    "sales_rep": "Sales Rep",
+    "fetch_error": "Failed to load customers list",
+    "delete_success": "Customer deleted",
+    "delete_error": "Failed to delete customer",
+    "update_success": "Customer updated",
+    "create_success": "New customer added",
+    "delete_title": "Delete customer?",
+    "delete_confirm": "Are you sure you want to delete customer {{name}}? This action cannot be undone.",
+    "columns": {
+      "customer": "Customer",
+      "classification": "Classification",
+      "phone": "Phone",
+      "email": "Email",
+      "sales_rep": "Sales Rep"
+    }
+  },
+  "customer_form": {
+    "add_title": "Add Customer",
+    "edit_title": "Edit Customer — {{name}}",
+    "save": "Save Customer",
+    "saving": "Saving...",
+    "load_error": "Failed to load customer details",
+    "save_error": "An error occurred while saving",
+    "fields": {
+      "name": "Customer Name",
+      "name_placeholder": "ABC Company",
+      "phone": "Phone Number",
+      "phone_placeholder": "0987654321",
+      "email": "Email",
+      "email_placeholder": "email@example.com",
+      "tax": "Tax ID",
+      "tax_placeholder": "0101234567",
+      "address": "Address",
+      "address_placeholder": "123 ABC Street...",
+      "classification": "Classification",
+      "classification_placeholder": "Select classification...",
+      "sales_rep": "Sales Rep",
+      "sales_rep_placeholder": "Select sales rep...",
+      "notes": "Notes",
+      "notes_placeholder": "Additional notes..."
+    },
+    "validation": {
+      "name_required": "Please enter customer name",
+      "name_max": "Customer name cannot exceed 255 characters",
+      "phone_required": "Please enter phone number",
+      "phone_max": "Phone number cannot exceed 20 characters",
+      "email_max": "Email cannot exceed 150 characters",
+      "email_invalid": "Invalid email",
+      "address_max": "Address cannot exceed 1000 characters",
+      "tax_max": "Tax ID cannot exceed 50 characters",
+      "sales_required": "Please select a sales rep",
+      "notes_max": "Notes cannot exceed 2000 characters"
+    }
+  },
+  "customer_detail": {
+    "fetch_error": "Failed to load customer details",
+    "contact_update_success": "Contact updated",
+    "contact_create_success": "New contact added",
+    "contact_update_error": "Failed to update contact",
+    "contact_create_error": "Failed to add contact",
+    "contact_delete_success": "Contact deleted",
+    "contact_delete_error": "Failed to delete contact",
+    "interaction_create_success": "Interaction recorded",
+    "interaction_create_error": "Failed to record interaction",
+    "interaction_delete_success": "Interaction deleted",
+    "interaction_delete_error": "Failed to delete interaction",
+    "tax_number": "Tax ID",
+    "unclassified": "Unclassified",
+    "contact_info": "Contact Information",
+    "sales_rep": "Sales Rep",
+    "unassigned": "Unassigned",
+    "notes": "Notes",
+    "contacts_tab": "Contacts",
+    "interactions_tab": "Interactions",
+    "contacts_list": "Contacts List",
+    "add_contact": "Add Contact",
+    "interactions_list": "Interaction History",
+    "add_interaction": "Record Interaction"
+  },
+  "contact": {
+    "columns": {
+      "name": "Full Name",
+      "position": "Position",
+      "phone": "Phone Number",
+      "email": "Email",
+      "is_primary": "Primary Contact"
+    },
+    "yes": "Yes",
+    "add_title": "Add Contact",
+    "edit_title": "Edit Contact",
+    "save": "Save Contact",
+    "update": "Update",
+    "is_primary_label": "This is the primary contact",
+    "validation": {
+      "name_required": "Please enter full name",
+      "name_max": "Name cannot exceed 255 characters",
+      "position_max": "Position cannot exceed 100 characters",
+      "phone_max": "Phone cannot exceed 20 characters"
+    }
+  },
+  "interaction": {
+    "empty_state": {
+      "title": "No interactions yet",
+      "description": "Click Record Interaction to log your first activity with this customer."
+    },
+    "default_type": "Interaction",
+    "recorded_by": "Recorded by",
+    "add_title": "Record Interaction",
+    "save": "Save Interaction",
+    "fields": {
+      "type": "Type",
+      "type_placeholder": "Select...",
+      "date": "Date",
+      "content": "Details",
+      "content_placeholder": "Detailed notes about the interaction..."
+    },
+    "validation": {
+      "type_required": "Please select a type",
+      "date_required": "Please select a date",
+      "content_required": "Please enter details"
+    },
+    "default_types": {
+      "call": "Call",
+      "email": "Email",
+      "meeting": "Meeting",
+      "zalo": "Zalo/Chat"
+    }
+  },
+  "quote": {
+    "title": "Quotes",
+    "description": "Manage quotes sent to customers",
+    "create": "Create Quote",
+    "fetch_error": "Failed to load quotes list",
+    "delete_success": "Quote deleted",
+    "delete_error": "Failed to delete quote",
+    "update_success": "Quote updated",
+    "create_success": "New quote created",
+    "filters": {
+      "search_placeholder": "Quote code, Customer...",
+      "all_customers": "All customers",
+      "created_by": "Created by",
+      "all_creators": "All creators",
+      "created_date": "Created Date",
+      "time_range": "Time range"
+    },
+    "columns": {
+      "quote_code": "Quote Code",
+      "customer": "Customer",
+      "quote_date": "Quote Date",
+      "value": "Value (VND)"
+    },
+    "actions": {
+      "attachments": "Attachments",
+      "download_pdf": "Download PDF",
+      "delete_title": "Delete quote?",
+      "delete_confirm": "Are you sure you want to delete quote",
+      "delete_warning": "? This action cannot be undone.",
+      "delete": "Delete"
+    },
+    "form": {
+      "edit_title": "Update Quote — {{code}}",
+      "add_title": "Create new Quote",
+      "saving": "Saving...",
+      "save": "Save Quote",
+      "save_error": "An error occurred while saving the quote",
+      "fields": {
+        "customer": "Customer",
+        "customer_placeholder": "Select customer...",
+        "quote_date": "Quote Date",
+        "value": "Total Value (VND)",
+        "description": "Details",
+        "description_placeholder": "Detailed quote notes...",
+        "notes": "Internal Notes",
+        "notes_placeholder": "Internal notes for this quote..."
+      },
+      "validation": {
+        "customer_required": "Please select a customer",
+        "date_required": "Please select a quote date",
+        "value_required": "Please enter the total value",
+        "value_min": "Quote value must be greater than 0",
+        "desc_max": "Description cannot exceed 5000 characters",
+        "notes_max": "Notes cannot exceed 2000 characters"
+      }
+    },
+    "files": {
+      "fetch_error": "Failed to load documents",
+      "upload_success": "Attachment uploaded successfully",
+      "upload_error": "Failed to upload attachment",
+      "delete_confirm": "Are you sure you want to delete this attachment?",
+      "delete_success": "Attachment deleted",
+      "delete_error": "Failed to delete attachment",
+      "title": "Attachments for quote: {{code}}",
+      "select_file": "Select new quote document",
+      "file_hint": "Supports PDF, images, or Excel spreadsheets up to 10 MB",
+      "uploading": "Uploading...",
+      "upload": "Upload Document",
+      "current_files": "Current Attachments",
+      "no_files": "No attachments yet.",
+      "validation": {
+        "file_required": "Please select a file"
+      }
+    }
+  },
+  "contract": {
+    "title": "Contracts",
+    "description": "Manage signed contracts",
+    "create": "Create Contract",
+    "fetch_error": "Failed to load contracts list",
+    "fetch_detail_error": "Failed to load contract details",
+    "delete_success": "Contract deleted",
+    "delete_error": "Failed to delete contract",
+    "update_success": "Contract updated",
+    "create_success": "New contract created",
+    "filters": {
+      "search_placeholder": "Contract code, Customer..."
+    },
+    "columns": {
+      "contract_code": "Contract Code",
+      "customer": "Customer",
+      "contract_date": "Contract Date",
+      "value": "Value (VND)",
+      "sales_rep": "Sales Rep"
+    },
+    "actions": {
+      "attachments": "Attachments",
+      "download_file": "Download File",
+      "delete_title": "Delete contract?",
+      "delete_confirm": "Are you sure you want to delete contract",
+      "delete_warning": "? This action cannot be undone.",
+      "delete": "Delete"
+    },
+    "form": {
+      "edit_title": "Update Contract — {{code}}",
+      "add_title": "Create new Contract",
+      "saving": "Saving...",
+      "save": "Save Contract",
+      "save_error": "An error occurred while saving the contract",
+      "fields": {
+        "customer": "Customer",
+        "customer_placeholder": "Select customer...",
+        "quote_link": "Quote Link (Optional)",
+        "no_link": "--- No link ---",
+        "quote_placeholder": "Select quote (if any)",
+        "sales_rep": "Sales Rep",
+        "sales_placeholder": "Select sales rep...",
+        "status": "Status",
+        "status_placeholder": "Select status...",
+        "contract_date": "Contract Date",
+        "signed_date": "Signed Date",
+        "value": "Total Value (VND)",
+        "content": "Contract Content",
+        "content_placeholder": "Main content notes...",
+        "terms": "Special Terms",
+        "terms_placeholder": "Additional payment, delivery terms..."
+      },
+      "validation": {
+        "customer_required": "Please select a customer",
+        "date_required": "Please enter a contract date",
+        "value_required": "Please enter the contract value",
+        "value_min": "Contract value must be greater than 0",
+        "sales_required": "Please select a Sales Rep",
+        "status_required": "Please select a status",
+        "content_max": "Content cannot exceed 10000 characters",
+        "terms_max": "Terms cannot exceed 5000 characters"
+      }
+    },
+    "files": {
+      "fetch_error": "Failed to load documents",
+      "upload_success": "Attachment uploaded successfully",
+      "upload_error": "Failed to upload attachment",
+      "delete_confirm": "Are you sure you want to delete this attachment?",
+      "delete_success": "Attachment deleted",
+      "delete_error": "Failed to delete attachment",
+      "title": "Attachments for contract: {{code}}",
+      "select_file": "Select new contract document",
+      "file_hint": "Supports PDF, images, or Excel spreadsheets up to 10 MB",
+      "uploading": "Uploading...",
+      "upload": "Upload Document",
+      "current_files": "Current Attachments",
+      "no_files": "No attachments yet.",
+      "validation": {
+        "file_required": "Please select a file"
+      }
+    }
+  }
+}

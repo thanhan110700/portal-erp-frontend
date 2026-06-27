@@ -22,8 +22,10 @@ import { ContactTable } from "../components/ContactTable"
 import { ContactFormModal } from "../components/ContactFormModal"
 import { InteractionList } from "../components/InteractionList"
 import { InteractionFormModal } from "../components/InteractionFormModal"
+import { useTranslation } from "react-i18next"
 
 export function CustomerDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const customerId = parseInt(id || "0")
@@ -55,7 +57,7 @@ export function CustomerDetailPage() {
       setContacts(contactRes)
       setInteractions(interactRes)
     } catch {
-      toast.error("Không thể tải thông tin khách hàng")
+      toast.error(t("sales:customer_detail.fetch_error"))
       void navigate("/sales/customers")
     } finally {
       setIsLoading(false)
@@ -75,27 +77,31 @@ export function CustomerDetailPage() {
           selectedContact.id,
           payload as UpdateContactPayload,
         )
-        toast.success("Đã cập nhật liên hệ")
+        toast.success(t("sales:customer_detail.contact_update_success"))
       } else {
         await customerApi.createContact(customerId, payload as CreateContactPayload)
-        toast.success("Đã thêm liên hệ mới")
+        toast.success(t("sales:customer_detail.contact_create_success"))
       }
       setContactModalOpen(false)
       const contactRes = await customerApi.getContacts(customerId)
       setContacts(contactRes)
     } catch {
-      toast.error(selectedContact ? "Cập nhật liên hệ thất bại" : "Thêm liên hệ thất bại")
+      toast.error(
+        selectedContact
+          ? t("sales:customer_detail.contact_update_error")
+          : t("sales:customer_detail.contact_create_error"),
+      )
     }
   }
 
   const handleDeleteContact = async (contactId: number) => {
     try {
       await customerApi.deleteContact(customerId, contactId)
-      toast.success("Đã xóa liên hệ")
+      toast.success(t("sales:customer_detail.contact_delete_success"))
       const contactRes = await customerApi.getContacts(customerId)
       setContacts(contactRes)
     } catch {
-      toast.error("Xóa liên hệ thất bại")
+      toast.error(t("sales:customer_detail.contact_delete_error"))
     }
   }
 
@@ -103,23 +109,23 @@ export function CustomerDetailPage() {
   const handleCreateInteraction = async (payload: CreateInteractionPayload) => {
     try {
       await customerApi.createInteraction(customerId, payload)
-      toast.success("Đã ghi nhận tương tác")
+      toast.success(t("sales:customer_detail.interaction_create_success"))
       setInteractionModalOpen(false)
       const interactRes = await customerApi.getInteractions(customerId)
       setInteractions(interactRes)
     } catch {
-      toast.error("Thêm tương tác thất bại")
+      toast.error(t("sales:customer_detail.interaction_create_error"))
     }
   }
 
   const handleDeleteInteraction = async (interactionId: number) => {
     try {
       await customerApi.deleteInteraction(customerId, interactionId)
-      toast.success("Đã xóa tương tác")
+      toast.success(t("sales:customer_detail.interaction_delete_success"))
       const interactRes = await customerApi.getInteractions(customerId)
       setInteractions(interactRes)
     } catch {
-      toast.error("Xóa tương tác thất bại")
+      toast.error(t("sales:customer_detail.interaction_delete_error"))
     }
   }
 
@@ -146,12 +152,13 @@ export function CustomerDetailPage() {
             <div>
               <h1 className="text-xl font-semibold">{customer.customer_name ?? customer.name}</h1>
               <p className="text-sm text-muted-foreground">
-                Mã số thuế: {customer.tax_number ?? customer.tax_code ?? "—"}
+                {t("sales:customer_detail.tax_number")}:{" "}
+                {customer.tax_number ?? customer.tax_code ?? "—"}
               </p>
             </div>
           </div>
           <Badge variant="outline" className="text-sm px-3 py-1 bg-background">
-            {customer.classification || "Chưa phân loại"}
+            {customer.classification || t("sales:customer_detail.unclassified")}
           </Badge>
         </div>
       </div>
@@ -160,7 +167,9 @@ export function CustomerDetailPage() {
         {/* ── Overview Sidebar ────────────────────────────────────────────── */}
         <div className="col-span-1 space-y-4">
           <div className="rounded-xl border bg-card p-5 space-y-4">
-            <h3 className="font-semibold border-b pb-2">Thông tin liên hệ</h3>
+            <h3 className="font-semibold border-b pb-2">
+              {t("sales:customer_detail.contact_info")}
+            </h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <Phone className="size-4 text-muted-foreground mt-0.5" />
@@ -177,9 +186,9 @@ export function CustomerDetailPage() {
               <div className="flex items-start gap-3">
                 <Briefcase className="size-4 text-muted-foreground mt-0.5" />
                 <span>
-                  Sales phụ trách:{" "}
+                  {t("sales:customer_detail.sales_rep")}:{" "}
                   <span className="font-medium">
-                    {customer.sales_rep?.full_name || "Chưa phân công"}
+                    {customer.sales_rep?.full_name || t("sales:customer_detail.unassigned")}
                   </span>
                 </span>
               </div>
@@ -188,7 +197,7 @@ export function CustomerDetailPage() {
 
           {customer.notes && (
             <div className="rounded-xl border bg-card p-5 space-y-2">
-              <h3 className="font-semibold">Ghi chú</h3>
+              <h3 className="font-semibold">{t("sales:customer_detail.notes")}</h3>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
             </div>
           )}
@@ -199,16 +208,20 @@ export function CustomerDetailPage() {
           <Tabs defaultValue="contacts" className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="contacts" className="gap-2">
-                Người liên hệ <Badge variant="secondary">{contacts.length}</Badge>
+                {t("sales:customer_detail.contacts_tab")}{" "}
+                <Badge variant="secondary">{contacts.length}</Badge>
               </TabsTrigger>
               <TabsTrigger value="interactions" className="gap-2">
-                Lịch sử tương tác <Badge variant="secondary">{interactions.length}</Badge>
+                {t("sales:customer_detail.interactions_tab")}{" "}
+                <Badge variant="secondary">{interactions.length}</Badge>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="contacts" className="space-y-4 outline-none">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Danh sách người liên hệ</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("sales:customer_detail.contacts_list")}
+                </h3>
                 {canEdit && (
                   <Button
                     size="sm"
@@ -219,7 +232,7 @@ export function CustomerDetailPage() {
                     className="gap-2"
                   >
                     <UserPlus className="size-4" />
-                    Thêm liên hệ
+                    {t("sales:customer_detail.add_contact")}
                   </Button>
                 )}
               </div>
@@ -236,11 +249,13 @@ export function CustomerDetailPage() {
 
             <TabsContent value="interactions" className="space-y-4 outline-none">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Lịch sử làm việc</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("sales:customer_detail.interactions_list")}
+                </h3>
                 {canEdit && (
                   <Button size="sm" onClick={() => setInteractionModalOpen(true)} className="gap-2">
                     <Plus className="size-4" />
-                    Ghi nhận tương tác
+                    {t("sales:customer_detail.add_interaction")}
                   </Button>
                 )}
               </div>
