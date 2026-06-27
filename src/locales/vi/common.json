@@ -43,7 +43,10 @@
     "ongoing": "Đang triển khai",
     "testing": "Nghiệm thu",
     "settled": "Quyết toán",
-    "on_hold": "Tạm hoãn"
+    "on_hold": "Tạm hoãn",
+    "vip": "VIP",
+    "regular": "Thông thường",
+    "new": "Mới"
   },
   "table": {
     "all": "Tất cả",
@@ -101,5 +104,13 @@
     "sales_contracts": "Hợp đồng",
     "finance_vouchers": "Chứng từ Thu/Chi",
     "reports": "Báo cáo quản trị"
+  },
+  "roles": {
+    "admin": "Quản trị viên",
+    "director": "Giám đốc",
+    "accountant": "Kế toán",
+    "sales": "Kinh doanh",
+    "technician": "Kỹ thuật",
+    "employee": "Nhân viên"
   }
 }

@@ -164,6 +164,11 @@ export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
   ]
 
   const projectTable = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns: projectColumns,
     data: projectProfitData,
     enableColumnActions: false,
@@ -188,6 +193,11 @@ export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
   })
 
   const receivablesTable = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns: receivablesColumns,
     data: receivablesData,
     enableColumnActions: false,
@@ -218,10 +228,14 @@ export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="income" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="income">{t("hr:employees.reports.tabs.income")}</TabsTrigger>
-            <TabsTrigger value="projects">{t("hr:employees.reports.tabs.projects")}</TabsTrigger>
-            <TabsTrigger value="receivables">
+          <TabsList className="mb-4 w-full justify-start h-auto p-1 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
+            <TabsTrigger value="income" className="min-h-11 md:min-h-9 whitespace-nowrap px-4">
+              {t("hr:employees.reports.tabs.income")}
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="min-h-11 md:min-h-9 whitespace-nowrap px-4">
+              {t("hr:employees.reports.tabs.projects")}
+            </TabsTrigger>
+            <TabsTrigger value="receivables" className="min-h-11 md:min-h-9 whitespace-nowrap px-4">
               {t("hr:employees.reports.tabs.receivables")}
             </TabsTrigger>
           </TabsList>

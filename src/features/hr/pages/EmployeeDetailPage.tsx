@@ -164,7 +164,7 @@ export function EmployeeDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setRoleModalOpen(true)}
-              className="gap-2"
+              className="gap-2 min-h-11 md:min-h-9"
             >
               <ShieldCheck className="size-4" />
               {t("hr:employees.actions.assign_role")}

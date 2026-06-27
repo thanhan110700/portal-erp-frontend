@@ -39,6 +39,7 @@ const DEFAULT_STATUS_MAP: Record<
   reviewing: { variant: "warning", label: "Reviewing" },
   unpaid: { variant: "warning", label: "Unpaid" },
   partial: { variant: "warning", label: "Partial" },
+  vip: { variant: "warning", label: "VIP", pulse: true },
 
   // Secondary/Info states
   paused: { variant: "secondary", label: "Paused" },
@@ -49,8 +50,10 @@ const DEFAULT_STATUS_MAP: Record<
   processing: { variant: "secondary", label: "Processing", pulse: true },
   new: { variant: "secondary", label: "New", pulse: true },
   open: { variant: "secondary", label: "Open" },
+  regular: { variant: "secondary", label: "Regular" },
 
   // Destructive/Error states
+  inactive: { variant: "destructive", label: "Inactive" },
   suspended: { variant: "destructive", label: "Suspended" },
   trash: { variant: "destructive", label: "Trash" },
   error: { variant: "destructive", label: "Error" },

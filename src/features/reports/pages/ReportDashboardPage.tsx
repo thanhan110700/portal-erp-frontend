@@ -437,18 +437,33 @@ export function ReportDashboardPage() {
   }
 
   const incomeExpenseTable = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns: incomeExpenseColumns,
     data: incomeExpenseData,
     ...commonTableProps,
   })
 
   const receivablesTable = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns: receivablesColumns,
     data: receivablesData,
     ...commonTableProps,
   })
 
   const projectProfitTable = useMantineReactTable({
+    renderEmptyRowsFallback: () => (
+      <div className="p-8 text-center text-muted-foreground">
+        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+      </div>
+    ),
     columns: projectProfitColumns,
     data: projectProfitData,
     ...commonTableProps,
