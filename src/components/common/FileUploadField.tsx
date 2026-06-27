@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 import { ImagePreviewDialog } from "./ImagePreviewDialog"
+import { useTranslation } from "react-i18next"
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -40,11 +41,13 @@ export function FileUploadInput({
   value,
   onChange,
   accept = "image/*",
-  hint = "PNG, JPG, GIF, WEBP up to 10 MB",
+  hint,
   disabled = false,
   previewSize = "md",
   existingUrl,
 }: FileUploadInputProps) {
+  const { t } = useTranslation()
+  const displayHint = hint ?? t("common:file.default_hint")
   const [dragging, setDragging] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const dragCounter = useRef(0)
@@ -112,7 +115,7 @@ export function FileUploadInput({
             type="button"
             className="group relative shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
             onClick={() => setPreviewOpen(true)}
-            title="Click to preview"
+            title={t("common:file.click_preview")}
           >
             <img
               src={existingUrl}
@@ -124,8 +127,8 @@ export function FileUploadInput({
             </div>
           </button>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="text-sm font-medium text-foreground">Current image</p>
-            <p className="text-xs text-muted-foreground">Upload a new file to replace</p>
+            <p className="text-sm font-medium text-foreground">{t("common:file.current_image")}</p>
+            <p className="text-xs text-muted-foreground">{t("common:file.upload_replace")}</p>
           </div>
           <Button
             type="button"
@@ -133,11 +136,11 @@ export function FileUploadInput({
             variant="ghost"
             className="h-7 shrink-0 gap-1 px-2 text-xs"
             disabled={disabled}
-            aria-label="Change file"
+            aria-label={t("common:file.change")}
             onClick={() => fileInputRef.current?.click()}
           >
             <Pencil className="size-3.5" />
-            Change
+            {t("common:file.change")}
           </Button>
           <input
             ref={fileInputRef}
@@ -168,7 +171,7 @@ export function FileUploadInput({
               type="button"
               className="group relative shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
               onClick={() => setPreviewOpen(true)}
-              title="Click to preview"
+              title={t("common:file.click_preview")}
             >
               <img
                 src={previewUrl}
@@ -200,11 +203,11 @@ export function FileUploadInput({
               variant="ghost"
               className="h-7 gap-1 px-2 text-xs"
               disabled={disabled}
-              aria-label="Change file"
+              aria-label={t("common:file.change")}
               onClick={() => fileInputRef.current?.click()}
             >
               <Pencil className="size-3.5" />
-              Change
+              {t("common:file.change")}
             </Button>
             <Button
               type="button"
@@ -212,11 +215,11 @@ export function FileUploadInput({
               variant="ghost"
               className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-destructive"
               disabled={disabled}
-              aria-label="Remove file"
+              aria-label={t("common:file.remove")}
               onClick={handleClear}
             >
               <X className="size-3.5" />
-              Remove
+              {t("common:file.remove")}
             </Button>
           </div>
           <input
@@ -266,9 +269,9 @@ export function FileUploadInput({
       <Upload className={cn("size-6", dragging && "animate-bounce")} />
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="text-sm font-medium">
-          {dragging ? "Drop to upload" : "Drag & drop or click to browse"}
+          {dragging ? t("common:file.drop_to_upload") : t("common:file.drag_drop")}
         </p>
-        <p className="text-xs opacity-60">{hint}</p>
+        <p className="text-xs opacity-60">{displayHint}</p>
       </div>
       <input
         ref={fileInputRef}

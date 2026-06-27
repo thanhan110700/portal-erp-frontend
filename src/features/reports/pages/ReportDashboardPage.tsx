@@ -32,6 +32,8 @@ import {
   type SalesPipelineData,
 } from "../api/reportApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
+import { useIsMobile } from "@/hooks/useMobile"
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"]
 
@@ -54,6 +56,8 @@ const TRANSLATED_STATUSES: Record<string, string> = {
 }
 
 export function ReportDashboardPage() {
+  const { t } = useTranslation(["reports", "common"])
+  const isMobile = useIsMobile()
   const [activeTab, setActiveTab] = useState("income-expense")
   const [loading, setLoading] = useState(true)
 
@@ -92,13 +96,13 @@ export function ReportDashboardPage() {
       return [
         {
           field: "date_from",
-          label: "Từ ngày",
+          label: t("reports:filters.dateFrom"),
           type: "datepicker",
           value: dateFrom || null,
         },
         {
           field: "date_to",
-          label: "Đến ngày",
+          label: t("reports:filters.dateTo"),
           type: "datepicker",
           value: dateTo || null,
         },
@@ -108,37 +112,37 @@ export function ReportDashboardPage() {
       return [
         {
           field: "date_from",
-          label: "Từ ngày",
+          label: t("reports:filters.dateFrom"),
           type: "datepicker",
           value: dateFrom || null,
         },
         {
           field: "date_to",
-          label: "Đến ngày",
+          label: t("reports:filters.dateTo"),
           type: "datepicker",
           value: dateTo || null,
         },
         {
           field: "customer_id",
-          label: "Khách hàng",
+          label: t("reports:filters.customer"),
           type: "select",
-          value: customerId || null,
+          value: customerId || "",
           options: customers.map((c) => ({
             label: c.label,
             value: c.value?.toString() || c.id?.toString() || "",
           })),
-          placeholder: "Chọn khách hàng...",
+          placeholder: t("reports:filters.customer_placeholder"),
         },
         {
           field: "sales_rep_id",
-          label: "Nhân viên phụ trách",
+          label: t("reports:filters.salesRep"),
           type: "select",
-          value: salesRepId || null,
+          value: salesRepId || "",
           options: salesReps.map((e) => ({
             label: e.label,
             value: e.value?.toString() || e.id?.toString() || "",
           })),
-          placeholder: "Chọn nhân viên...",
+          placeholder: t("reports:filters.salesRep_placeholder"),
         },
       ]
     }
@@ -146,35 +150,35 @@ export function ReportDashboardPage() {
       return [
         {
           field: "year",
-          label: "Năm",
+          label: t("reports:filters.year"),
           type: "input",
-          value: year ? String(year) : null,
-          placeholder: "Nhập năm...",
+          value: year ? String(year) : "",
+          placeholder: t("reports:filters.year_placeholder"),
         },
         {
           field: "month",
-          label: "Tháng",
+          label: t("reports:filters.month"),
           type: "select",
-          value: month || null,
+          value: month || "",
           options: [
-            { label: "Cả năm", value: "all" },
+            { label: t("reports:filters.month_all"), value: "all" },
             ...Array.from({ length: 12 }, (_, i) => ({
-              label: `Tháng ${i + 1}`,
+              label: t("reports:filters.month") + ` ${i + 1}`,
               value: String(i + 1),
             })),
           ],
-          placeholder: "Chọn tháng...",
+          placeholder: t("reports:filters.month_placeholder"),
         },
         {
           field: "sales_rep_id",
-          label: "Nhân viên phụ trách",
+          label: t("reports:filters.salesRep"),
           type: "select",
-          value: salesRepId || null,
+          value: salesRepId || "",
           options: salesReps.map((e) => ({
             label: e.label,
             value: e.value?.toString() || e.id?.toString() || "",
           })),
-          placeholder: "Chọn nhân viên...",
+          placeholder: t("reports:filters.salesRep_placeholder"),
         },
       ]
     }
@@ -214,15 +218,16 @@ export function ReportDashboardPage() {
   const incomeExpenseColumns = useMemo<MRT_ColumnDef<IncomeExpenseRow>[]>(
     () => [
       {
-        accessorFn: (row) => `Tháng ${row.month} / ${row.year}`,
+        accessorFn: (row) =>
+          t("reports:incomeExpense.columns.month", { month: row.month, year: row.year }),
         id: "period",
-        header: "Thời gian",
+        header: t("reports:incomeExpense.columns.period"),
         size: 200,
         Cell: ({ cell }) => <span className="font-semibold">{cell.getValue<string>()}</span>,
       },
       {
         accessorKey: "income",
-        header: "Tổng thu",
+        header: t("reports:incomeExpense.columns.income"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-emerald-600">
@@ -232,7 +237,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "expense",
-        header: "Tổng chi",
+        header: t("reports:incomeExpense.columns.expense"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-rose-600">
@@ -242,7 +247,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "net",
-        header: "Dòng tiền ròng",
+        header: t("reports:incomeExpense.columns.net"),
         size: 150,
         Cell: ({ cell }) => {
           const val = Number(cell.getValue<number>())
@@ -263,7 +268,7 @@ export function ReportDashboardPage() {
     () => [
       {
         accessorKey: "contract_code",
-        header: "Hợp đồng",
+        header: t("reports:receivables.columns.contract"),
         size: 150,
         Cell: ({ cell }) => (
           <span className="font-semibold text-foreground">{cell.getValue<string>()}</span>
@@ -271,18 +276,18 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "customer_name",
-        header: "Khách hàng",
+        header: t("reports:receivables.columns.customer"),
         size: 200,
       },
       {
         accessorKey: "sales_rep_name",
-        header: "Sales phụ trách",
+        header: t("reports:receivables.columns.salesRep"),
         size: 150,
         Cell: ({ cell }) => cell.getValue<string>() || "—",
       },
       {
         accessorKey: "contract_date",
-        header: "Ngày ký",
+        header: t("reports:receivables.columns.date"),
         size: 120,
         Cell: ({ cell }) => (
           <span className="text-muted-foreground">{cell.getValue<string>()}</span>
@@ -290,7 +295,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "contract_value",
-        header: "Tổng giá trị",
+        header: t("reports:receivables.columns.value"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono">
@@ -300,7 +305,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "payment_received",
-        header: "Đã thu",
+        header: t("reports:receivables.columns.received"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-emerald-600">
@@ -310,7 +315,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "payment_outstanding",
-        header: "Còn lại cần thu",
+        header: t("reports:receivables.columns.outstanding"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-orange-600 font-bold">
@@ -326,7 +331,7 @@ export function ReportDashboardPage() {
     () => [
       {
         accessorKey: "project_code",
-        header: "Mã dự án",
+        header: t("reports:projectProfit.columns.code"),
         size: 120,
         Cell: ({ cell }) => (
           <span className="font-mono font-semibold">{cell.getValue<string>()}</span>
@@ -334,7 +339,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "project_name",
-        header: "Tên dự án",
+        header: t("reports:projectProfit.columns.name"),
         size: 200,
         Cell: ({ cell }) => (
           <span className="font-medium text-foreground">{cell.getValue<string>()}</span>
@@ -342,7 +347,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "contract_value",
-        header: "Giá trị hợp đồng",
+        header: t("reports:projectProfit.columns.contractValue"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono">
@@ -352,7 +357,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "total_received",
-        header: "Doanh thu thực thu",
+        header: t("reports:projectProfit.columns.received"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-emerald-600">
@@ -362,7 +367,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "total_spent",
-        header: "Chi phí thực tế",
+        header: t("reports:projectProfit.columns.spent"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="text-right font-mono text-rose-600">
@@ -372,7 +377,7 @@ export function ReportDashboardPage() {
       },
       {
         accessorKey: "profit",
-        header: "Lợi nhuận ròng",
+        header: t("reports:projectProfit.columns.profit"),
         size: 150,
         Cell: ({ cell }) => {
           const profit = Number(cell.getValue<number>() || 0)
@@ -387,7 +392,7 @@ export function ReportDashboardPage() {
       },
       {
         id: "margin",
-        header: "Tỷ suất lợi nhuận",
+        header: t("reports:projectProfit.columns.margin"),
         size: 120,
         Cell: ({ row }) => {
           const contract = Number(row.original.contract_value || 0)
@@ -495,7 +500,7 @@ export function ReportDashboardPage() {
           setPipelineData(data)
         }
       } catch {
-        toast.error("Không thể tải báo cáo dữ liệu")
+        toast.error(t("reports:fetch_error"))
       } finally {
         setLoading(false)
       }
@@ -512,28 +517,41 @@ export function ReportDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Báo cáo Phân tích Quản trị</h1>
-        <p className="text-sm text-muted-foreground">
-          Tổng quan trực quan về dòng tiền, công nợ, hiệu suất kinh doanh và năng suất dự án.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("reports:title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("reports:subtitle")}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto gap-1">
-          <TabsTrigger value="income-expense" className="rounded-lg py-2.5 text-xs md:text-sm">
-            Thu chi & Dòng tiền
+        <TabsList className="w-full flex justify-start overflow-x-auto no-scrollbar md:grid md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto! gap-1 scroll-smooth">
+          <TabsTrigger
+            value="income-expense"
+            className="rounded-lg py-2 px-3 min-h-11 flex-none w-auto text-xs md:text-sm"
+          >
+            {t("reports:tabs.incomeExpense")}
           </TabsTrigger>
-          <TabsTrigger value="receivables" className="rounded-lg py-2.5 text-xs md:text-sm">
-            Phải thu khách hàng
+          <TabsTrigger
+            value="receivables"
+            className="rounded-lg py-2 px-3 min-h-11 flex-none w-auto text-xs md:text-sm"
+          >
+            {t("reports:tabs.receivables")}
           </TabsTrigger>
-          <TabsTrigger value="project-profit" className="rounded-lg py-2.5 text-xs md:text-sm">
-            Hiệu quả dự án
+          <TabsTrigger
+            value="project-profit"
+            className="rounded-lg py-2 px-3 min-h-11 flex-none w-auto text-xs md:text-sm"
+          >
+            {t("reports:tabs.projectProfit")}
           </TabsTrigger>
-          <TabsTrigger value="sales-performance" className="rounded-lg py-2.5 text-xs md:text-sm">
-            Hiệu suất Sales
+          <TabsTrigger
+            value="sales-performance"
+            className="rounded-lg py-2 px-3 min-h-11 flex-none w-auto text-xs md:text-sm"
+          >
+            {t("reports:tabs.salesPerformance")}
           </TabsTrigger>
-          <TabsTrigger value="pipeline" className="rounded-lg py-2.5 text-xs md:text-sm">
-            Phễu cơ hội
+          <TabsTrigger
+            value="pipeline"
+            className="rounded-lg py-2 px-3 min-h-11 flex-none w-auto text-xs md:text-sm"
+          >
+            {t("reports:tabs.pipeline")}
           </TabsTrigger>
         </TabsList>
 
@@ -544,7 +562,7 @@ export function ReportDashboardPage() {
             fields={filterFields}
             onApply={handleApplyFilters}
             onReset={handleResetFilters}
-            title="Bộ lọc báo cáo"
+            title={t("reports:filters.title")}
             className="mt-4"
           />
         )}
@@ -561,54 +579,58 @@ export function ReportDashboardPage() {
               value="income-expense"
               className="m-0 focus-visible:outline-none space-y-6"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 md:gap-6">
                 <Card className="col-span-2 shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-                      <BarChart3 className="size-4 text-primary" /> Biểu đồ so sánh Thu - Chi theo
-                      tháng
+                      <BarChart3 className="size-4 text-primary" />{" "}
+                      {t("reports:incomeExpense.chart.title")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="h-[300px]">
                     {incomeExpenseData.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        Không có dữ liệu trong khoảng thời gian này.
+                        {t("reports:incomeExpense.chart.no_data")}
                       </div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={incomeExpenseData.map((row) => ({
-                            name: `T.${row.month}/${row.year}`,
-                            "Thu tiền": Number(row.income),
-                            "Chi tiêu": Number(row.expense),
-                            "Dòng tiền ròng": Number(row.net),
+                            name: t("reports:incomeExpense.chart.period", {
+                              month: row.month,
+                              year: row.year,
+                            }),
+                            [t("reports:incomeExpense.chart.income")]: Number(row.income),
+                            [t("reports:incomeExpense.chart.expense")]: Number(row.expense),
+                            [t("reports:incomeExpense.chart.net")]: Number(row.net),
                           }))}
+                          margin={{ top: 10, right: 10, left: isMobile ? -5 : 0, bottom: 0 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="name" fontSize={11} />
+                          <XAxis dataKey="name" fontSize={isMobile ? 9 : 11} />
                           <YAxis
                             tickFormatter={(v) => (v / 1e6).toLocaleString() + "M"}
-                            fontSize={11}
+                            fontSize={isMobile ? 9 : 11}
                           />
                           <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                           <Legend verticalAlign="top" height={36} iconType="circle" />
                           <Area
                             type="monotone"
-                            dataKey="Thu tiền"
+                            dataKey={t("reports:incomeExpense.chart.income")}
                             stroke="#10b981"
                             fill="#10b981"
                             fillOpacity={0.08}
                           />
                           <Area
                             type="monotone"
-                            dataKey="Chi tiêu"
+                            dataKey={t("reports:incomeExpense.chart.expense")}
                             stroke="#ef4444"
                             fill="#ef4444"
                             fillOpacity={0.08}
                           />
                           <Area
                             type="monotone"
-                            dataKey="Dòng tiền ròng"
+                            dataKey={t("reports:incomeExpense.chart.net")}
                             stroke="#3b82f6"
                             fill="#3b82f6"
                             fillOpacity={0.05}
@@ -621,7 +643,9 @@ export function ReportDashboardPage() {
 
                 <Card className="col-span-1 shadow-sm">
                   <CardHeader>
-                    <CardTitle className="text-sm font-semibold">Tóm tắt Dòng tiền</CardTitle>
+                    <CardTitle className="text-sm font-semibold">
+                      {t("reports:incomeExpense.summary.title")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {(() => {
@@ -637,27 +661,27 @@ export function ReportDashboardPage() {
 
                       return (
                         <>
-                          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-4 space-y-1">
+                          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-4 flex flex-col items-center justify-center text-center space-y-1">
                             <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                              TỔNG THU TIỀN
+                              {t("reports:incomeExpense.summary.total_income")}
                             </div>
                             <div className="text-lg font-bold font-mono text-emerald-700 dark:text-emerald-300">
                               {totalIn.toLocaleString("vi-VN")} ₫
                             </div>
                           </div>
-                          <div className="rounded-lg bg-rose-50 dark:bg-rose-950/20 p-4 space-y-1">
+                          <div className="rounded-lg bg-rose-50 dark:bg-rose-950/20 p-4 flex flex-col items-center justify-center text-center space-y-1">
                             <div className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-                              TỔNG CHI TIÊU
+                              {t("reports:incomeExpense.summary.total_expense")}
                             </div>
                             <div className="text-lg font-bold font-mono text-rose-700 dark:text-rose-300">
                               {totalOut.toLocaleString("vi-VN")} ₫
                             </div>
                           </div>
                           <div
-                            className={`rounded-lg p-4 space-y-1 ${totalNet >= 0 ? "bg-blue-50 dark:bg-blue-950/20" : "bg-orange-50 dark:bg-orange-950/20"}`}
+                            className={`rounded-lg p-4 flex flex-col items-center justify-center text-center space-y-1 ${totalNet >= 0 ? "bg-blue-50 dark:bg-blue-950/20" : "bg-orange-50 dark:bg-orange-950/20"}`}
                           >
                             <div className="text-xs font-semibold text-muted-foreground">
-                              TỔNG DÒNG TIỀN THUẦN
+                              {t("reports:incomeExpense.summary.total_net")}
                             </div>
                             <div
                               className={`text-lg font-bold font-mono ${totalNet >= 0 ? "text-blue-700 dark:text-blue-300" : "text-orange-700 dark:text-orange-300"}`}
@@ -673,7 +697,7 @@ export function ReportDashboardPage() {
               </div>
 
               {/* Data Table */}
-              <div className="rounded-xl border bg-card overflow-hidden">
+              <div className="rounded-xl border bg-card overflow-x-auto">
                 <MantineReactTable table={incomeExpenseTable} />
               </div>
             </TabsContent>
@@ -694,25 +718,26 @@ export function ReportDashboardPage() {
 
                   return (
                     <>
-                      <div className="rounded-xl border bg-card p-5 space-y-2">
+                      <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-2">
                         <div className="text-xs text-muted-foreground font-semibold">
-                          TỔNG GIÁ TRỊ HỢP ĐỒNG ĐANG NỢ
+                          {t("reports:receivables.summary.outstanding")}
                         </div>
                         <p className="text-xl font-bold font-mono">
                           {totalContract.toLocaleString("vi-VN")} ₫
                         </p>
                       </div>
-                      <div className="rounded-xl border bg-card p-5 space-y-2">
+                      <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-2">
                         <div className="text-xs text-muted-foreground font-semibold">
-                          ĐÃ THU HỒI
+                          {t("reports:receivables.summary.received")}
                         </div>
                         <p className="text-xl font-bold font-mono text-emerald-600">
                           {totalReceived.toLocaleString("vi-VN")} ₫
                         </p>
                       </div>
-                      <div className="rounded-xl border bg-card p-5 space-y-2 border-orange-200 bg-orange-50/20">
-                        <div className="text-xs text-orange-600 font-semibold flex items-center gap-1">
-                          <AlertCircle className="size-4" /> DƯ NỢ CÒN PHẢI THU (CHƯA THANH TOÁN)
+                      <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-2 border-orange-200 bg-orange-50/20">
+                        <div className="text-xs text-orange-600 font-semibold flex items-center justify-center gap-1">
+                          <AlertCircle className="size-4" />{" "}
+                          {t("reports:receivables.summary.unpaid")}
                         </div>
                         <p className="text-xl font-bold font-mono text-orange-600">
                           {totalOutstanding.toLocaleString("vi-VN")} ₫
@@ -743,39 +768,56 @@ export function ReportDashboardPage() {
               value="sales-performance"
               className="m-0 focus-visible:outline-none space-y-6"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 md:gap-6">
                 {/* Rep Revenue Chart */}
                 <Card className="col-span-2 shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-                      <Users className="size-4 text-primary" /> So sánh doanh số ký hợp đồng theo
-                      nhân viên
+                      <Users className="size-4 text-primary" />{" "}
+                      {t("reports:salesPerformance.chart.title")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="h-[300px]">
                     {salesRevenueData.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        Không có dữ liệu hợp đồng ký mới trong giai đoạn này.
+                        {t("reports:salesPerformance.chart.no_data")}
                       </div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={salesRevenueData.map((row) => ({
-                            name: row.sales_rep?.full_name || `Mã: ${row.sales_rep?.id}`,
-                            "Hợp đồng đã ký": Number(row.total_contract_value),
-                            "Đã thu tiền": Number(row.total_payment_received),
+                            name:
+                              row.sales_rep?.full_name ||
+                              t("reports:salesPerformance.chart.rep_code", {
+                                id: row.sales_rep?.id,
+                              }),
+                            [t("reports:salesPerformance.chart.signed")]: Number(
+                              row.total_contract_value,
+                            ),
+                            [t("reports:salesPerformance.chart.received")]: Number(
+                              row.total_payment_received,
+                            ),
                           }))}
+                          margin={{ top: 10, right: 10, left: isMobile ? -5 : 0, bottom: 0 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="name" fontSize={11} />
+                          <XAxis dataKey="name" fontSize={isMobile ? 9 : 11} />
                           <YAxis
                             tickFormatter={(v) => (v / 1e6).toLocaleString() + "M"}
-                            fontSize={11}
+                            fontSize={isMobile ? 9 : 11}
                           />
                           <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                           <Legend verticalAlign="top" height={36} iconType="circle" />
-                          <Bar dataKey="Hợp đồng đã ký" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="Đã thu tiền" fill="#10b981" radius={[4, 4, 0, 0]} />
+                          <Bar
+                            dataKey={t("reports:salesPerformance.chart.signed")}
+                            fill="#3b82f6"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey={t("reports:salesPerformance.chart.received")}
+                            fill="#10b981"
+                            radius={[4, 4, 0, 0]}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     )}
@@ -786,7 +828,7 @@ export function ReportDashboardPage() {
                 <Card className="col-span-1 shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-sm font-semibold">
-                      Tỷ lệ chuyển đổi báo giá
+                      {t("reports:salesPerformance.conversion.title")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -797,16 +839,20 @@ export function ReportDashboardPage() {
                             {quoteConversionData.conversion_rate}%
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Tỷ lệ chuyển đổi thành công từ Báo giá sang Hợp đồng ký kết.
+                            {t("reports:salesPerformance.conversion.description")}
                           </p>
                         </div>
                         <div className="space-y-2.5 text-sm">
                           <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Tổng số Báo giá lập:</span>
+                            <span className="text-muted-foreground">
+                              {t("reports:salesPerformance.conversion.quotes_created")}
+                            </span>
                             <span className="font-semibold">{quoteConversionData.quote_count}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Số báo giá đã chốt ký:</span>
+                            <span className="text-muted-foreground">
+                              {t("reports:salesPerformance.conversion.quotes_signed")}
+                            </span>
                             <span className="font-semibold text-emerald-600">
                               {quoteConversionData.converted_count}
                             </span>
@@ -815,7 +861,7 @@ export function ReportDashboardPage() {
                       </>
                     ) : (
                       <div className="text-center text-xs text-muted-foreground py-10">
-                        Không tìm thấy báo cáo báo giá.
+                        {t("reports:salesPerformance.conversion.no_data")}
                       </div>
                     )}
                   </CardContent>
@@ -829,25 +875,25 @@ export function ReportDashboardPage() {
                 <>
                   {/* Totals Summary */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="rounded-xl border bg-card p-5 space-y-1.5 shadow-sm">
+                    <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm">
                       <div className="text-xs text-muted-foreground font-semibold">
-                        DỰ ÁN ĐANG THỰC HIỆN
+                        {t("reports:pipeline.summary.active_projects")}
                       </div>
                       <p className="text-3xl font-bold font-mono text-primary">
                         {pipelineData.totals.active_projects}
                       </p>
                     </div>
-                    <div className="rounded-xl border bg-card p-5 space-y-1.5 shadow-sm">
+                    <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm">
                       <div className="text-xs text-muted-foreground font-semibold">
-                        BÁO GIÁ ĐANG CHỜ PHẢN HỒI
+                        {t("reports:pipeline.summary.pending_quotes")}
                       </div>
                       <p className="text-3xl font-bold font-mono text-warning">
                         {pipelineData.totals.pending_quotes}
                       </p>
                     </div>
-                    <div className="rounded-xl border bg-card p-5 space-y-1.5 shadow-sm">
+                    <div className="rounded-xl border bg-card p-5 flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm">
                       <div className="text-xs text-muted-foreground font-semibold">
-                        HỢP ĐỒNG ĐÃ KÝ THÀNH CÔNG
+                        {t("reports:pipeline.summary.signed_contracts")}
                       </div>
                       <p className="text-3xl font-bold font-mono text-success">
                         {pipelineData.totals.signed_contracts}
@@ -860,12 +906,14 @@ export function ReportDashboardPage() {
                     <Card className="shadow-sm">
                       <CardHeader>
                         <CardTitle className="text-sm font-semibold">
-                          Phân bổ Dự án theo Trạng thái
+                          {t("reports:pipeline.charts.project_title")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="h-[250px] flex items-center justify-center">
                         {pipelineData.projects_by_status.length === 0 ? (
-                          <div className="text-xs text-muted-foreground">Không có dự án.</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t("reports:pipeline.charts.project_no_data")}
+                          </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -878,9 +926,11 @@ export function ReportDashboardPage() {
                                 dataKey="count"
                                 nameKey="status"
                                 cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                label={({ name, value }: any) => `${name}: ${value}`}
+                                cy="45%"
+                                outerRadius={isMobile ? 50 : 70}
+                                label={
+                                  isMobile ? false : ({ name, value }: any) => `${name}: ${value}`
+                                }
                               >
                                 {pipelineData.projects_by_status.map((_, index) => (
                                   <Cell
@@ -890,7 +940,18 @@ export function ReportDashboardPage() {
                                 ))}
                               </Pie>
                               <Tooltip
-                                formatter={(value) => [`${String(value)} dự án`, "Số lượng"]}
+                                formatter={(value) => [
+                                  t("reports:pipeline.charts.project_tooltip", {
+                                    count: String(value),
+                                  }),
+                                  t("reports:pipeline.charts.quantity"),
+                                ]}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                height={36}
+                                iconType="circle"
+                                wrapperStyle={{ fontSize: isMobile ? 11 : 12 }}
                               />
                             </PieChart>
                           </ResponsiveContainer>
@@ -902,12 +963,14 @@ export function ReportDashboardPage() {
                     <Card className="shadow-sm">
                       <CardHeader>
                         <CardTitle className="text-sm font-semibold">
-                          Phân bổ Báo giá theo Trạng thái
+                          {t("reports:pipeline.charts.quote_title")}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="h-[250px] flex items-center justify-center">
                         {pipelineData.quotes_by_status.length === 0 ? (
-                          <div className="text-xs text-muted-foreground">Không có báo giá.</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t("reports:pipeline.charts.quote_no_data")}
+                          </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -920,9 +983,11 @@ export function ReportDashboardPage() {
                                 dataKey="count"
                                 nameKey="status"
                                 cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                label={({ name, value }: any) => `${name}: ${value}`}
+                                cy="45%"
+                                outerRadius={isMobile ? 50 : 70}
+                                label={
+                                  isMobile ? false : ({ name, value }: any) => `${name}: ${value}`
+                                }
                               >
                                 {pipelineData.quotes_by_status.map((_, index) => (
                                   <Cell
@@ -932,7 +997,18 @@ export function ReportDashboardPage() {
                                 ))}
                               </Pie>
                               <Tooltip
-                                formatter={(value) => [`${String(value)} báo giá`, "Số lượng"]}
+                                formatter={(value) => [
+                                  t("reports:pipeline.charts.quote_tooltip", {
+                                    count: String(value),
+                                  }),
+                                  t("reports:pipeline.charts.quantity"),
+                                ]}
+                              />
+                              <Legend
+                                verticalAlign="bottom"
+                                height={36}
+                                iconType="circle"
+                                wrapperStyle={{ fontSize: isMobile ? 11 : 12 }}
                               />
                             </PieChart>
                           </ResponsiveContainer>
@@ -943,7 +1019,7 @@ export function ReportDashboardPage() {
                 </>
               ) : (
                 <div className="text-center text-xs text-muted-foreground py-12">
-                  Không tìm thấy báo cáo phễu cơ hội.
+                  {t("reports:pipeline.no_data")}
                 </div>
               )}
             </TabsContent>

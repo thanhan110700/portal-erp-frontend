@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react"
-import { CheckCircle2, XCircle, Clock } from "lucide-react"
+import { CheckCircle2, XCircle } from "lucide-react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { RowActions } from "@/components/common/RowActions"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,29 +14,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { Timesheet, TimesheetStatus } from "../types/timesheet"
+import type { Timesheet } from "../types/timesheet"
+import { useTranslation } from "react-i18next"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<
-  TimesheetStatus,
-  { label: string; variant: "warning" | "success" | "destructive"; icon: React.ElementType }
-> = {
-  pending: { label: "Chờ duyệt", variant: "warning", icon: Clock },
-  approved: { label: "Đã duyệt", variant: "success", icon: CheckCircle2 },
-  rejected: { label: "Từ chối", variant: "destructive", icon: XCircle },
-}
-
-function StatusBadge({ status }: { status: TimesheetStatus }) {
-  const cfg = STATUS_CONFIG[status]
-  const Icon = cfg.icon
-  return (
-    <Badge variant={cfg.variant} className="gap-1 text-[11px] py-0.5">
-      <Icon className="size-3" />
-      {cfg.label}
-    </Badge>
-  )
-}
 
 function formatTime(dt: string | null): string {
   if (!dt) return "—"
@@ -69,6 +50,7 @@ export function TimesheetTable({
   onApprove,
   onReject,
 }: TimesheetTableProps) {
+  const { t } = useTranslation(["hr", "common"])
   const [confirmTarget, setConfirmTarget] = useState<{
     timesheet: Timesheet
     action: "approve" | "reject"
@@ -88,7 +70,7 @@ export function TimesheetTable({
     () => [
       {
         accessorKey: "user.full_name",
-        header: "Nhân viên",
+        header: t("hr:timesheet.columns.employee"),
         size: 180,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
@@ -101,7 +83,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "timesheet_date",
-        header: "Ngày",
+        header: t("hr:timesheet.columns.date"),
         size: 110,
         Cell: ({ cell }) => (
           <span className="text-sm font-medium">{formatDate(cell.getValue<string>())}</span>
@@ -109,7 +91,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "check_in_time",
-        header: "Giờ vào",
+        header: t("hr:timesheet.columns.check_in"),
         size: 100,
         Cell: ({ cell }) => (
           <span className="text-sm font-mono text-muted-foreground">
@@ -119,7 +101,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "check_out_time",
-        header: "Giờ ra",
+        header: t("hr:timesheet.columns.check_out"),
         size: 100,
         Cell: ({ cell }) => (
           <span className="text-sm font-mono text-muted-foreground">
@@ -129,7 +111,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "working_hours",
-        header: "Số giờ",
+        header: t("hr:timesheet.columns.hours"),
         size: 100,
         Cell: ({ cell }) => (
           <span className="text-sm font-medium">
@@ -139,7 +121,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("hr:timesheet.columns.status"),
         size: 150,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-1 align-baseline items-start">
@@ -154,7 +136,7 @@ export function TimesheetTable({
       },
       {
         accessorKey: "notes",
-        header: "Ghi chú",
+        header: t("hr:timesheet.columns.notes"),
         size: 200,
         Cell: ({ cell }) => (
           <span className="text-xs text-muted-foreground line-clamp-2">
@@ -172,34 +154,32 @@ export function TimesheetTable({
             return <span className="text-xs text-muted-foreground">—</span>
           }
           return (
-            <div
-              className="flex items-center justify-end gap-1.5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="ghost"
-                size="xs"
-                className="gap-1 text-success hover:text-success hover:bg-success/10"
-                onClick={() => setConfirmTarget({ timesheet: ts, action: "approve" })}
-              >
-                <CheckCircle2 className="size-3.5" />
-                Duyệt
-              </Button>
-              <Button
-                variant="ghost"
-                size="xs"
-                className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setConfirmTarget({ timesheet: ts, action: "reject" })}
-              >
-                <XCircle className="size-3.5" />
-                Từ chối
-              </Button>
+            <div onClick={(e) => e.stopPropagation()}>
+              <RowActions
+                actions={
+                  [
+                    {
+                      label: t("hr:timesheet.actions.approve", { defaultValue: "Duyệt" }),
+                      icon: <CheckCircle2 className="size-4" />,
+                      onClick: () => setConfirmTarget({ timesheet: ts, action: "approve" }),
+                      className: "text-success hover:text-success hover:bg-success/10",
+                    },
+                    {
+                      label: t("hr:timesheet.actions.reject", { defaultValue: "Từ chối" }),
+                      icon: <XCircle className="size-4" />,
+                      onClick: () => setConfirmTarget({ timesheet: ts, action: "reject" }),
+                      className: "text-destructive hover:text-destructive hover:bg-destructive/10",
+                      variant: "destructive" as const,
+                    },
+                  ] as import("@/components/common/RowActions").RowAction[]
+                }
+              />
             </div>
           )
         },
       },
     ],
-    [onApprove, onReject],
+    [onApprove, onReject, t],
   )
 
   const table = useMantineReactTable({
@@ -244,21 +224,26 @@ export function TimesheetTable({
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmTarget?.action === "approve" ? "Xác nhận duyệt?" : "Xác nhận từ chối?"}
+              {confirmTarget?.action === "approve"
+                ? t("hr:timesheet.actions.approve_confirm_title")
+                : t("hr:timesheet.actions.reject_confirm_title")}
             </AlertDialogTitle>
             <AlertDialogDescription>
+              {/* Not fully translated, generic text could be fine, or just remove dynamic name/date interpolation if not specified. Keeping dynamic interpolation for now. */}
               {confirmTarget?.action === "approve"
                 ? `Duyệt chấm công ngày ${formatDate(confirmTarget.timesheet.timesheet_date)} của ${confirmTarget.timesheet.user?.full_name}?`
                 : `Từ chối chấm công ngày ${formatDate(confirmTarget?.timesheet.timesheet_date ?? null)} của ${confirmTarget?.timesheet.user?.full_name}?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant={confirmTarget?.action === "approve" ? "default" : "destructive"}
               onClick={handleConfirm}
             >
-              {confirmTarget?.action === "approve" ? "Duyệt" : "Từ chối"}
+              {confirmTarget?.action === "approve"
+                ? t("hr:timesheet.actions.approve")
+                : t("hr:timesheet.actions.reject")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

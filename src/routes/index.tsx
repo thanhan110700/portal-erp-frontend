@@ -49,7 +49,7 @@ export const router = createBrowserRouter([
           {
             path: routeSegment(PATHS.login),
             element: <LoginPage />,
-            handle: { title: "Login" },
+            handle: { title: "common:routes.login" },
           },
         ],
       },
@@ -75,17 +75,17 @@ export const router = createBrowserRouter([
                   const { DashboardPage } = await import("@/features/dashboard/pages/DashboardPage")
                   return { Component: DashboardPage }
                 },
-                handle: { title: "Dashboard" },
+                handle: { title: "common:routes.dashboard" },
               },
               {
                 path: routeSegment(PATHS.projects),
                 element: <ProjectListPage />,
-                handle: { title: "Dự án" },
+                handle: { title: "common:routes.projects" },
               },
               {
                 path: `${routeSegment(PATHS.projects)}/:id`,
                 element: <ProjectDetailPage />,
-                handle: { title: "Chi tiết dự án" },
+                handle: { title: "common:routes.project_detail" },
               },
               {
                 path: routeSegment(PATHS.examples),
@@ -94,7 +94,7 @@ export const router = createBrowserRouter([
                     await import("@/features/examples/pages/ComponentExamplesPage")
                   return { Component: ComponentExamplesPage }
                 },
-                handle: { title: "Component Examples" },
+                handle: { title: "common:routes.component_examples" },
               },
               // ── HR Module ──────────────────────────────────────────────
               {
@@ -103,7 +103,7 @@ export const router = createBrowserRouter([
                   const { EmployeeListPage } = await import("@/features/hr/pages/EmployeeListPage")
                   return { Component: EmployeeListPage }
                 },
-                handle: { title: "Nhân viên" },
+                handle: { title: "common:routes.hr_employees" },
               },
               {
                 path: "hr/employees/:id",
@@ -112,7 +112,16 @@ export const router = createBrowserRouter([
                     await import("@/features/hr/pages/EmployeeDetailPage")
                   return { Component: EmployeeDetailPage }
                 },
-                handle: { title: "Chi tiết nhân viên" },
+                handle: { title: "common:routes.hr_employee_detail" },
+              },
+              {
+                path: routeSegment(PATHS.hrDepartments),
+                lazy: async () => {
+                  const { DepartmentListPage } =
+                    await import("@/features/hr/pages/DepartmentListPage")
+                  return { Component: DepartmentListPage }
+                },
+                handle: { title: "common:routes.hr_departments" },
               },
               {
                 path: routeSegment(PATHS.hrTimesheets),
@@ -121,7 +130,7 @@ export const router = createBrowserRouter([
                     await import("@/features/hr/pages/TimesheetListPage")
                   return { Component: TimesheetListPage }
                 },
-                handle: { title: "Chấm công" },
+                handle: { title: "common:routes.hr_timesheets" },
               },
               {
                 path: routeSegment(PATHS.hrKpi),
@@ -129,7 +138,7 @@ export const router = createBrowserRouter([
                   const { KpiDashboardPage } = await import("@/features/hr/pages/KpiDashboardPage")
                   return { Component: KpiDashboardPage }
                 },
-                handle: { title: "KPI Kinh doanh" },
+                handle: { title: "common:routes.hr_kpi" },
               },
               // ── Sales Module ───────────────────────────────────────────
               {
@@ -139,7 +148,7 @@ export const router = createBrowserRouter([
                     await import("@/features/sales/pages/CustomerListPage")
                   return { Component: CustomerListPage }
                 },
-                handle: { title: "Khách hàng" },
+                handle: { title: "common:routes.sales_customers" },
               },
               {
                 path: "sales/customers/:id",
@@ -148,7 +157,7 @@ export const router = createBrowserRouter([
                     await import("@/features/sales/pages/CustomerDetailPage")
                   return { Component: CustomerDetailPage }
                 },
-                handle: { title: "Chi tiết khách hàng" },
+                handle: { title: "common:routes.sales_customer_detail" },
               },
               {
                 path: routeSegment(PATHS.salesQuotes),
@@ -156,7 +165,7 @@ export const router = createBrowserRouter([
                   const { QuoteListPage } = await import("@/features/sales/pages/QuoteListPage")
                   return { Component: QuoteListPage }
                 },
-                handle: { title: "Báo giá" },
+                handle: { title: "common:routes.sales_quotes" },
               },
               {
                 path: routeSegment(PATHS.salesContracts),
@@ -165,7 +174,7 @@ export const router = createBrowserRouter([
                     await import("@/features/sales/pages/ContractListPage")
                   return { Component: ContractListPage }
                 },
-                handle: { title: "Hợp đồng" },
+                handle: { title: "common:routes.sales_contracts" },
               },
               // ── Finance Module ──────────────────────────────────────────
               {
@@ -175,7 +184,7 @@ export const router = createBrowserRouter([
                     await import("@/features/finance/pages/VoucherListPage")
                   return { Component: VoucherListPage }
                 },
-                handle: { title: "Chứng từ Thu/Chi" },
+                handle: { title: "common:routes.finance_vouchers" },
               },
               // ── Reports Module ──────────────────────────────────────────
               {
@@ -185,7 +194,7 @@ export const router = createBrowserRouter([
                     await import("@/features/reports/pages/ReportDashboardPage")
                   return { Component: ReportDashboardPage }
                 },
-                handle: { title: "Báo cáo quản trị" },
+                handle: { title: "common:routes.reports" },
               },
             ],
           },

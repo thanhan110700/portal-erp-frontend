@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { SubmitTimesheetPayload } from "../types/timesheet"
+import { useTranslation, Trans } from "react-i18next"
 
 interface TimesheetFormData {
   timesheet_date: string
@@ -37,6 +38,7 @@ function calcWorkingHours(date: string, checkIn: string, checkOut: string): numb
 }
 
 export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimesheetModalProps) {
+  const { t } = useTranslation(["hr", "common"])
   const [previewHours, setPreviewHours] = useState<number | null>(null)
 
   const {
@@ -90,16 +92,16 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
     <CommonDialog
       open={open}
       onClose={onClose}
-      title="Khai báo chấm công"
+      title={t("hr:timesheet.form.title")}
       size="md"
       primaryAction={{
-        label: isSubmitting ? "Đang gửi..." : "Khai báo",
+        label: isSubmitting ? t("common:table.loading") : t("hr:timesheet.form.submit"),
         type: "submit",
         form: "timesheet-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -114,10 +116,10 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
           <Controller
             name="timesheet_date"
             control={control}
-            rules={{ required: "Vui lòng chọn ngày" }}
+            rules={{ required: t("hr:timesheet.form.date_required") }}
             render={({ field, fieldState }) => (
               <CommonDatePicker
-                label="Ngày làm việc"
+                label={t("hr:timesheet.form.date")}
                 value={field.value || null}
                 onChange={field.onChange}
                 error={fieldState.error?.message}
@@ -131,13 +133,13 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ts-in" className="text-sm font-medium">
-              Giờ vào
+              {t("hr:timesheet.form.check_in")}
             </Label>
             <Input id="ts-in" type="time" {...register("check_in_time")} className="h-9" />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ts-out" className="text-sm font-medium">
-              Giờ ra
+              {t("hr:timesheet.form.check_out")}
             </Label>
             <Input id="ts-out" type="time" {...register("check_out_time")} className="h-9" />
           </div>
@@ -148,7 +150,7 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
           <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
             <Info className="size-4 text-primary shrink-0" />
             <span className="text-sm text-primary font-medium">
-              Tổng số giờ làm: <strong>{previewHours}h</strong>
+              {t("hr:timesheet.summary_hours")}: <strong>{previewHours}h</strong>
             </span>
           </div>
         )}
@@ -156,11 +158,11 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
         {/* Notes */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="ts-notes" className="text-sm font-medium">
-            Ghi chú
+            {t("hr:timesheet.form.notes")}
           </Label>
           <Textarea
             id="ts-notes"
-            placeholder="VD: Làm việc tại nhà, họp với khách hàng..."
+            placeholder={t("hr:timesheet.form.notes_placeholder")}
             rows={3}
             {...register("notes")}
             className="resize-none text-sm"
@@ -169,7 +171,7 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
 
         {/* Policy notice */}
         <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
-          📌 Chấm công sẽ ở trạng thái <strong>Chờ duyệt</strong> cho đến khi quản lý xác nhận.
+          📌 <Trans i18nKey="hr:timesheet.form.policy_notice" components={{ 1: <strong /> }} />
         </p>
       </form>
     </CommonDialog>

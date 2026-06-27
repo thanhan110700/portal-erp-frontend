@@ -11,32 +11,35 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { Contract, CreateContractPayload } from "../types/sales"
 import type { OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
 
-const contractSchema = z.object({
-  customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
-  quote_id: z.number().optional().nullable(),
-  contract_date: z.string().min(1, "Vui lòng nhập ngày hợp đồng"),
-  contract_value: z
-    .number({ message: "Vui lòng nhập giá trị hợp đồng" })
-    .gt(0, "Giá trị hợp đồng phải lớn hơn 0"),
-  sales_rep_id: z.number().min(1, "Vui lòng chọn Sales phụ trách"),
-  signed_date: z.string().optional().nullable().or(z.literal("")),
-  status: z.string().min(1, "Vui lòng chọn trạng thái"),
-  content: z
-    .string()
-    .max(10000, "Nội dung hợp đồng không được quá 10000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  terms: z
-    .string()
-    .max(5000, "Điều khoản không được quá 5000 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-})
+const createContractSchema = (t: TFunction) =>
+  z.object({
+    customer_id: z.number().min(1, t("sales:contract.form.validation.customer_required")),
+    quote_id: z.number().optional().nullable(),
+    contract_date: z.string().min(1, t("sales:contract.form.validation.date_required")),
+    contract_value: z
+      .number({ message: t("sales:contract.form.validation.value_required") })
+      .gt(0, t("sales:contract.form.validation.value_min")),
+    sales_rep_id: z.number().min(1, t("sales:contract.form.validation.sales_required")),
+    signed_date: z.string().optional().nullable().or(z.literal("")),
+    status: z.string().min(1, t("sales:contract.form.validation.status_required")),
+    content: z
+      .string()
+      .max(10000, t("sales:contract.form.validation.content_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    terms: z
+      .string()
+      .max(5000, t("sales:contract.form.validation.terms_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+  })
 
-type ContractFormData = z.infer<typeof contractSchema>
+type ContractFormData = z.infer<ReturnType<typeof createContractSchema>>
 
 interface ContractFormModalProps {
   open: boolean
@@ -59,6 +62,7 @@ export function ContractFormModal({
   salesReps = [],
   quotes = [],
 }: ContractFormModalProps) {
+  const { t } = useTranslation()
   const isEditing = !!editData
 
   const {
@@ -69,7 +73,7 @@ export function ContractFormModal({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<ContractFormData>({
-    resolver: zodResolver(contractSchema),
+    resolver: zodResolver(createContractSchema(t)),
     defaultValues: {
       customer_id: 0,
       quote_id: null,
@@ -134,7 +138,7 @@ export function ContractFormModal({
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Đã xảy ra lỗi khi lưu hợp đồng")
+      toast.error(t("sales:contract.form.save_error"))
     }
   }
 
@@ -147,16 +151,20 @@ export function ContractFormModal({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? `Cập nhật Hợp đồng — ${editData.contract_code}` : "Tạo Hợp đồng mới"}
+      title={
+        isEditing
+          ? t("sales:contract.form.edit_title", { code: editData.contract_code })
+          : t("sales:contract.form.add_title")
+      }
       size="2xl"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu Hợp đồng",
+        label: isSubmitting ? t("sales:contract.form.saving") : t("sales:contract.form.save"),
         type: "submit",
         form: "contract-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -168,7 +176,7 @@ export function ContractFormModal({
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-customer">Khách hàng *</Label>
+            <Label htmlFor="c-customer">{t("sales:contract.form.fields.customer")} *</Label>
             <Controller
               name="customer_id"
               control={control}
@@ -180,7 +188,7 @@ export function ContractFormModal({
                     label: item.label,
                     value: item.value?.toString() || item.id?.toString() || "",
                   }))}
-                  placeholder="Chọn khách hàng..."
+                  placeholder={t("sales:contract.form.fields.customer_placeholder")}
                 />
               )}
             />
@@ -190,7 +198,7 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-quote">Liên kết Báo giá (Tùy chọn)</Label>
+            <Label htmlFor="c-quote">{t("sales:contract.form.fields.quote_link")}</Label>
             <Controller
               name="quote_id"
               control={control}
@@ -199,13 +207,13 @@ export function ContractFormModal({
                   value={field.value ? field.value.toString() : ""}
                   onValueChange={(val) => field.onChange(val && val !== "0" ? parseInt(val) : null)}
                   options={[
-                    { label: "--- Không liên kết ---", value: "0" },
+                    { label: t("sales:contract.form.fields.no_link"), value: "0" },
                     ...filteredQuotes.map((item) => ({
                       label: `${item.label}`,
                       value: item.value?.toString() || item.id?.toString() || "",
                     })),
                   ]}
-                  placeholder="Chọn báo giá (nếu có)"
+                  placeholder={t("sales:contract.form.fields.quote_placeholder")}
                 />
               )}
             />
@@ -217,7 +225,7 @@ export function ContractFormModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-sales">Sales phụ trách *</Label>
+            <Label htmlFor="c-sales">{t("sales:contract.form.fields.sales_rep")} *</Label>
             <Controller
               name="sales_rep_id"
               control={control}
@@ -229,7 +237,7 @@ export function ContractFormModal({
                     label: item.label,
                     value: item.value?.toString() || item.id?.toString() || "",
                   }))}
-                  placeholder="Chọn sales..."
+                  placeholder={t("sales:contract.form.fields.sales_placeholder")}
                 />
               )}
             />
@@ -239,7 +247,7 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-status">Trạng thái *</Label>
+            <Label htmlFor="c-status">{t("sales:contract.form.fields.status")} *</Label>
             <Controller
               name="status"
               control={control}
@@ -260,7 +268,7 @@ export function ContractFormModal({
                           { label: "Completed", value: "Completed" },
                         ]
                   }
-                  placeholder="Chọn trạng thái..."
+                  placeholder={t("sales:contract.form.fields.status_placeholder")}
                 />
               )}
             />
@@ -275,7 +283,7 @@ export function ContractFormModal({
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày HĐ"
+                  label={t("sales:contract.form.fields.contract_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -291,7 +299,7 @@ export function ContractFormModal({
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày ký"
+                  label={t("sales:contract.form.fields.signed_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -301,10 +309,11 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-value">Giá trị HĐ (VNĐ) *</Label>
+            <Label htmlFor="c-value">{t("sales:contract.form.fields.value")} *</Label>
             <Input
               id="c-value"
               type="number"
+              inputMode="decimal"
               min="0"
               {...register("contract_value", { valueAsNumber: true })}
               aria-invalid={!!errors.contract_value}
@@ -316,11 +325,11 @@ export function ContractFormModal({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="c-content">Nội dung hợp đồng</Label>
+          <Label htmlFor="c-content">{t("sales:contract.form.fields.content")}</Label>
           <Textarea
             id="c-content"
             rows={3}
-            placeholder="Ghi chú nội dung chính..."
+            placeholder={t("sales:contract.form.fields.content_placeholder")}
             {...register("content")}
             className="resize-none"
             aria-invalid={!!errors.content}
@@ -329,11 +338,11 @@ export function ContractFormModal({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="c-terms">Điều khoản đặc biệt</Label>
+          <Label htmlFor="c-terms">{t("sales:contract.form.fields.terms")}</Label>
           <Textarea
             id="c-terms"
             rows={3}
-            placeholder="Các điều khoản thanh toán, giao hàng bổ sung..."
+            placeholder={t("sales:contract.form.fields.terms_placeholder")}
             {...register("terms")}
             className="resize-none"
             aria-invalid={!!errors.terms}

@@ -1,7 +1,8 @@
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { RowActions } from "@/components/common/RowActions"
 import type { Contact } from "../types/sales"
+import { useTranslation } from "react-i18next"
 
 interface ContactTableProps {
   contacts: Contact[]
@@ -11,36 +12,37 @@ interface ContactTableProps {
 }
 
 export function ContactTable({ contacts, onEdit, onDelete, isAdmin = false }: ContactTableProps) {
+  const { t } = useTranslation()
   const columns: MRT_ColumnDef<Contact>[] = [
     {
       accessorKey: "contact_name",
-      header: "Họ và tên",
+      header: t("sales:contact.columns.name"),
       size: 150,
       Cell: ({ cell }) => <span className="font-medium">{cell.getValue<string>()}</span>,
     },
     {
       accessorKey: "position",
-      header: "Chức vụ",
+      header: t("sales:contact.columns.position"),
       size: 130,
     },
     {
       accessorKey: "phone",
-      header: "Số điện thoại",
+      header: t("sales:contact.columns.phone"),
       size: 120,
     },
     {
       accessorKey: "email",
-      header: "Email",
+      header: t("sales:contact.columns.email"),
       size: 180,
     },
     {
       accessorKey: "is_primary",
-      header: "Liên hệ chính",
+      header: t("sales:contact.columns.is_primary"),
       size: 120,
       Cell: ({ cell }) =>
         cell.getValue<boolean>() ? (
           <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-            Có
+            {t("sales:contact.yes")}
           </span>
         ) : null,
     },
@@ -51,24 +53,23 @@ export function ContactTable({ contacts, onEdit, onDelete, isAdmin = false }: Co
       Cell: ({ row }) => {
         if (!isAdmin) return null
         return (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-              onClick={() => onEdit(row.original)}
-            >
-              <Pencil className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              onClick={() => void onDelete(row.original.id)}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <RowActions
+            actions={[
+              {
+                label: t("common:actions.edit", { defaultValue: "Sửa" }),
+                icon: <Pencil className="size-4" />,
+                onClick: () => onEdit(row.original),
+                className: "text-muted-foreground hover:text-primary hover:bg-primary/10",
+              },
+              {
+                label: t("common:actions.delete", { defaultValue: "Xóa" }),
+                icon: <Trash2 className="size-4" />,
+                onClick: () => void onDelete(row.original.id),
+                className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                variant: "destructive",
+              },
+            ]}
+          />
         )
       },
     },
@@ -78,20 +79,22 @@ export function ContactTable({ contacts, onEdit, onDelete, isAdmin = false }: Co
     columns,
     data: contacts,
     enableColumnActions: false,
-    enableColumnFilters: true,
-    enableGlobalFilter: true,
+    enableColumnFilters: false,
     enablePagination: false,
     enableSorting: true,
     enableBottomToolbar: false,
-    enableTopToolbar: true,
-    positionGlobalFilter: "left",
-    mantineSearchTextInputProps: {
-      placeholder: "Tìm kiếm...",
-      variant: "filled",
-    },
+    enableTopToolbar: false,
     mantineTableProps: {
       striped: true,
+      highlightOnHover: true,
       withBorder: false,
+      withColumnBorders: false,
+    },
+    mantineTableContainerProps: {
+      onScroll: (e: React.UIEvent<HTMLDivElement>) => {
+        e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
+      },
+      sx: { overflowX: "auto", WebkitOverflowScrolling: "touch" },
     },
   })
 

@@ -100,6 +100,12 @@ importers:
       dayjs:
         specifier: ^1.11.20
         version: 1.11.20
+      i18next:
+        specifier: ^26.3.3
+        version: 26.3.3(typescript@5.9.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.2.1
+        version: 8.2.1
       lucide-react:
         specifier: ^1.7.0
         version: 1.7.0(react@19.2.4)
@@ -124,6 +130,9 @@ importers:
       react-hook-form:
         specifier: 7.72.0
         version: 7.72.0(react@19.2.4)
+      react-i18next:
+        specifier: ^17.0.8
+        version: 17.0.8(i18next@26.3.3(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       react-router-dom:
         specifier: ^7.13.2
         version: 7.13.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -4447,6 +4456,12 @@ packages:
       }
     engines: { node: ">=16.9.0" }
 
+  html-parse-stringify@3.0.1:
+    resolution:
+      {
+        integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==,
+      }
+
   http-errors@2.0.1:
     resolution:
       {
@@ -4474,6 +4489,23 @@ packages:
         integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==,
       }
     engines: { node: ">=18.18.0" }
+
+  i18next-browser-languagedetector@8.2.1:
+    resolution:
+      {
+        integrity: sha512-bZg8+4bdmaOiApD7N7BPT9W8MLZG+nPTOFlLiJiT8uzKXFjhxw4v2ierCXOwB5sFDMtuA5G4kgYZ0AznZxQ/cw==,
+      }
+
+  i18next@26.3.3:
+    resolution:
+      {
+        integrity: sha512-aYVegyBdXSO93CMMihvr47jI7GHSOcIahMpJX+qzUXDzW4xDJf2uenIA+45vDU+YhiVdcfsql70AC9RVdMNrHg==,
+      }
+    peerDependencies:
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   iconv-lite@0.7.2:
     resolution:
@@ -5895,6 +5927,25 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
+  react-i18next@17.0.8:
+    resolution:
+      {
+        integrity: sha512-0ooKbGLU8JXhe1zwpQUWIeXSgLPOfwJmgheWRIUpcoA0CpyabpGhayjdG+/eA5esC1AQ8h2jWpXjJfzQzeDOCw==,
+      }
+    peerDependencies:
+      i18next: ">= 26.2.0"
+      react: ">= 16.8.0"
+      react-dom: "*"
+      react-native: "*"
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+      typescript:
+        optional: true
+
   react-is@16.13.1:
     resolution:
       {
@@ -6869,6 +6920,13 @@ packages:
         optional: true
       yaml:
         optional: true
+
+  void-elements@3.1.0:
+    resolution:
+      {
+        integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==,
+      }
+    engines: { node: ">=0.10.0" }
 
   w3c-keyname@2.2.8:
     resolution:
@@ -9982,6 +10040,10 @@ snapshots:
 
   hono@4.12.9: {}
 
+  html-parse-stringify@3.0.1:
+    dependencies:
+      void-elements: 3.1.0
+
   http-errors@2.0.1:
     dependencies:
       depd: 2.0.0
@@ -10000,6 +10062,14 @@ snapshots:
   human-signals@2.1.0: {}
 
   human-signals@8.0.1: {}
+
+  i18next-browser-languagedetector@8.2.1:
+    dependencies:
+      "@babel/runtime": 7.29.2
+
+  i18next@26.3.3(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
 
   iconv-lite@0.7.2:
     dependencies:
@@ -10822,6 +10892,17 @@ snapshots:
     dependencies:
       react: 19.2.4
 
+  react-i18next@17.0.8(i18next@26.3.3(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3):
+    dependencies:
+      "@babel/runtime": 7.29.2
+      html-parse-stringify: 3.0.1
+      i18next: 26.3.3(typescript@5.9.3)
+      react: 19.2.4
+      use-sync-external-store: 1.6.0(react@19.2.4)
+    optionalDependencies:
+      react-dom: 19.2.4(react@19.2.4)
+      typescript: 5.9.3
+
   react-is@16.13.1: {}
 
   react-is@19.2.4: {}
@@ -11486,6 +11567,8 @@ snapshots:
       "@types/node": 24.12.0
       fsevents: 2.3.3
       jiti: 2.6.1
+
+  void-elements@3.1.0: {}
 
   w3c-keyname@2.2.8: {}
 

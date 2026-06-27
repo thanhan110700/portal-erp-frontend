@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { ProjectMilestone } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMilestoneFormModal } from "./ProjectMilestoneFormModal"
+import { useTranslation } from "react-i18next"
 
 interface ProjectMilestonesTabProps {
   projectId: number
@@ -35,6 +36,7 @@ export function ProjectMilestonesTab({
   onRefresh,
   canEdit,
 }: ProjectMilestonesTabProps) {
+  const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedMilestone, setSelectedMilestone] = useState<ProjectMilestone | null>(null)
 
@@ -42,30 +44,30 @@ export function ProjectMilestonesTab({
     try {
       if (selectedMilestone) {
         await projectApi.updateMilestone(projectId, selectedMilestone.id, payload)
-        toast.success("Cập nhật cột mốc thành công")
+        toast.success(t("projects:milestones.update_success"))
       } else {
         await projectApi.addMilestone(projectId, payload)
-        toast.success("Thêm cột mốc thành công")
+        toast.success(t("projects:milestones.add_success"))
       }
       setModalOpen(false)
       onRefresh()
     } catch {
-      toast.error("Lỗi xử lý yêu cầu")
+      toast.error(t("projects:milestones.process_error"))
     }
   }
 
   const handleRemove = useCallback(
     async (milestoneId: number) => {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa cột mốc này?")) return
+      if (!window.confirm(t("projects:milestones.delete_confirm"))) return
       try {
         await projectApi.removeMilestone(projectId, milestoneId)
-        toast.success("Đã xóa cột mốc")
+        toast.success(t("projects:milestones.delete_success"))
         onRefresh()
       } catch {
-        toast.error("Xóa cột mốc thất bại")
+        toast.error(t("projects:milestones.delete_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   // Sort milestones by date chronologically
@@ -77,7 +79,7 @@ export function ProjectMilestonesTab({
     const cols: MRT_ColumnDef<ProjectMilestone>[] = [
       {
         accessorKey: "milestone_name",
-        header: "Tên cột mốc",
+        header: t("projects:milestones.columns.name"),
         size: 200,
         Cell: ({ cell }) => (
           <span className="font-semibold text-foreground">{cell.getValue<string>()}</span>
@@ -85,7 +87,7 @@ export function ProjectMilestonesTab({
       },
       {
         accessorKey: "milestone_date",
-        header: "Ngày đến hạn",
+        header: t("projects:milestones.columns.due_date"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -96,20 +98,22 @@ export function ProjectMilestonesTab({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("projects:milestones.columns.status"),
         size: 150,
         Cell: ({ cell }) => {
           const status = cell.getValue<string>() || "planned"
           return (
             <Badge variant={STATUS_VARIANTS[status] || "default"}>
-              {STATUS_LABELS[status] || status || ""}
+              {t(`common:status.${status}`, {
+                defaultValue: STATUS_LABELS[status] || status || "",
+              })}
             </Badge>
           )
         },
       },
       {
         accessorKey: "notes",
-        header: "Ghi chú / Tiêu chí nghiệm thu",
+        header: t("projects:milestones.columns.notes"),
         size: 300,
         Cell: ({ cell }) => (
           <span
@@ -125,7 +129,7 @@ export function ProjectMilestonesTab({
     if (canEdit) {
       cols.push({
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 100,
         Cell: ({ row }) => {
           const milestone = row.original
@@ -159,7 +163,7 @@ export function ProjectMilestonesTab({
       })
     }
     return cols
-  }, [canEdit, handleRemove, setSelectedMilestone, setModalOpen])
+  }, [canEdit, handleRemove, setSelectedMilestone, setModalOpen, t])
 
   const table = useMantineReactTable({
     columns,
@@ -188,7 +192,9 @@ export function ProjectMilestonesTab({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Cột mốc dự án ({milestones.length})</h3>
+        <h3 className="text-lg font-semibold">
+          {t("projects:milestones.title")} ({milestones.length})
+        </h3>
         {canEdit && (
           <Button
             size="sm"
@@ -199,7 +205,7 @@ export function ProjectMilestonesTab({
             className="gap-2 min-h-11 md:min-h-9"
           >
             <Plus className="size-4" />
-            Thêm cột mốc
+            {t("projects:milestones.add_milestone")}
           </Button>
         )}
       </div>

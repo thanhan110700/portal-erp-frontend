@@ -1,0 +1,12 @@
+{
+  "title": "Dashboard",
+  "statistics": "Statistics",
+  "revenue": "Revenue",
+  "expense": "Expense",
+  "profit": "Profit",
+  "recentActivities": "Recent Activities",
+  "overview": "Overview",
+  "live": "Live Dashboard",
+  "welcome": "Welcome, {{name}}!",
+  "description": "Welcome to your new project base template. You can start adding features here."
+}

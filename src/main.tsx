@@ -10,6 +10,7 @@ import { PageLoader } from "@/components/common/PageLoader"
 import { Toaster } from "@/components/ui/sonner"
 
 import "./index.css"
+import "./i18n"
 import { strictMode } from "./config"
 
 import faviconTicollab from "@/assets/logo-red.png"

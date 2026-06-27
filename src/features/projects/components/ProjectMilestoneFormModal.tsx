@@ -10,16 +10,23 @@ import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { ProjectMilestone } from "../types/project"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
-const milestoneSchema = z.object({
-  milestone_name: z
-    .string()
-    .min(1, "Vui lòng nhập tên cột mốc")
-    .max(255, "Tên cột mốc tối đa 255 ký tự"),
-  milestone_date: z.string().min(1, "Vui lòng chọn ngày đến hạn"),
-  status: z.enum(["planned", "in_progress", "completed", "delayed"]).default("planned"),
-  notes: z.string().max(1000, "Ghi chú tối đa 1000 ký tự").optional().nullable().or(z.literal("")),
-})
+const getMilestoneSchema = (t: any) =>
+  z.object({
+    milestone_name: z
+      .string()
+      .min(1, t("projects:milestones.form.validation.name_required"))
+      .max(255, t("projects:milestones.form.validation.name_max")),
+    milestone_date: z.string().min(1, t("projects:milestones.form.validation.date_required")),
+    status: z.enum(["planned", "in_progress", "completed", "delayed"]).default("planned"),
+    notes: z
+      .string()
+      .max(1000, t("projects:milestones.form.validation.notes_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+  })
 
 interface ProjectMilestoneFormModalProps {
   open: boolean
@@ -41,6 +48,7 @@ export function ProjectMilestoneFormModal({
   onSubmit,
   editData,
 }: ProjectMilestoneFormModalProps) {
+  const { t } = useTranslation(["projects", "common"])
   const isEditing = !!editData
 
   const {
@@ -50,7 +58,7 @@ export function ProjectMilestoneFormModal({
     control,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(milestoneSchema),
+    resolver: zodResolver(getMilestoneSchema(t)),
     defaultValues: {
       milestone_name: "",
       milestone_date: "",
@@ -90,7 +98,7 @@ export function ProjectMilestoneFormModal({
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Lỗi khi lưu cột mốc")
+      toast.error(t("projects:milestones.form.validation.save_error"))
     }
   }
 
@@ -98,16 +106,20 @@ export function ProjectMilestoneFormModal({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? "Cập nhật Cột mốc" : "Thêm Cột mốc mới"}
+      title={
+        isEditing
+          ? t("projects:milestones.form.title_edit")
+          : t("projects:milestones.form.title_add")
+      }
       size="lg"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu",
+        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
         type: "submit",
         form: "project-milestone-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:action.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -118,14 +130,14 @@ export function ProjectMilestoneFormModal({
         className="grid gap-4 py-2"
       >
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ms-name">Tên cột mốc *</Label>
+          <Label htmlFor="ms-name">{t("projects:milestones.form.name")}</Label>
           <Input
             id="ms-name"
-            placeholder="Ví dụ: Bàn giao thiết kế, Handoff UAT..."
+            placeholder={t("projects:milestones.form.name_placeholder")}
             {...register("milestone_name")}
           />
           {errors.milestone_name && (
-            <p className="text-xs text-destructive">{errors.milestone_name.message}</p>
+            <p className="text-xs text-destructive">{errors.milestone_name.message as string}</p>
           )}
         </div>
 
@@ -136,7 +148,7 @@ export function ProjectMilestoneFormModal({
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày đến hạn *"
+                  label={t("projects:milestones.form.due_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -147,7 +159,7 @@ export function ProjectMilestoneFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>Trạng thái *</Label>
+            <Label>{t("projects:milestones.form.status")}</Label>
             <Controller
               name="status"
               control={control}
@@ -155,25 +167,32 @@ export function ProjectMilestoneFormModal({
                 <SearchableSelect
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={STATUS_OPTIONS}
-                  placeholder="Chọn trạng thái..."
+                  options={STATUS_OPTIONS.map((s) => ({
+                    ...s,
+                    label: t(`common:status.${s.value}`, { defaultValue: s.label }),
+                  }))}
+                  placeholder={t("projects:milestones.form.status_placeholder")}
                 />
               )}
             />
-            {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
+            {errors.status && (
+              <p className="text-xs text-destructive">{errors.status.message as string}</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ms-notes">Ghi chú / Mô tả tiêu chí</Label>
+          <Label htmlFor="ms-notes">{t("projects:milestones.form.notes")}</Label>
           <Textarea
             id="ms-notes"
             rows={3}
-            placeholder="Ghi chú chi tiết công việc hoặc tiêu chí nghiệm thu của cột mốc..."
+            placeholder={t("projects:milestones.form.notes_placeholder")}
             {...register("notes")}
             className="resize-none"
           />
-          {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
+          {errors.notes && (
+            <p className="text-xs text-destructive">{errors.notes.message as string}</p>
+          )}
         </div>
       </form>
     </CommonDialog>

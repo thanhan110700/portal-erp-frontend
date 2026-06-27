@@ -1,5 +1,6 @@
 import * as React from "react"
-
+import { useIsMobile } from "@/hooks/useMobile"
+import { CommonDrawer } from "@/components/common/CommonDrawer"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -137,6 +138,29 @@ export function CommonDialog({
   headerClassName,
   footerClassName,
 }: CommonDialogProps) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <CommonDrawer
+        open={open}
+        onClose={onClose}
+        title={title}
+        description={description}
+        primaryAction={primaryAction}
+        cancelAction={cancelAction}
+        extraActions={extraActions}
+        showCloseButton={showCloseButton}
+        direction="bottom"
+        contentClassName={cn("max-h-[95dvh]", contentClassName)}
+        headerClassName={headerClassName}
+        footerClassName={footerClassName}
+      >
+        {children}
+      </CommonDrawer>
+    )
+  }
+
   // Resolve action configs
   const primary = primaryAction
     ? resolveAction(primaryAction, { label: "Confirm", variant: "default" })

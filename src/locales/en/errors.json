@@ -1,0 +1,21 @@
+{
+  "notFound": "Page Not Found",
+  "unauthorized": "Unauthorized Access",
+  "serverError": "Internal Server Error",
+  "networkError": "Network Error",
+  "validationError": "Validation Error",
+  "goHome": "Go to Dashboard",
+  "retry": "Retry",
+  "appError": {
+    "title_outdated": "A new version is available",
+    "title_error": "Something went wrong",
+    "desc_outdated": "The app has just been updated. Please reload the page to use the latest version.",
+    "desc_error": "This page failed to load. Please reload the page, or try again in a few minutes if it persists.",
+    "reloading": "Reloading…",
+    "reload": "Reload page"
+  },
+  "notFoundPage": {
+    "desc": "The page you are looking for doesn't exist or has been moved. Check the URL or navigate back to safety.",
+    "goBack": "Go Back"
+  }
+}

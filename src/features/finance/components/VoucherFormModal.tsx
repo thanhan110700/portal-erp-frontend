@@ -8,40 +8,45 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
+import { MultiSearchableSelect } from "@/components/common/MultiSearchableSelect"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import type { Voucher, CreateVoucherPayload, UpdateVoucherPayload } from "../types/voucher"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
-const voucherSchema = z
-  .object({
-    voucher_type: z.enum(["receipt", "payment"]),
-    amount: z.number({ message: "Vui lòng nhập số tiền hợp lệ" }).gt(0, "Số tiền phải lớn hơn 0"),
-    voucher_date: z.string().min(1, "Vui lòng chọn ngày chứng từ"),
-    description: z
-      .string()
-      .min(1, "Vui lòng nhập lý do / mô tả chứng từ")
-      .max(1000, "Mô tả tối đa 1000 ký tự"),
-    notes: z
-      .string()
-      .max(2000, "Ghi chú tối đa 2000 ký tự")
-      .optional()
-      .nullable()
-      .or(z.literal("")),
-    project_id: z.number().optional().nullable(),
-    contract_id: z.number().optional().nullable(),
-    customer_id: z.number().optional().nullable(),
-    department_id: z.number().optional().nullable(),
-  })
-  .refine(
-    (data) => {
-      return !!(data.project_id || data.contract_id || data.customer_id || data.department_id)
-    },
-    {
-      message:
-        "Chứng từ phải liên kết với ít nhất một thông tin: Dự án, Hợp đồng, Khách hàng hoặc Phòng ban.",
-      path: ["project_id"], // Attach error message to project field primarily
-    },
-  )
+const getVoucherSchema = (t: any) =>
+  z
+    .object({
+      voucher_type: z.enum(["receipt", "payment"]),
+      amount: z
+        .number({ message: t("finance:form.validation.amount_invalid") })
+        .gt(0, t("finance:form.validation.amount_gt0")),
+      voucher_date: z.string().min(1, t("finance:form.validation.date_required")),
+      description: z
+        .string()
+        .min(1, t("finance:form.validation.description_required"))
+        .max(1000, t("finance:form.validation.description_max")),
+      notes: z
+        .string()
+        .max(2000, t("finance:form.validation.notes_max"))
+        .optional()
+        .nullable()
+        .or(z.literal("")),
+      project_id: z.number().optional().nullable(),
+      contract_id: z.number().optional().nullable(),
+      customer_id: z.number().optional().nullable(),
+      department_id: z.number().optional().nullable(),
+      employee_ids: z.array(z.number()).optional(),
+    })
+    .refine(
+      (data) => {
+        return !!(data.project_id || data.contract_id || data.customer_id || data.department_id)
+      },
+      {
+        message: t("finance:form.validation.linked_required"),
+        path: ["project_id"], // Attach error message to project field primarily
+      },
+    )
 
 interface VoucherFormModalProps {
   open: boolean
@@ -50,18 +55,15 @@ interface VoucherFormModalProps {
   editData?: Voucher | null
 }
 
-const VOUCHER_TYPE_OPTIONS = [
-  { value: "receipt", label: "Thu tiền (Receipt)" },
-  { value: "payment", label: "Chi tiền (Payment)" },
-]
-
 export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherFormModalProps) {
+  const { t } = useTranslation(["finance", "common"])
   const isEditing = !!editData
 
   const [projects, setProjects] = useState<OptionItem[]>([])
   const [contracts, setContracts] = useState<OptionItem[]>([])
   const [customers, setCustomers] = useState<OptionItem[]>([])
   const [departments, setDepartments] = useState<OptionItem[]>([])
+  const [employees, setEmployees] = useState<OptionItem[]>([])
 
   const {
     register,
@@ -70,7 +72,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
     control,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(voucherSchema),
+    resolver: zodResolver(getVoucherSchema(t)),
     defaultValues: {
       voucher_type: "payment" as const,
       amount: 0,
@@ -81,6 +83,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       contract_id: null,
       customer_id: null,
       department_id: null,
+      employee_ids: [] as number[],
     },
   })
 
@@ -92,12 +95,14 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         optionApi.getContracts(),
         optionApi.getCustomers(),
         optionApi.getDepartments(),
+        optionApi.getEmployees(),
       ])
-        .then(([p, con, cus, d]) => {
+        .then(([p, con, cus, d, emp]) => {
           setProjects(p)
           setContracts(con)
           setCustomers(cus)
           setDepartments(d)
+          setEmployees(emp)
         })
         .catch(console.error)
 
@@ -112,6 +117,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
           contract_id: editData.contract?.id || null,
           customer_id: editData.customer?.id || null,
           department_id: editData.department?.id || null,
+          employee_ids: editData.employees?.map((e) => e.id) || [],
         })
       } else {
         reset({
@@ -124,6 +130,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
           contract_id: null,
           customer_id: null,
           department_id: null,
+          employee_ids: [],
         })
       }
     }
@@ -142,10 +149,15 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         customer_id: data.customer_id || null,
         department_id: data.department_id || null,
       }
+      if (data.voucher_type === "payment" && data.employee_ids && data.employee_ids.length > 0) {
+        payload.employee_ids = data.employee_ids
+      } else if (data.voucher_type === "payment") {
+        payload.employee_ids = []
+      }
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Lỗi khi lưu chứng từ")
+      toast.error(t("finance:form.validation.save_error"))
     }
   }
 
@@ -153,16 +165,20 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? `Cập nhật Chứng từ: ${editData.voucher_code}` : "Lập Chứng từ Thu/Chi mới"}
+      title={
+        isEditing
+          ? t("finance:form.title_edit", { code: editData.voucher_code })
+          : t("finance:form.title_add")
+      }
       size="xl"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu",
+        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
         type: "submit",
         form: "voucher-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:action.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -170,7 +186,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       <form id="voucher-form" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-2">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Loại chứng từ *</Label>
+            <Label>{t("finance:form.type")}</Label>
             <Controller
               name="voucher_type"
               control={control}
@@ -178,27 +194,33 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                 <SearchableSelect
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={VOUCHER_TYPE_OPTIONS}
-                  placeholder="Chọn loại..."
+                  options={[
+                    { value: "receipt", label: t("finance:list.types.receipt") },
+                    { value: "payment", label: t("finance:list.types.payment") },
+                  ]}
+                  placeholder={t("finance:form.type_placeholder")}
                   disabled={isEditing}
                 />
               )}
             />
             {errors.voucher_type && (
-              <p className="text-xs text-destructive">{errors.voucher_type.message}</p>
+              <p className="text-xs text-destructive">{errors.voucher_type.message as string}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="v-amount">Số tiền (VNĐ) *</Label>
+            <Label htmlFor="v-amount">{t("finance:form.amount")}</Label>
             <Input
               id="v-amount"
               type="number"
+              inputMode="decimal"
               min="0"
-              placeholder="Nhập số tiền..."
+              placeholder={t("finance:form.amount_placeholder")}
               {...register("amount", { valueAsNumber: true })}
             />
-            {errors.amount && <p className="text-xs text-destructive">{errors.amount.message}</p>}
+            {errors.amount && (
+              <p className="text-xs text-destructive">{errors.amount.message as string}</p>
+            )}
           </div>
         </div>
 
@@ -209,7 +231,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày chứng từ *"
+                  label={t("finance:form.date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -218,22 +240,52 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
               )}
             />
           </div>
+
+          <Controller
+            name="voucher_type"
+            control={control}
+            render={({ field: { value: typeVal } }) =>
+              typeVal === "payment" ? (
+                <div className="flex flex-col gap-1.5">
+                  <Label>{t("finance:form.employee")}</Label>
+                  <Controller
+                    name="employee_ids"
+                    control={control}
+                    render={({ field }) => (
+                      <MultiSearchableSelect
+                        values={field.value?.map(String) || []}
+                        onValuesChange={(vals) => field.onChange(vals.map(Number))}
+                        options={employees.map((e) => ({
+                          label: e.label,
+                          value: e.value?.toString() || e.id?.toString() || "",
+                        }))}
+                        placeholder={t("finance:form.employee_placeholder")}
+                      />
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground">{t("finance:form.employee_hint")}</p>
+                </div>
+              ) : (
+                <div />
+              )
+            }
+          />
         </div>
 
         <div className="rounded-xl border bg-muted/20 p-4 space-y-4">
           <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
-            Liên kết Phân hệ (Chọn ít nhất một mục) *
+            {t("finance:form.linked_title")}
           </h4>
 
           {errors.project_id && (
             <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">
-              {errors.project_id.message}
+              {errors.project_id.message as string}
             </p>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label>Dự án liên quan</Label>
+              <Label>{t("finance:form.project")}</Label>
               <Controller
                 name="project_id"
                 control={control}
@@ -242,20 +294,20 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                     value={field.value ? field.value.toString() : ""}
                     onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     options={[
-                      { value: "", label: "— Không liên kết —" },
+                      { value: "", label: t("finance:form.no_link") },
                       ...projects.map((p) => ({
                         label: p.label,
                         value: p.value?.toString() || p.id?.toString() || "",
                       })),
                     ]}
-                    placeholder="Chọn dự án..."
+                    placeholder={t("finance:form.project_placeholder")}
                   />
                 )}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Hợp đồng liên quan</Label>
+              <Label>{t("finance:form.contract")}</Label>
               <Controller
                 name="contract_id"
                 control={control}
@@ -264,13 +316,13 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                     value={field.value ? field.value.toString() : ""}
                     onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     options={[
-                      { value: "", label: "— Không liên kết —" },
+                      { value: "", label: t("finance:form.no_link") },
                       ...contracts.map((c) => ({
                         label: c.label,
                         value: c.value?.toString() || c.id?.toString() || "",
                       })),
                     ]}
-                    placeholder="Chọn hợp đồng..."
+                    placeholder={t("finance:form.contract_placeholder")}
                   />
                 )}
               />
@@ -279,7 +331,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label>Khách hàng liên quan</Label>
+              <Label>{t("finance:form.customer")}</Label>
               <Controller
                 name="customer_id"
                 control={control}
@@ -288,20 +340,20 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                     value={field.value ? field.value.toString() : ""}
                     onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     options={[
-                      { value: "", label: "— Không liên kết —" },
+                      { value: "", label: t("finance:form.no_link") },
                       ...customers.map((c) => ({
                         label: c.label,
                         value: c.value?.toString() || c.id?.toString() || "",
                       })),
                     ]}
-                    placeholder="Chọn khách hàng..."
+                    placeholder={t("finance:form.customer_placeholder")}
                   />
                 )}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Phòng ban chịu phí / thụ hưởng</Label>
+              <Label>{t("finance:form.department")}</Label>
               <Controller
                 name="department_id"
                 control={control}
@@ -310,13 +362,13 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                     value={field.value ? field.value.toString() : ""}
                     onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     options={[
-                      { value: "", label: "— Không liên kết —" },
+                      { value: "", label: t("finance:form.no_link") },
                       ...departments.map((d) => ({
                         label: d.label,
                         value: d.value?.toString() || d.id?.toString() || "",
                       })),
                     ]}
-                    placeholder="Chọn phòng ban..."
+                    placeholder={t("finance:form.department_placeholder")}
                   />
                 )}
               />
@@ -325,29 +377,31 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="v-desc">Nội dung diễn giải chứng từ *</Label>
+          <Label htmlFor="v-desc">{t("finance:form.description")}</Label>
           <Textarea
             id="v-desc"
             rows={2}
-            placeholder="Mô tả cụ thể nội dung thu/chi..."
+            placeholder={t("finance:form.description_placeholder")}
             {...register("description")}
             className="resize-none"
           />
           {errors.description && (
-            <p className="text-xs text-destructive">{errors.description.message}</p>
+            <p className="text-xs text-destructive">{errors.description.message as string}</p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="v-notes">Ghi chú nội bộ</Label>
+          <Label htmlFor="v-notes">{t("finance:form.notes")}</Label>
           <Textarea
             id="v-notes"
             rows={2}
-            placeholder="Ghi chú thêm về phương thức thanh toán, tài khoản nhận..."
+            placeholder={t("finance:form.notes_placeholder")}
             {...register("notes")}
             className="resize-none"
           />
-          {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
+          {errors.notes && (
+            <p className="text-xs text-destructive">{errors.notes.message as string}</p>
+          )}
         </div>
       </form>
     </CommonDialog>

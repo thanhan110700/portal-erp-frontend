@@ -5,6 +5,7 @@ import { Calendar, Receipt, Info } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { projectApi } from "../api/projectApi"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface ProjectVouchersTabProps {
   projectId: number
@@ -25,6 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
+  const { t } = useTranslation(["projects", "common"])
   const [vouchers, setVouchers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -36,18 +38,18 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       })
       .catch((err) => {
         console.error(err)
-        toast.error("Không thể tải danh sách chứng từ")
+        toast.error(t("projects:vouchers.fetch_error"))
       })
       .finally(() => {
         setIsLoading(false)
       })
-  }, [projectId])
+  }, [projectId, t])
 
   const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
       {
         accessorKey: "voucher_code",
-        header: "Mã chứng từ",
+        header: t("projects:vouchers.columns.code"),
         size: 140,
         Cell: ({ cell }) => (
           <span className="font-semibold text-foreground">{cell.getValue<string>()}</span>
@@ -55,7 +57,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       },
       {
         accessorKey: "voucher_type",
-        header: "Loại",
+        header: t("projects:vouchers.columns.type"),
         size: 130,
         Cell: ({ cell }) => {
           const type = cell.getValue<string>()
@@ -67,14 +69,16 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
               }`}
             >
               <Receipt className="size-3.5" />
-              {isReceipt ? "Thu tiền" : "Chi tiền"}
+              {isReceipt
+                ? t("projects:vouchers.types.receipt")
+                : t("projects:vouchers.types.payment")}
             </span>
           )
         },
       },
       {
         accessorKey: "voucher_date",
-        header: "Ngày chứng từ",
+        header: t("projects:vouchers.columns.date"),
         size: 150,
         Cell: ({ cell }) => (
           <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -85,7 +89,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       },
       {
         accessorKey: "amount",
-        header: "Số tiền",
+        header: t("projects:vouchers.columns.amount"),
         size: 160,
         Cell: ({ row }) => {
           const isReceipt = row.original.voucher_type === "receipt"
@@ -103,14 +107,14 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("projects:vouchers.columns.status"),
         size: 130,
         Cell: ({ cell }) => {
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
               <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {STATUS_LABELS[status] || status}
+                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
               </Badge>
             </div>
           )
@@ -118,7 +122,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       },
       {
         id: "description",
-        header: "Diễn giải / Ghi chú",
+        header: t("projects:vouchers.columns.description"),
         size: 300,
         Cell: ({ row }) => (
           <span
@@ -130,7 +134,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
         ),
       },
     ],
-    [],
+    [t],
   )
 
   const table = useMantineReactTable({
@@ -163,9 +167,11 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Chứng từ liên quan ({vouchers.length})</h3>
+        <h3 className="text-lg font-semibold">
+          {t("projects:vouchers.title")} ({vouchers.length})
+        </h3>
         <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Info className="size-3.5" /> Chỉ xem liên kết. Quản lý chứng từ tại phân hệ Tài chính.
+          <Info className="size-3.5" /> {t("projects:vouchers.info")}
         </span>
       </div>
 

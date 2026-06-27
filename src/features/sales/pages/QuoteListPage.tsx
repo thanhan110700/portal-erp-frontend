@@ -13,8 +13,10 @@ import { QuoteTable } from "../components/QuoteTable"
 import { QuoteFormModal } from "../components/QuoteFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
+import { useTranslation } from "react-i18next"
 
 export function QuoteListPage() {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isSales = user?.roles?.includes("sales") ?? false
@@ -57,11 +59,11 @@ export function QuoteListPage() {
       setQuotes(res.data)
       setTotalCount(res.meta.total)
     } catch {
-      toast.error("Không thể tải danh sách báo giá")
+      toast.error(t("sales:quote.fetch_error"))
     } finally {
       setIsLoading(false)
     }
-  }, [params])
+  }, [params, t])
 
   useEffect(() => {
     void loadData()
@@ -73,16 +75,16 @@ export function QuoteListPage() {
       {
         field: "search",
         type: "input",
-        label: "Tìm kiếm",
-        placeholder: "Mã BG, Khách hàng...",
+        label: t("common:actions.search"),
+        placeholder: t("sales:quote.filters.search_placeholder"),
         value: params.search || "",
       },
       {
         field: "status",
         type: "select",
-        label: "Trạng thái",
-        placeholder: "Tất cả",
-        value: params.status || null,
+        label: t("common:status.status"),
+        placeholder: t("common:filters.all"),
+        value: params.status || "",
         options: statuses.map((c) => ({
           label: c.label,
           value: c.value.toString(),
@@ -91,9 +93,9 @@ export function QuoteListPage() {
       {
         field: "customer_id",
         type: "select",
-        label: "Khách hàng",
-        placeholder: "Tất cả khách hàng",
-        value: params.customer_id?.toString() || null,
+        label: t("sales:quote.columns.customer"),
+        placeholder: t("sales:quote.filters.all_customers"),
+        value: params.customer_id?.toString() || "",
         options: customers.map((c) => ({
           label: c.label,
           value: c.id?.toString() || "",
@@ -102,9 +104,9 @@ export function QuoteListPage() {
       {
         field: "created_by",
         type: "select",
-        label: "Người tạo",
-        placeholder: "Tất cả người tạo",
-        value: params.created_by?.toString() || null,
+        label: t("sales:quote.filters.created_by"),
+        placeholder: t("sales:quote.filters.all_creators"),
+        value: params.created_by?.toString() || "",
         options: employees.map((e) => ({
           label: e.label,
           value: e.id?.toString() || "",
@@ -113,8 +115,8 @@ export function QuoteListPage() {
       {
         field: "dateRange",
         type: "daterange",
-        label: "Ngày tạo",
-        placeholder: "Khoảng thời gian",
+        label: t("sales:quote.filters.created_date"),
+        placeholder: t("sales:quote.filters.time_range"),
         value: dateRange,
       },
     ],
@@ -127,6 +129,7 @@ export function QuoteListPage() {
       statuses,
       customers,
       employees,
+      t,
     ],
   )
 
@@ -178,10 +181,10 @@ export function QuoteListPage() {
   const handleDelete = async (id: number) => {
     try {
       await quoteApi.delete(id)
-      toast.success("Đã xóa báo giá")
+      toast.success(t("sales:quote.delete_success"))
       void loadData()
     } catch {
-      toast.error("Xóa thất bại")
+      toast.error(t("sales:quote.delete_error"))
     }
   }
 
@@ -189,10 +192,10 @@ export function QuoteListPage() {
     try {
       if (editTarget) {
         await quoteApi.update(editTarget.id, payload as UpdateQuotePayload)
-        toast.success("Đã cập nhật báo giá")
+        toast.success(t("sales:quote.update_success"))
       } else {
         await quoteApi.create(payload)
-        toast.success("Đã tạo báo giá mới")
+        toast.success(t("sales:quote.create_success"))
       }
       setModalOpen(false)
       void loadData()
@@ -210,10 +213,8 @@ export function QuoteListPage() {
             <FileText className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Báo Giá</h1>
-            <p className="text-sm text-muted-foreground">
-              Quản lý danh sách báo giá gửi khách hàng
-            </p>
+            <h1 className="text-xl font-semibold">{t("sales:quote.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("sales:quote.description")}</p>
           </div>
         </div>
         <div className="flex gap-2 self-start sm:self-auto">
@@ -225,12 +226,12 @@ export function QuoteListPage() {
             className="gap-1.5"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("common:actions.refresh")}
           </Button>
           {canEdit && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
-              Tạo báo giá
+              {t("sales:quote.create")}
             </Button>
           )}
         </div>
@@ -252,6 +253,7 @@ export function QuoteListPage() {
           isAdmin={isAdmin}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
+          onRefresh={() => void loadData()}
         />
 
         <TablePagination

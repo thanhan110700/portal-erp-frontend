@@ -7,35 +7,38 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import type { Contact, CreateContactPayload, UpdateContactPayload } from "../types/sales"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
 
-const contactSchema = z.object({
-  contact_name: z
-    .string()
-    .min(1, "Vui lòng nhập họ và tên")
-    .max(255, "Họ và tên không được quá 255 ký tự"),
-  position: z
-    .string()
-    .max(100, "Chức vụ không được quá 100 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  phone: z
-    .string()
-    .max(20, "Số điện thoại không được quá 20 ký tự")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  email: z
-    .string()
-    .max(150, "Email không được quá 150 ký tự")
-    .email("Email không hợp lệ")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  is_primary: z.boolean(),
-})
+const createContactSchema = (t: TFunction) =>
+  z.object({
+    contact_name: z
+      .string()
+      .min(1, t("sales:contact.validation.name_required"))
+      .max(255, t("sales:contact.validation.name_max")),
+    position: z
+      .string()
+      .max(100, t("sales:contact.validation.position_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    phone: z
+      .string()
+      .max(20, t("sales:contact.validation.phone_max"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    email: z
+      .string()
+      .max(150, t("sales:customer_form.validation.email_max"))
+      .email(t("sales:customer_form.validation.email_invalid"))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
+    is_primary: z.boolean(),
+  })
 
-type ContactFormData = z.infer<typeof contactSchema>
+type ContactFormData = z.infer<ReturnType<typeof createContactSchema>>
 
 interface ContactFormModalProps {
   open: boolean
@@ -45,6 +48,7 @@ interface ContactFormModalProps {
 }
 
 export function ContactFormModal({ open, onClose, onSubmit, initialData }: ContactFormModalProps) {
+  const { t } = useTranslation()
   const isEditing = !!initialData
   const {
     register,
@@ -54,7 +58,7 @@ export function ContactFormModal({ open, onClose, onSubmit, initialData }: Conta
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormData>({
-    resolver: zodResolver(contactSchema),
+    resolver: zodResolver(createContactSchema(t)),
     defaultValues: {
       contact_name: "",
       position: "",
@@ -107,23 +111,23 @@ export function ContactFormModal({ open, onClose, onSubmit, initialData }: Conta
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? "Cập nhật Người Liên Hệ" : "Thêm Người Liên Hệ"}
+      title={isEditing ? t("sales:contact.edit_title") : t("sales:contact.add_title")}
       size="md"
       primaryAction={{
-        label: isEditing ? "Cập nhật" : "Lưu liên hệ",
+        label: isEditing ? t("sales:contact.update") : t("sales:contact.save"),
         type: "submit",
         form: "contact-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
     >
       <form id="contact-form" onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ct-name">Họ và tên *</Label>
+          <Label htmlFor="ct-name">{t("sales:contact.columns.name")} *</Label>
           <Input id="ct-name" {...register("contact_name")} aria-invalid={!!errors.contact_name} />
           {errors.contact_name && (
             <p className="text-xs text-destructive">{errors.contact_name.message}</p>
@@ -131,19 +135,24 @@ export function ContactFormModal({ open, onClose, onSubmit, initialData }: Conta
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ct-position">Chức vụ</Label>
+          <Label htmlFor="ct-position">{t("sales:contact.columns.position")}</Label>
           <Input id="ct-position" {...register("position")} aria-invalid={!!errors.position} />
           {errors.position && <p className="text-xs text-destructive">{errors.position.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ct-phone">Số điện thoại</Label>
-            <Input id="ct-phone" {...register("phone")} aria-invalid={!!errors.phone} />
+            <Label htmlFor="ct-phone">{t("sales:contact.columns.phone")}</Label>
+            <Input
+              id="ct-phone"
+              inputMode="tel"
+              {...register("phone")}
+              aria-invalid={!!errors.phone}
+            />
             {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ct-email">Email</Label>
+            <Label htmlFor="ct-email">{t("sales:contact.columns.email")}</Label>
             <Input
               id="ct-email"
               type="email"
@@ -161,7 +170,7 @@ export function ContactFormModal({ open, onClose, onSubmit, initialData }: Conta
             onCheckedChange={(checked) => setValue("is_primary", checked as boolean)}
           />
           <Label htmlFor="ct-primary" className="font-normal cursor-pointer">
-            Đây là người liên hệ chính
+            {t("sales:contact.is_primary_label")}
           </Label>
         </div>
       </form>

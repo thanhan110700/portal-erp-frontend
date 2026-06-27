@@ -11,44 +11,50 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import type { ProjectMember } from "../types/project"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
-const memberSchema = z
-  .object({
-    user_id: z.number().min(1, "Vui lòng chọn nhân viên"),
-    role: z
-      .string()
-      .max(100, "Vai trò không vượt quá 100 ký tự")
-      .optional()
-      .nullable()
-      .or(z.literal("")),
-    start_date: z.string().optional().nullable().or(z.literal("")),
-    end_date: z.string().optional().nullable().or(z.literal("")),
-    labor_cost: z.preprocess(
-      (val) =>
-        val === "" || val === null || val === undefined || Number.isNaN(Number(val))
-          ? null
-          : Number(val),
-      z.number().min(0, "Chi phí nhân công phải >= 0").nullable().optional(),
-    ),
-    notes: z
-      .string()
-      .max(1000, "Ghi chú không vượt quá 1000 ký tự")
-      .optional()
-      .nullable()
-      .or(z.literal("")),
-  })
-  .refine(
-    (data) => {
-      if (data.start_date && data.end_date) {
-        return new Date(data.end_date) >= new Date(data.start_date)
-      }
-      return true
-    },
-    {
-      message: "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu",
-      path: ["end_date"],
-    },
-  )
+const getMemberSchema = (t: any) =>
+  z
+    .object({
+      user_id: z.number().min(1, t("projects:members.form.validation.employee_required")),
+      role: z
+        .string()
+        .max(100, t("projects:members.form.validation.role_max"))
+        .optional()
+        .nullable()
+        .or(z.literal("")),
+      start_date: z.string().optional().nullable().or(z.literal("")),
+      end_date: z.string().optional().nullable().or(z.literal("")),
+      labor_cost: z.preprocess(
+        (val) =>
+          val === "" || val === null || val === undefined || Number.isNaN(Number(val))
+            ? null
+            : Number(val),
+        z
+          .number()
+          .min(0, t("projects:members.form.validation.labor_cost_min"))
+          .nullable()
+          .optional(),
+      ),
+      notes: z
+        .string()
+        .max(1000, t("projects:members.form.validation.notes_max"))
+        .optional()
+        .nullable()
+        .or(z.literal("")),
+    })
+    .refine(
+      (data) => {
+        if (data.start_date && data.end_date) {
+          return new Date(data.end_date) >= new Date(data.start_date)
+        }
+        return true
+      },
+      {
+        message: t("projects:members.form.validation.date_invalid"),
+        path: ["end_date"],
+      },
+    )
 
 interface ProjectMemberFormModalProps {
   open: boolean
@@ -63,6 +69,7 @@ export function ProjectMemberFormModal({
   onSubmit,
   editData,
 }: ProjectMemberFormModalProps) {
+  const { t } = useTranslation(["projects", "common"])
   const isEditing = !!editData
   const [employees, setEmployees] = useState<OptionItem[]>([])
 
@@ -73,7 +80,7 @@ export function ProjectMemberFormModal({
     control,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(getMemberSchema(t)),
     defaultValues: {
       user_id: 0,
       role: "",
@@ -126,7 +133,7 @@ export function ProjectMemberFormModal({
       await onSubmit(payload)
     } catch (error) {
       console.error(error)
-      toast.error("Lỗi khi lưu thông tin thành viên")
+      toast.error(t("projects:members.form.validation.save_error"))
     }
   }
 
@@ -134,16 +141,18 @@ export function ProjectMemberFormModal({
     <CommonDialog
       open={open}
       onClose={onClose}
-      title={isEditing ? "Cập nhật Thành viên dự án" : "Thêm Thành viên vào dự án"}
+      title={
+        isEditing ? t("projects:members.form.title_edit") : t("projects:members.form.title_add")
+      }
       size="lg"
       primaryAction={{
-        label: isSubmitting ? "Đang lưu..." : "Lưu",
+        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
         type: "submit",
         form: "project-member-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: "Hủy",
+        label: t("common:action.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -154,7 +163,7 @@ export function ProjectMemberFormModal({
         className="grid gap-4 py-2"
       >
         <div className="flex flex-col gap-1.5">
-          <Label>Nhân viên *</Label>
+          <Label>{t("projects:members.form.employee")}</Label>
           <Controller
             name="user_id"
             control={control}
@@ -167,7 +176,7 @@ export function ProjectMemberFormModal({
                   label: emp.label,
                   value: emp.value?.toString() || emp.id?.toString() || "",
                 }))}
-                placeholder="Chọn nhân viên..."
+                placeholder={t("projects:members.form.employee_placeholder")}
                 disabled={isEditing}
               />
             )}
@@ -177,21 +186,28 @@ export function ProjectMemberFormModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="m-role">Vai trò / Nhiệm vụ</Label>
-            <Input id="m-role" placeholder="Ví dụ: Dev, PM, Tester..." {...register("role")} />
-            {errors.role && <p className="text-xs text-destructive">{errors.role.message}</p>}
+            <Label htmlFor="m-role">{t("projects:members.form.role")}</Label>
+            <Input
+              id="m-role"
+              placeholder={t("projects:members.form.role_placeholder")}
+              {...register("role")}
+            />
+            {errors.role && (
+              <p className="text-xs text-destructive">{errors.role.message as string}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="m-labor-cost">Chi phí nhân công (VNĐ/tháng)</Label>
+            <Label htmlFor="m-labor-cost">{t("projects:members.form.labor_cost")}</Label>
             <Input
               id="m-labor-cost"
               type="number"
-              placeholder="Nhập chi phí..."
+              inputMode="decimal"
+              placeholder={t("projects:members.form.labor_cost_placeholder")}
               {...register("labor_cost", { valueAsNumber: true })}
             />
             {errors.labor_cost && (
-              <p className="text-xs text-destructive">{errors.labor_cost.message}</p>
+              <p className="text-xs text-destructive">{errors.labor_cost.message as string}</p>
             )}
           </div>
         </div>
@@ -203,7 +219,7 @@ export function ProjectMemberFormModal({
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày bắt đầu tham gia"
+                  label={t("projects:members.form.start_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -218,7 +234,7 @@ export function ProjectMemberFormModal({
               control={control}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
-                  label="Ngày kết thúc"
+                  label={t("projects:members.form.end_date")}
                   value={field.value || null}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
@@ -229,15 +245,17 @@ export function ProjectMemberFormModal({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="m-notes">Ghi chú</Label>
+          <Label htmlFor="m-notes">{t("projects:members.form.notes")}</Label>
           <Textarea
             id="m-notes"
             rows={3}
-            placeholder="Ghi chú chi tiết công việc..."
+            placeholder={t("projects:members.form.notes_placeholder")}
             {...register("notes")}
             className="resize-none"
           />
-          {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
+          {errors.notes && (
+            <p className="text-xs text-destructive">{errors.notes.message as string}</p>
+          )}
         </div>
       </form>
     </CommonDialog>

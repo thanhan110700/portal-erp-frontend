@@ -1,0 +1,132 @@
+{
+  "title": "Finance Management",
+  "vouchers": "Vouchers",
+  "receipt": "Receipt",
+  "payment": "Payment",
+  "amount": "Amount",
+  "payer": "Payer",
+  "payee": "Payee",
+  "reason": "Reason",
+  "date": "Voucher Date",
+  "bankAccount": "Bank Account",
+  "cash": "Cash",
+  "transactionType": "Transaction Type",
+  "balance": "Balance",
+  "list": {
+    "title": "Finance Vouchers",
+    "description": "Plan receipts, payments, approve invoices, and settle finances for departments and projects.",
+    "create": "Create Voucher",
+    "fetch_error": "Failed to load vouchers",
+    "create_success": "Voucher created successfully",
+    "update_success": "Voucher updated successfully",
+    "delete_confirm": "Are you sure you want to delete this voucher?",
+    "delete_success": "Voucher deleted",
+    "delete_error": "Failed to delete voucher",
+    "approve_success": "Voucher approved",
+    "approve_error": "Failed to approve",
+    "reject_prompt": "Enter rejection reason (required):",
+    "reject_reason_required": "Rejection reason cannot be empty",
+    "reject_success": "Voucher rejected",
+    "reject_error": "Failed to reject",
+    "filters": {
+      "search": "Search",
+      "search_placeholder": "Voucher code, reason...",
+      "type": "Transaction Type",
+      "status": "Status",
+      "date_from": "From Date",
+      "date_to": "To Date"
+    },
+    "columns": {
+      "code": "Voucher Code",
+      "type": "Type",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "description": "Description / Linked",
+      "attachments": "Attachments"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "edit": "Edit",
+      "delete": "Delete",
+      "history": "Approval History"
+    },
+    "types": {
+      "receipt": "Receipt",
+      "payment": "Payment",
+      "receipt_short": "Receipt",
+      "payment_short": "Payment"
+    },
+    "linked": {
+      "project": "Project",
+      "contract": "Contract",
+      "customer": "Customer",
+      "department": "Department"
+    }
+  },
+  "form": {
+    "title_add": "Create New Voucher",
+    "title_edit": "Update Voucher: {{code}}",
+    "type": "Voucher Type *",
+    "type_placeholder": "Select type...",
+    "amount": "Amount (VND) *",
+    "amount_placeholder": "Enter amount...",
+    "date": "Voucher Date *",
+    "employee": "Payment / Transaction Employee",
+    "employee_placeholder": "Select employee...",
+    "employee_hint": "Can select multiple employees",
+    "linked_title": "Module Linking (Select at least one) *",
+    "project": "Related Project",
+    "project_placeholder": "Select project...",
+    "contract": "Related Contract",
+    "contract_placeholder": "Select contract...",
+    "customer": "Related Customer",
+    "customer_placeholder": "Select customer...",
+    "department": "Related Department",
+    "department_placeholder": "Select department...",
+    "no_link": "— Not linked —",
+    "description": "Voucher Description *",
+    "description_placeholder": "Describe receipt/payment details...",
+    "notes": "Internal Notes",
+    "notes_placeholder": "Notes about payment method, receiving account...",
+    "validation": {
+      "amount_invalid": "Please enter a valid amount",
+      "amount_gt0": "Amount must be greater than 0",
+      "date_required": "Please select voucher date",
+      "description_required": "Please enter description",
+      "description_max": "Description maximum 1000 characters",
+      "notes_max": "Notes maximum 2000 characters",
+      "linked_required": "Voucher must be linked with at least one: Project, Contract, Customer or Department.",
+      "save_error": "Error saving voucher"
+    }
+  },
+  "history": {
+    "title": "Change History: {{code}}",
+    "fetch_error": "Failed to load voucher history",
+    "empty": "No activities recorded for this voucher.",
+    "close": "Close",
+    "user_id": "Emp ID: {{id}}",
+    "opinion": "Notes:",
+    "changes_title": "Change Details:"
+  },
+  "attachments": {
+    "title": "Attachments: {{code}}",
+    "fetch_error": "Failed to load voucher documents",
+    "upload_success": "Attachment uploaded successfully",
+    "upload_error": "Failed to upload attachment",
+    "delete_confirm": "Are you sure you want to delete this attachment?",
+    "delete_success": "Attachment deleted",
+    "delete_error": "Failed to delete attachment",
+    "close": "Close",
+    "select_label": "Select new voucher document",
+    "select_hint": "Supports PDF, images, or Excel spreadsheets up to 10 MB",
+    "upload_button": "Upload Document",
+    "uploading": "Uploading...",
+    "list_title": "Current Attachments",
+    "empty": "No attachments yet.",
+    "validation": {
+      "file_required": "Please select a file"
+    }
+  }
+}

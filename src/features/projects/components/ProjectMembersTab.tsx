@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { ProjectMember } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMemberFormModal } from "./ProjectMemberFormModal"
+import { useTranslation } from "react-i18next"
 
 interface ProjectMembersTabProps {
   projectId: number
@@ -21,6 +22,7 @@ export function ProjectMembersTab({
   onRefresh,
   canEdit,
 }: ProjectMembersTabProps) {
+  const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null)
 
@@ -28,38 +30,38 @@ export function ProjectMembersTab({
     try {
       if (selectedMember) {
         await projectApi.updateMember(projectId, selectedMember.id, payload)
-        toast.success("Cập nhật thành viên thành công")
+        toast.success(t("projects:members.update_success"))
       } else {
         await projectApi.addMember(projectId, payload)
-        toast.success("Thêm thành viên thành công")
+        toast.success(t("projects:members.add_success"))
       }
       setModalOpen(false)
       onRefresh()
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Lỗi xử lý yêu cầu"
+      const errMsg = err.response?.data?.message || t("projects:members.process_error")
       toast.error(errMsg)
     }
   }
 
   const handleRemove = useCallback(
     async (memberId: number) => {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa thành viên này khỏi dự án?")) return
+      if (!window.confirm(t("projects:members.delete_confirm"))) return
       try {
         await projectApi.removeMember(projectId, memberId)
-        toast.success("Đã xóa thành viên khỏi dự án")
+        toast.success(t("projects:members.delete_success"))
         onRefresh()
       } catch {
-        toast.error("Xóa thành viên thất bại")
+        toast.error(t("projects:members.delete_error"))
       }
     },
-    [projectId, onRefresh],
+    [projectId, onRefresh, t],
   )
 
   const columns = useMemo<MRT_ColumnDef<ProjectMember>[]>(() => {
     const cols: MRT_ColumnDef<ProjectMember>[] = [
       {
         accessorKey: "user.full_name",
-        header: "Họ và tên",
+        header: t("projects:members.columns.full_name"),
         size: 200,
         Cell: ({ row }) => (
           <span className="font-medium text-foreground">{row.original.user?.full_name || "—"}</span>
@@ -67,17 +69,17 @@ export function ProjectMembersTab({
       },
       {
         accessorKey: "role",
-        header: "Vai trò",
+        header: t("projects:members.columns.role"),
         size: 150,
         Cell: ({ cell }) => (
           <Badge variant="secondary" className="px-2 py-0.5 font-normal">
-            {cell.getValue<string>() || "Chưa phân vai trò"}
+            {cell.getValue<string>() || t("projects:members.no_role")}
           </Badge>
         ),
       },
       {
         accessorKey: "start_date",
-        header: "Ngày bắt đầu",
+        header: t("projects:members.columns.start_date"),
         size: 130,
         Cell: ({ cell }) => (
           <span className="text-muted-foreground">{cell.getValue<string>() || "—"}</span>
@@ -85,7 +87,7 @@ export function ProjectMembersTab({
       },
       {
         accessorKey: "end_date",
-        header: "Ngày kết thúc",
+        header: t("projects:members.columns.end_date"),
         size: 130,
         Cell: ({ cell }) => (
           <span className="text-muted-foreground">{cell.getValue<string>() || "—"}</span>
@@ -93,7 +95,7 @@ export function ProjectMembersTab({
       },
       {
         accessorKey: "labor_cost",
-        header: "Chi phí nhân công (tháng)",
+        header: t("projects:members.columns.labor_cost"),
         size: 200,
         Cell: ({ cell }) => {
           const cost = cell.getValue<number | null>()
@@ -109,7 +111,7 @@ export function ProjectMembersTab({
     if (canEdit) {
       cols.push({
         id: "actions",
-        header: "Thao tác",
+        header: t("common:table.actions"),
         size: 100,
         Cell: ({ row }) => {
           const member = row.original
@@ -144,7 +146,7 @@ export function ProjectMembersTab({
     }
 
     return cols
-  }, [canEdit, handleRemove, setSelectedMember, setModalOpen])
+  }, [canEdit, handleRemove, setSelectedMember, setModalOpen, t])
 
   const table = useMantineReactTable({
     columns,
@@ -173,7 +175,9 @@ export function ProjectMembersTab({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Thành viên tham gia ({members.length})</h3>
+        <h3 className="text-lg font-semibold">
+          {t("projects:members.title")} ({members.length})
+        </h3>
         {canEdit && (
           <Button
             size="sm"
@@ -184,7 +188,7 @@ export function ProjectMembersTab({
             className="gap-2 min-h-11 md:min-h-9"
           >
             <Plus className="size-4" />
-            Thêm thành viên
+            {t("projects:members.add_member")}
           </Button>
         )}
       </div>

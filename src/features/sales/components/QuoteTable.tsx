@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit, FileText, Download } from "lucide-react"
+import { Trash2, Edit, FileText, Download, Paperclip } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { QuoteFilesDialog } from "./QuoteFilesDialog"
+import { useTranslation } from "react-i18next"
+
+import { RowActions } from "@/components/common/RowActions"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,28 +25,8 @@ interface QuoteTableProps {
   isLoading?: boolean
   onEdit: (quote: Quote) => void
   onDelete: (id: number) => Promise<void>
+  onRefresh: () => void
   isAdmin?: boolean
-}
-
-function getQuoteStatusBadge(status: string) {
-  switch (status.toLowerCase()) {
-    case "draft":
-      return (
-        <Badge variant="outline" className="text-muted-foreground">
-          Draft
-        </Badge>
-      )
-    case "sent":
-      return <Badge className="bg-blue-500 hover:bg-blue-600">Sent</Badge>
-    case "waiting":
-      return <Badge className="bg-amber-500 hover:bg-amber-600">Waiting</Badge>
-    case "accepted":
-      return <Badge className="bg-green-500 hover:bg-green-600">Accepted</Badge>
-    case "rejected":
-      return <Badge variant="destructive">Rejected</Badge>
-    default:
-      return <Badge variant="outline">{status}</Badge>
-  }
 }
 
 export function QuoteTable({
@@ -52,14 +35,17 @@ export function QuoteTable({
   onEdit,
   onDelete,
   isAdmin = false,
+  onRefresh,
 }: QuoteTableProps) {
+  const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Quote | null>(null)
+  const [fileTarget, setFileTarget] = useState<Quote | null>(null)
 
   const columns = useMemo<MRT_ColumnDef<Quote>[]>(
     () => [
       {
         accessorKey: "quote_code",
-        header: "Mã BG",
+        header: t("sales:quote.columns.quote_code"),
         size: 130,
         Cell: ({ cell }) => (
           <div className="flex items-center gap-2 font-mono text-sm">
@@ -70,7 +56,7 @@ export function QuoteTable({
       },
       {
         accessorKey: "customer.customer_name",
-        header: "Khách hàng",
+        header: t("sales:quote.columns.customer"),
         size: 200,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
@@ -85,13 +71,13 @@ export function QuoteTable({
       },
       {
         accessorKey: "quote_date",
-        header: "Ngày báo giá",
+        header: t("sales:quote.columns.quote_date"),
         size: 120,
         Cell: ({ cell }) => <span className="text-sm">{cell.getValue<string>()}</span>,
       },
       {
         accessorKey: "quote_value",
-        header: "Giá trị (VNĐ)",
+        header: t("sales:quote.columns.value"),
         size: 150,
         Cell: ({ cell }) => {
           const val = cell.getValue<number | string>()
@@ -109,52 +95,62 @@ export function QuoteTable({
       },
       {
         accessorKey: "status",
-        header: "Trạng thái",
+        header: t("common:status.status"),
         size: 120,
-        Cell: ({ cell }) => getQuoteStatusBadge(cell.getValue<string>()),
+        Cell: ({ cell }) => <StatusBadge status={cell.getValue<string>()} />,
       },
       {
         id: "actions",
         header: "",
         size: 100,
         Cell: ({ row }) => {
+          const actions: import("@/components/common/RowActions").RowAction[] = [
+            {
+              label: t("sales:quote.actions.attachments", { defaultValue: "Đính kèm" }),
+              icon: (
+                <div className="relative">
+                  <Paperclip className="size-4" />
+                  {row.original.files && row.original.files.length > 0 && (
+                    <span className="absolute -top-1 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                      {row.original.files.length}
+                    </span>
+                  )}
+                </div>
+              ),
+              onClick: () => setFileTarget(row.original),
+              className: "text-muted-foreground hover:text-foreground",
+            },
+            {
+              label: t("sales:quote.actions.download_pdf", { defaultValue: "Tải PDF" }),
+              icon: <Download className="size-4" />,
+              onClick: () => {},
+              className: "text-muted-foreground hover:text-foreground",
+            },
+            {
+              label: t("common:actions.edit", { defaultValue: "Sửa" }),
+              icon: <Edit className="size-4" />,
+              onClick: () => onEdit(row.original),
+              className: "text-muted-foreground hover:text-foreground",
+            },
+          ]
+          if (isAdmin) {
+            actions.push({
+              label: t("common:actions.delete", { defaultValue: "Xóa" }),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => setDeleteTarget(row.original),
+              className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+              variant: "destructive" as const,
+            })
+          }
           return (
-            <div
-              className="flex items-center justify-end gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                title="Tải PDF"
-              >
-                <Download className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit(row.original)}
-              >
-                <Edit className="size-4" />
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteTarget(row.original)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <RowActions actions={actions} />
             </div>
           )
         },
       },
     ],
-    [isAdmin, onEdit],
+    [isAdmin, onEdit, t],
   )
 
   const table = useMantineReactTable({
@@ -193,15 +189,15 @@ export function QuoteTable({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa báo giá?</AlertDialogTitle>
+            <AlertDialogTitle>{t("sales:quote.actions.delete_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa báo giá{" "}
+              {t("sales:quote.actions.delete_confirm")}{" "}
               <span className="font-semibold text-foreground">{deleteTarget?.quote_code}</span>{" "}
-              không? Hành động này không thể hoàn tác.
+              {t("sales:quote.actions.delete_warning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={async () => {
@@ -211,11 +207,19 @@ export function QuoteTable({
                 }
               }}
             >
-              Xóa
+              {t("sales:quote.actions.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <QuoteFilesDialog
+        open={!!fileTarget}
+        onClose={() => setFileTarget(null)}
+        quoteId={fileTarget?.id ?? 0}
+        quoteTitle={fileTarget?.quote_code ?? ""}
+        onRefresh={onRefresh}
+      />
     </>
   )
 }

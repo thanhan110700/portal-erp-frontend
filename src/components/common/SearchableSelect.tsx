@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useState } from "react"
 import { Check, ChevronDown, Search } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -21,11 +22,15 @@ function SearchableSelectInner({
   value,
   onValueChange,
   options,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
+  placeholder,
+  searchPlaceholder,
   className,
   disabled = false,
 }: SearchableSelectProps) {
+  const { t } = useTranslation()
+  const finalPlaceholder = placeholder ?? t("common:filter.select", { defaultValue: "Select..." })
+  const finalSearchPlaceholder =
+    searchPlaceholder ?? t("common:actions.search", { defaultValue: "Search..." })
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
 
@@ -68,7 +73,7 @@ function SearchableSelectInner({
             className,
           )}
         >
-          <span className="flex-1 truncate text-left">{selectedLabel ?? placeholder}</span>
+          <span className="flex-1 truncate text-left">{selectedLabel ?? finalPlaceholder}</span>
           <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
@@ -81,7 +86,7 @@ function SearchableSelectInner({
           <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <input
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            placeholder={searchPlaceholder}
+            placeholder={finalSearchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             autoFocus
@@ -93,7 +98,9 @@ function SearchableSelectInner({
           onTouchMove={(e) => e.stopPropagation()}
         >
           {filtered.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">No results</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              {t("common:filter.no_results", { defaultValue: "No results" })}
+            </p>
           ) : (
             filtered.map((opt) => (
               <button

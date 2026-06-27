@@ -1,0 +1,12 @@
+{
+  "title": "Tổng quan",
+  "statistics": "Thống kê",
+  "revenue": "Doanh thu",
+  "expense": "Chi phí",
+  "profit": "Lợi nhuận",
+  "recentActivities": "Hoạt động gần đây",
+  "overview": "Cái nhìn tổng quan",
+  "live": "Bảng điều khiển trực tiếp",
+  "welcome": "Xin chào, {{name}}!",
+  "description": "Chào mừng bạn đến với bảng điều khiển chính. Bạn có thể xem các thông tin tổng quan tại đây."
+}

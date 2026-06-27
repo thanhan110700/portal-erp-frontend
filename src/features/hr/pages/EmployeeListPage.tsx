@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState, useMemo } from "react"
 import { toast } from "sonner"
 import { Plus, Users } from "lucide-react"
 
+import { useTranslation } from "react-i18next"
 import { TablePagination } from "@/components/common/TablePagination"
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { useAuthStore } from "@/hooks/useAuthStore"
-import { departmentApi, employeeApi } from "../api/employeeApi"
+import { employeeApi } from "../api/employeeApi"
+import { departmentApi } from "../api/departmentApi"
 import { EmployeeTable } from "../components/EmployeeTable"
 import { EmployeeFormModal } from "../components/EmployeeFormModal"
 import { AssignRoleModal } from "../components/AssignRoleModal"
@@ -15,6 +17,7 @@ import type { CreateEmployeePayload, Department, Employee } from "../types/emplo
 const PER_PAGE = 20
 
 export function EmployeeListPage() {
+  const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.roles?.includes("admin") ?? false
   const isHR =
@@ -60,7 +63,7 @@ export function EmployeeListPage() {
       setTotalPages(res.meta.last_page)
       setTotal(res.meta.total)
     } catch {
-      toast.error("Không thể tải danh sách nhân viên")
+      toast.error(t("common:messages.error"))
     } finally {
       setIsLoading(false)
     }
@@ -75,10 +78,10 @@ export function EmployeeListPage() {
     try {
       if (editTarget) {
         await employeeApi.update(editTarget.id, payload)
-        toast.success("Cập nhật thông tin nhân viên thành công")
+        toast.success(t("common:messages.success"))
       } else {
         await employeeApi.create(payload)
-        toast.success("Tạo nhân viên mới thành công")
+        toast.success(t("common:messages.success"))
       }
       setFormOpen(false)
       setEditTarget(null)
@@ -86,7 +89,7 @@ export function EmployeeListPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Đã có lỗi xảy ra"
+        t("common:messages.error")
       toast.error(msg)
       throw err
     }
@@ -95,10 +98,10 @@ export function EmployeeListPage() {
   const handleDelete = async (employee: Employee) => {
     try {
       await employeeApi.delete(employee.id)
-      toast.success(`Đã xóa nhân viên ${employee.full_name}`)
+      toast.success(t("common:messages.success"))
       fetchEmployees()
     } catch {
-      toast.error("Không thể xóa nhân viên này")
+      toast.error(t("common:messages.error"))
     }
   }
 
@@ -115,13 +118,13 @@ export function EmployeeListPage() {
   const handleRoleSubmit = async (role: string) => {
     if (!roleTarget) return
     try {
-      const updated = await employeeApi.assignRole(roleTarget.id, { role })
-      toast.success(`Đã gán vai trò "${role}" cho ${updated.full_name}`)
+      await employeeApi.assignRole(roleTarget.id, { role })
+      toast.success(t("common:messages.success"))
       setRoleModalOpen(false)
       setRoleTarget(null)
       fetchEmployees()
     } catch {
-      toast.error("Không thể gán vai trò")
+      toast.error(t("common:messages.error"))
     }
   }
 
@@ -138,25 +141,24 @@ export function EmployeeListPage() {
   }
 
   const filterFields = useMemo<FilterFieldDef[]>(() => {
-    console.log("🚀 ~ EmployeeListPage ~ departments:", departments)
     return [
       {
         field: "search",
         type: "input",
-        label: "Tìm kiếm",
-        placeholder: "Tìm theo tên, email...",
-        value: search,
+        label: t("common:actions.search").replace("...", ""),
+        placeholder: t("common:actions.search"),
+        value: search || "",
       },
       {
         field: "department_id",
         type: "select",
-        label: "Phòng ban",
-        placeholder: "Tất cả phòng ban",
-        value: deptFilter,
+        label: t("hr:department.title"),
+        placeholder: t("common:filter.all"),
+        value: deptFilter || "",
         options: departments.map((d) => ({ label: d.label || d.name, value: d.id.toString() })),
       },
     ]
-  }, [search, deptFilter, departments])
+  }, [search, deptFilter, departments, t])
 
   return (
     <div className="flex flex-col gap-6">
@@ -167,9 +169,9 @@ export function EmployeeListPage() {
             <Users className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Nhân viên</h1>
+            <h1 className="text-xl font-semibold">{t("hr:employees.title")}</h1>
             <p className="text-sm text-muted-foreground">
-              {isLoading ? "Đang tải..." : `${total} nhân viên`}
+              {isLoading ? t("common:table.loading") : `${total}`}
             </p>
           </div>
         </div>
@@ -183,7 +185,7 @@ export function EmployeeListPage() {
             className="gap-2 self-start sm:self-auto"
           >
             <Plus className="size-4" />
-            Thêm nhân viên
+            {t("hr:employees.create")}
           </Button>
         )}
       </div>
@@ -194,7 +196,6 @@ export function EmployeeListPage() {
         fields={filterFields}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        title="Lọc nhân viên"
       />
 
       {/* ── Table ─────────────────────────────────────────────────────────── */}

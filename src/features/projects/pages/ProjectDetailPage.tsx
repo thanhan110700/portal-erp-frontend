@@ -22,6 +22,7 @@ import { useAuthStore } from "@/hooks/useAuthStore"
 
 import { projectApi } from "../api/projectApi"
 import type { Project } from "../types/project"
+import { useTranslation } from "react-i18next"
 
 import { ProjectMembersTab } from "../components/ProjectMembersTab"
 import { ProjectMilestonesTab } from "../components/ProjectMilestonesTab"
@@ -29,19 +30,12 @@ import { ProjectExpensesTab } from "../components/ProjectExpensesTab"
 import { ProjectFilesTab } from "../components/ProjectFilesTab"
 import { ProjectVouchersTab } from "../components/ProjectVouchersTab"
 
-const STATUS_LABELS: Record<string, string> = {
-  planning: "Đang báo giá",
-  quoting: "Báo giá",
-  signed: "Đã ký",
-  ongoing: "Đang làm",
-  testing: "Nghiệm thu",
-  settled: "Quyết toán",
-  completed: "Hoàn tất",
-}
-
-const STATUS_VARIANTS: Record<string, any> = {
+const STATUS_VARIANTS: Record<
+  string,
+  "default" | "secondary" | "success" | "warning" | "destructive" | "outline"
+> = {
   planning: "secondary",
-  quoting: "info",
+  quoting: "secondary",
   signed: "default",
   ongoing: "warning",
   testing: "warning",
@@ -60,6 +54,7 @@ const STATUS_OPTIONS = [
 ]
 
 export function ProjectDetailPage() {
+  const { t } = useTranslation(["projects", "common"])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const projectId = parseInt(id || "0")
@@ -80,7 +75,7 @@ export function ProjectDetailPage() {
       const data = await projectApi.get(projectId)
       setProject(data)
     } catch {
-      toast.error("Không thể tải thông tin dự án")
+      toast.error(t("projects:detail.fetch_error"))
       void navigate("/projects")
     } finally {
       setIsLoading(false)
@@ -97,12 +92,12 @@ export function ProjectDetailPage() {
     try {
       const updated = await projectApi.updateStatus(project.id, newStatus)
       setProject((prev) => (prev ? { ...prev, status: updated.status } : null))
-      toast.success("Cập nhật trạng thái dự án thành công")
+      toast.success(t("projects:detail.status_update_success"))
       // Soft refresh other stats that might be recalculated
       const data = await projectApi.get(projectId)
       setProject(data)
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || "Lỗi cập nhật trạng thái"
+      const errMsg = err.response?.data?.message || t("projects:detail.status_update_error")
       toast.error(errMsg)
     } finally {
       setStatusUpdating(false)
@@ -115,7 +110,7 @@ export function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="p-6 text-center text-muted-foreground">Không tìm thấy thông tin dự án.</div>
+      <div className="p-6 text-center text-muted-foreground">{t("projects:detail.not_found")}</div>
     )
   }
 
@@ -153,7 +148,7 @@ export function ProjectDetailPage() {
                 </Badge>
               </h1>
               <p className="text-sm text-muted-foreground">
-                Khách hàng:{" "}
+                {t("projects:detail.customer")}{" "}
                 <span className="font-medium text-foreground">{project.customer?.name || "—"}</span>
               </p>
             </div>
@@ -163,7 +158,9 @@ export function ProjectDetailPage() {
               variant={STATUS_VARIANTS[project.status] || "outline"}
               className="text-sm px-3 py-1"
             >
-              {STATUS_LABELS[project.status] || project.status}
+              {t(`common:status.${project.status}`, {
+                defaultValue: project.status,
+              })}
             </Badge>
           </div>
         </div>
@@ -173,52 +170,58 @@ export function ProjectDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
-            <span>GIÁ TRỊ HỢP ĐỒNG</span>
+            <span>{t("projects:detail.contract_value_title")}</span>
             <DollarSign className="size-4 text-primary" />
           </div>
           <p className="text-xl font-bold font-mono text-foreground">
-            {contractVal.toLocaleString("vi-VN")} <span className="text-xs">VNĐ</span>
+            {contractVal.toLocaleString("vi-VN")}{" "}
+            <span className="text-xs">{t("projects:detail.currency_unit")}</span>
           </p>
           <div className="text-xs text-muted-foreground">
-            Hợp đồng: <span className="font-semibold">{project.contract?.name || "—"}</span>
+            {t("projects:detail.contract")}{" "}
+            <span className="font-semibold">{project.contract?.name || "—"}</span>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
-            <span>ĐÃ THU TIỀN</span>
+            <span>{t("projects:detail.received_title")}</span>
             <TrendingUp className="size-4 text-emerald-500" />
           </div>
           <p className="text-xl font-bold font-mono text-emerald-600">
-            {receivedVal.toLocaleString("vi-VN")} <span className="text-xs">VNĐ</span>
+            {receivedVal.toLocaleString("vi-VN")}{" "}
+            <span className="text-xs">{t("projects:detail.currency_unit")}</span>
           </p>
           <div className="text-xs text-muted-foreground flex items-center gap-1">
             <Percent className="size-3" />
             <span>
-              Tiến độ thu: {contractVal > 0 ? ((receivedVal / contractVal) * 100).toFixed(1) : 0}%
+              {t("projects:detail.received_progress")}{" "}
+              {contractVal > 0 ? ((receivedVal / contractVal) * 100).toFixed(1) : 0}%
             </span>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
-            <span>ĐÃ CHI TIÊU</span>
+            <span>{t("projects:detail.spent_title")}</span>
             <TrendingDown className="size-4 text-rose-500" />
           </div>
           <p className="text-xl font-bold font-mono text-rose-600">
-            {spentVal.toLocaleString("vi-VN")} <span className="text-xs">VNĐ</span>
+            {spentVal.toLocaleString("vi-VN")}{" "}
+            <span className="text-xs">{t("projects:detail.currency_unit")}</span>
           </p>
           <div className="text-xs text-muted-foreground flex items-center gap-1">
             <Percent className="size-3" />
             <span>
-              Tỷ lệ chi/HĐ: {contractVal > 0 ? ((spentVal / contractVal) * 100).toFixed(1) : 0}%
+              {t("projects:detail.spent_ratio")}{" "}
+              {contractVal > 0 ? ((spentVal / contractVal) * 100).toFixed(1) : 0}%
             </span>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
-            <span>LỢI NHUẬN DỰ ÁN</span>
+            <span>{t("projects:detail.profit_title")}</span>
             {isProfitPositive ? (
               <TrendingUp className="size-4 text-emerald-500" />
             ) : (
@@ -228,10 +231,11 @@ export function ProjectDetailPage() {
           <p
             className={`text-xl font-bold font-mono ${isProfitPositive ? "text-emerald-600" : "text-rose-600"}`}
           >
-            {profitVal.toLocaleString("vi-VN")} <span className="text-xs">VNĐ</span>
+            {profitVal.toLocaleString("vi-VN")}{" "}
+            <span className="text-xs">{t("projects:detail.currency_unit")}</span>
           </p>
           <div className="text-xs text-muted-foreground">
-            Biên lợi nhuận:{" "}
+            {t("projects:detail.profit_margin")}{" "}
             <span
               className={`font-semibold ${isProfitPositive ? "text-emerald-600" : "text-rose-600"}`}
             >
@@ -248,14 +252,17 @@ export function ProjectDetailPage() {
             <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
               <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
                 <ArrowRightLeft className="size-4 text-muted-foreground" />
-                Thay đổi trạng thái dự án
+                {t("projects:detail.change_status")}
               </h3>
               <div className="flex flex-col gap-2">
                 <SearchableSelect
                   value={project.status}
                   onValueChange={handleStatusChange}
-                  options={STATUS_OPTIONS}
-                  placeholder="Chọn trạng thái..."
+                  options={STATUS_OPTIONS.map((s) => ({
+                    ...s,
+                    label: t(`common:status.${s.value}`, { defaultValue: s.label }),
+                  }))}
+                  placeholder={t("projects:detail.select_status")}
                   disabled={statusUpdating}
                 />
               </div>
@@ -265,19 +272,21 @@ export function ProjectDetailPage() {
           <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
             <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
               <Calendar className="size-4 text-muted-foreground" />
-              Thời gian thực hiện
+              {t("projects:detail.time_info")}
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Ngày bắt đầu:</span>
+                <span className="text-muted-foreground">{t("projects:detail.start_date")}</span>
                 <span className="font-medium text-foreground">{project.start_date || "—"}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Ngày kết thúc (Dự kiến):</span>
+                <span className="text-muted-foreground">
+                  {t("projects:detail.end_date_expected")}
+                </span>
                 <span className="font-medium text-foreground">{project.end_date || "—"}</span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-muted-foreground">Tiến độ hoàn thành:</span>
+                <span className="text-muted-foreground">{t("projects:detail.progress")}</span>
                 <span className="font-semibold text-primary">{project.progress_percent || 0}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
@@ -292,10 +301,10 @@ export function ProjectDetailPage() {
           <div className="rounded-xl border bg-card p-5 space-y-3 shadow-sm">
             <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
               <Compass className="size-4 text-muted-foreground" />
-              Mô tả dự án
+              {t("projects:detail.description")}
             </h3>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-              {project.description || "Không có mô tả chi tiết."}
+              {project.description || t("projects:detail.no_description")}
             </p>
           </div>
         </div>
@@ -305,19 +314,19 @@ export function ProjectDetailPage() {
           <Tabs defaultValue="members" className="w-full">
             <TabsList className="w-full grid grid-cols-5 p-1 rounded-xl bg-muted/50 h-12 overflow-x-auto scrollbar-none whitespace-nowrap">
               <TabsTrigger value="members" className="rounded-lg py-2 text-xs md:text-sm">
-                Thành viên
+                {t("projects:detail.tabs.members")}
               </TabsTrigger>
               <TabsTrigger value="milestones" className="rounded-lg py-2 text-xs md:text-sm">
-                Cột mốc
+                {t("projects:detail.tabs.milestones")}
               </TabsTrigger>
               <TabsTrigger value="expenses" className="rounded-lg py-2 text-xs md:text-sm">
-                Chi phí
+                {t("projects:detail.tabs.expenses")}
               </TabsTrigger>
               <TabsTrigger value="files" className="rounded-lg py-2 text-xs md:text-sm">
-                Tài liệu
+                {t("projects:detail.tabs.files")}
               </TabsTrigger>
               <TabsTrigger value="vouchers" className="rounded-lg py-2 text-xs md:text-sm">
-                Chứng từ
+                {t("projects:detail.tabs.vouchers")}
               </TabsTrigger>
             </TabsList>
 

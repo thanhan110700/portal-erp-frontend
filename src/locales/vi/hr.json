@@ -1,0 +1,310 @@
+{
+  "title": "Nhân sự",
+  "employee": "Nhân viên",
+  "employees": "Danh sách nhân viên",
+  "department": {
+    "title": "Phòng Ban",
+    "description": "Quản lý danh sách và cơ cấu phòng ban",
+    "create": "Thêm phòng ban",
+    "fetch_error": "Không thể tải danh sách phòng ban",
+    "delete_success": "Đã xóa phòng ban",
+    "delete_error": "Xóa phòng ban thất bại",
+    "update_success": "Đã cập nhật phòng ban",
+    "create_success": "Đã tạo phòng ban mới",
+    "save_error": "Có lỗi xảy ra khi lưu thông tin",
+    "columns": {
+      "code": "Mã PB",
+      "name": "Tên phòng ban",
+      "description": "Mô tả"
+    },
+    "actions": {
+      "delete_title": "Xóa phòng ban?",
+      "delete_confirm": "Bạn có chắc chắn muốn xóa phòng ban",
+      "delete_warning": "không? Hành động này không thể hoàn tác.",
+      "delete": "Xóa"
+    },
+    "form": {
+      "edit_title": "Cập nhật phòng ban",
+      "add_title": "Thêm phòng ban mới",
+      "update": "Cập nhật",
+      "create": "Tạo mới",
+      "fields": {
+        "code": "Mã phòng ban",
+        "code_placeholder": "Nhập mã phòng ban...",
+        "name": "Tên phòng ban",
+        "name_placeholder": "Nhập tên phòng ban...",
+        "description": "Mô tả",
+        "description_placeholder": "Nhập mô tả phòng ban..."
+      },
+      "validation": {
+        "name_required": "Tên phòng ban là bắt buộc",
+        "code_required": "Mã phòng ban là bắt buộc"
+      }
+    }
+  },
+  "employees": {
+    "title": "Danh sách nhân viên",
+    "create": "Thêm nhân viên",
+    "fetch_error": "Không tìm thấy nhân viên",
+    "assign_role_success": "Đã gán vai trò \"{{role}}\"",
+    "assign_role_error": "Không thể gán vai trò",
+    "details_title": "Thông tin chi tiết",
+    "delete_title": "Xóa nhân viên?",
+    "delete_confirm": "Bạn có chắc muốn xóa nhân viên",
+    "delete_warning": "? Hành động này không thể hoàn tác.",
+    "columns": {
+      "user_code": "Mã NV",
+      "full_name": "Họ tên",
+      "department": "Phòng ban",
+      "position": "Chức vụ",
+      "hire_date": "Ngày vào",
+      "roles": "Vai trò"
+    },
+    "actions": {
+      "view_detail": "Xem chi tiết",
+      "assign_role": "Phân quyền",
+      "assign_projects": "Phân công dự án",
+      "delete": "Xóa nhân viên"
+    },
+    "form": {
+      "add_title": "Thêm nhân viên mới",
+      "edit_title": "Sửa thông tin — {{name}}",
+      "create": "Tạo nhân viên",
+      "update": "Cập nhật",
+      "saving": "Đang lưu...",
+      "fields": {
+        "full_name": "Họ tên",
+        "full_name_placeholder": "Nguyễn Văn A",
+        "email": "Email",
+        "email_placeholder": "nva@company.com",
+        "phone": "Số điện thoại",
+        "phone_placeholder": "0901234567",
+        "position": "Chức vụ",
+        "position_placeholder": "Kế toán viên",
+        "department": "Phòng ban",
+        "department_placeholder": "Chọn phòng ban",
+        "manager": "Quản lý trực tiếp",
+        "manager_none": "Không có",
+        "hire_date": "Ngày vào làm",
+        "resign_date": "Ngày nghỉ việc",
+        "social_insurance": "Số BHXH",
+        "social_insurance_placeholder": "0123456789",
+        "national_id": "CMND / CCCD",
+        "national_id_placeholder": "079201012345",
+        "address": "Địa chỉ",
+        "address_placeholder": "123 Lê Lợi, Quận 1, TP.HCM",
+        "password": "Mật khẩu ban đầu",
+        "password_placeholder": "Mặc định: Password@123",
+        "password_hint": "Để trống sẽ dùng mật khẩu mặc định <1>Password@123</1>"
+      },
+      "validation": {
+        "full_name_required": "Vui lòng nhập họ tên",
+        "full_name_max": "Họ tên không được quá 150 ký tự",
+        "email_required": "Vui lòng nhập email",
+        "email_invalid": "Email không hợp lệ",
+        "phone_max": "Số điện thoại không được quá 20 ký tự",
+        "department_required": "Vui lòng chọn phòng ban",
+        "position_required": "Vui lòng nhập chức vụ",
+        "position_max": "Chức vụ không được quá 100 ký tự",
+        "hire_date_required": "Vui lòng nhập ngày vào làm",
+        "address_max": "Địa chỉ không được quá 500 ký tự",
+        "social_insurance_max": "Số BHXH không được quá 20 ký tự",
+        "national_id_max": "CMND / CCCD không được quá 20 ký tự",
+        "resign_date_invalid": "Ngày nghỉ việc phải sau ngày vào làm",
+        "password_min": "Mật khẩu phải từ 8 ký tự trở lên"
+      }
+    },
+    "assign_role": {
+      "title": "Phân quyền — {{name}}",
+      "submit": "Gán vai trò",
+      "current_roles": "Vai trò hiện tại",
+      "no_roles": "Chưa có vai trò nào",
+      "assign_new": "Gán vai trò mới",
+      "placeholder": "Chọn vai trò...",
+      "warning": "Gán vai trò sẽ thay thế vai trò hiện tại của nhân viên.",
+      "roles": {
+        "admin": "Quản lý toàn bộ hệ thống",
+        "director": "Duyệt chi, xem tất cả báo cáo",
+        "accountant": "Tạo/sửa phiếu, duyệt chứng từ",
+        "sales": "Quản lý KH, báo giá, hợp đồng",
+        "technician": "Quản lý dự án, cập nhật tiến độ",
+        "employee": "Chấm công, xem dữ liệu cá nhân"
+      }
+    },
+    "assign_projects": {
+      "title": "Phân công Dự án: {{name}}",
+      "submit": "Lưu Phân Công",
+      "add_project": "Thêm dự án",
+      "update_success": "Cập nhật dự án thành công",
+      "update_error": "Lỗi khi cập nhật dự án",
+      "fields": {
+        "project": "Dự án",
+        "project_placeholder": "Chọn dự án...",
+        "role": "Vai trò",
+        "role_placeholder": "VD: Kỹ thuật",
+        "labor_cost": "Chi phí khoán (VNĐ)",
+        "start_date": "Từ ngày",
+        "end_date": "Đến ngày",
+        "notes": "Ghi chú",
+        "notes_placeholder": "Ghi chú phân công..."
+      },
+      "validation": {
+        "project_required": "Dự án là bắt buộc",
+        "role_max": "Vai trò tối đa 100 ký tự",
+        "labor_cost_min": "Chi phí nhân công không được âm",
+        "notes_max": "Ghi chú tối đa 1000 ký tự",
+        "min_one_project": "Phải chọn ít nhất một dự án",
+        "date_invalid": "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu cho các dự án"
+      }
+    },
+    "reports": {
+      "title": "Báo cáo tài chính cá nhân",
+      "tabs": {
+        "income": "Thu / Chi",
+        "projects": "Lợi nhuận dự án",
+        "receivables": "Công nợ"
+      },
+      "income_expense": {
+        "income": "Thu",
+        "expense": "Chi",
+        "net": "Lợi nhuận",
+        "no_data": "Không có dữ liệu thu chi",
+        "month_format": "T{{month}}/{{year}}"
+      },
+      "projects": {
+        "project_code": "Mã dự án",
+        "project_name": "Tên dự án",
+        "contract_value": "Giá trị HĐ",
+        "total_received": "Đã thu",
+        "total_spent": "Đã chi",
+        "profit": "Lợi nhuận"
+      },
+      "receivables": {
+        "contract_code": "Mã HĐ",
+        "customer_name": "Khách hàng",
+        "contract_value": "Giá trị HĐ",
+        "payment_received": "Đã thanh toán",
+        "payment_outstanding": "Còn nợ"
+      }
+    }
+  },
+  "timesheet": {
+    "title": "Quản lý chấm công",
+    "create": "Khai báo chấm công",
+    "fetch_error": "Không thể tải dữ liệu chấm công",
+    "create_success": "Đã khai báo chấm công — đang chờ quản lý duyệt",
+    "create_error": "Ngày này đã có chấm công hoặc đã có lỗi xảy ra",
+    "approve_error": "Không thể duyệt chấm công này",
+    "reject_error": "Không thể từ chối chấm công này",
+    "mode_manager": "Chế độ quản lý",
+    "mode_my": "Của tôi",
+    "summary_hours": "Tổng số giờ làm",
+    "filter_title": "Lọc chấm công",
+    "filter_employee": "Nhân viên",
+    "filter_employee_all": "Tất cả nhân viên",
+    "filter_status": "Trạng thái",
+    "filter_status_all": "Tất cả trạng thái",
+    "filter_date_range": "Thời gian",
+    "filter_date_range_placeholder": "Chọn khoảng ngày",
+    "status": {
+      "pending": "Chờ duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Từ chối"
+    },
+    "columns": {
+      "employee": "Nhân viên",
+      "date": "Ngày",
+      "check_in": "Giờ vào",
+      "check_out": "Giờ ra",
+      "hours": "Số giờ",
+      "status": "Trạng thái",
+      "notes": "Ghi chú"
+    },
+    "actions": {
+      "approve_confirm_title": "Xác nhận duyệt?",
+      "reject_confirm_title": "Xác nhận từ chối?",
+      "approve": "Duyệt",
+      "reject": "Từ chối"
+    },
+    "form": {
+      "title": "Khai báo chấm công",
+      "submit": "Khai báo",
+      "date": "Ngày làm việc",
+      "date_required": "Vui lòng chọn ngày",
+      "check_in": "Giờ vào",
+      "check_out": "Giờ ra",
+      "notes": "Ghi chú",
+      "notes_placeholder": "VD: Làm việc tại nhà, họp với khách hàng...",
+      "policy_notice": "Chấm công sẽ ở trạng thái <1>Chờ duyệt</1> cho đến khi quản lý xác nhận."
+    }
+  },
+  "kpi": {
+    "title": "KPI & Đánh giá",
+    "filter_employee": "Nhân viên",
+    "filter_employee_all": "Tất cả nhân viên",
+    "filter_month": "Tháng/Năm",
+    "filter_month_placeholder": "Chọn tháng...",
+    "columns": {
+      "employee": "Nhân viên",
+      "target": "Mục tiêu (Target)",
+      "actual": "Thực tế đạt",
+      "progress": "Tiến độ KPI",
+      "quotes": "Báo giá",
+      "contracts": "Hợp đồng",
+      "notes": "Ghi chú"
+    },
+    "status": {
+      "excellent": "Đạt",
+      "good": "Khá",
+      "poor": "Chưa đạt"
+    },
+    "dashboard": {
+      "title": "KPI Kinh doanh",
+      "subtitle": "{{count}} nhân viên có dữ liệu",
+      "top_performers": "Top Performers",
+      "no_data": "Chưa có dữ liệu",
+      "filter_time": "Lọc thời gian",
+      "month": "Tháng",
+      "select_month": "Chọn tháng",
+      "year": "Năm",
+      "select_year": "Chọn năm",
+      "stats": {
+        "avg": "TB KPI",
+        "target": "Tổng target",
+        "actual": "Thực tế",
+        "achieved": "Đạt mục tiêu"
+      },
+      "table_title": "Bảng KPI tháng {{month}}/{{year}}",
+      "fetch_error": "Không thể tải dữ liệu KPI",
+      "upsert_success": "Đã cập nhật KPI thành công",
+      "upsert_error": "Không thể lưu KPI",
+      "actions": {
+        "set_target": "Đặt mục tiêu"
+      }
+    },
+    "form": {
+      "update_title": "Cập nhật mục tiêu KPI",
+      "create_title": "Đặt mục tiêu KPI",
+      "submit": "Lưu KPI",
+      "employee": "Nhân viên *",
+      "employee_placeholder": "Chọn nhân viên kinh doanh...",
+      "month": "Tháng *",
+      "year": "Năm *",
+      "target": "Doanh thu mục tiêu (VND) *",
+      "actual": "Doanh thu thực tế (VND)",
+      "actual_placeholder": "Tự động tính từ hợp đồng",
+      "notes": "Ghi chú",
+      "validation": {
+        "employee_required": "Vui lòng chọn nhân viên",
+        "month_required": "Vui lòng nhập tháng",
+        "month_invalid": "Tháng phải từ 1 đến 12",
+        "year_required": "Vui lòng nhập năm",
+        "year_invalid": "Năm phải từ 2020 đến 2100",
+        "target_required": "Vui lòng nhập doanh thu mục tiêu",
+        "target_invalid": "Doanh thu mục tiêu phải lớn hơn hoặc bằng 0",
+        "actual_invalid": "Doanh thu thực tế phải lớn hơn hoặc bằng 0",
+        "notes_max": "Ghi chú không được vượt quá 1000 ký tự"
+      }
+    }
+  }
+}

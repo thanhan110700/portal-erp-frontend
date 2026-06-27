@@ -11,6 +11,7 @@ import {
   Phone,
   ShieldCheck,
   User,
+  Briefcase,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,18 +21,24 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { PATHS } from "@/constants/paths"
-import { departmentApi, employeeApi } from "../api/employeeApi"
+import { employeeApi } from "../api/employeeApi"
+import { departmentApi } from "../api/departmentApi"
 import { EmployeeFormModal } from "../components/EmployeeFormModal"
 import { AssignRoleModal } from "../components/AssignRoleModal"
+import { EmployeeProjectsDrawer } from "../components/EmployeeProjectsDrawer"
+import { EmployeeReports } from "../components/EmployeeReports"
 import type { CreateEmployeePayload, Department, Employee } from "../types/employee"
+import type { AssignEmployeeProjectsPayload } from "../api/employeeApi"
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  director: "Giám đốc",
-  accountant: "Kế toán",
-  sales: "Kinh doanh",
-  technician: "Kỹ thuật",
-  employee: "Nhân viên",
+import { useTranslation } from "react-i18next"
+
+const ROLE_LABELS_KEYS: Record<string, string> = {
+  admin: "common:roles.admin",
+  director: "common:roles.director",
+  accountant: "common:roles.accountant",
+  sales: "common:roles.sales",
+  technician: "common:roles.technician",
+  employee: "common:roles.employee",
 }
 
 function InfoRow({
@@ -57,6 +64,7 @@ function InfoRow({
 }
 
 export function EmployeeDetailPage() {
+  const { t } = useTranslation(["hr", "common", "errors"])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
@@ -69,6 +77,7 @@ export function EmployeeDetailPage() {
 
   const [formOpen, setFormOpen] = useState(false)
   const [roleModalOpen, setRoleModalOpen] = useState(false)
+  const [projectDrawerOpen, setProjectDrawerOpen] = useState(false)
 
   const fetchEmployee = useCallback(async () => {
     if (!id) return
@@ -77,7 +86,7 @@ export function EmployeeDetailPage() {
       const emp = await employeeApi.get(parseInt(id))
       setEmployee(emp)
     } catch {
-      toast.error("Không tìm thấy nhân viên")
+      toast.error(t("hr:employees.fetch_error"))
       navigate(PATHS.hrEmployees)
     } finally {
       setIsLoading(false)
@@ -95,9 +104,9 @@ export function EmployeeDetailPage() {
       const updated = await employeeApi.update(employee.id, payload)
       setEmployee(updated)
       setFormOpen(false)
-      toast.success("Cập nhật thông tin thành công")
+      toast.success(t("common:messages.update_success"))
     } catch {
-      toast.error("Không thể cập nhật thông tin")
+      toast.error(t("common:messages.update_error"))
       throw new Error("Update failed")
     }
   }
@@ -108,10 +117,16 @@ export function EmployeeDetailPage() {
       const updated = await employeeApi.assignRole(employee.id, { role })
       setEmployee(updated)
       setRoleModalOpen(false)
-      toast.success(`Đã gán vai trò "${role}"`)
+      toast.success(t("hr:employees.assign_role_success", { role: t(`common:roles.${role}`) }))
     } catch {
-      toast.error("Không thể gán vai trò")
+      toast.error(t("hr:employees.assign_role_error"))
     }
+  }
+
+  const handleAssignProjects = async (payload: AssignEmployeeProjectsPayload) => {
+    if (!employee) return
+    await employeeApi.assignProjects(employee.id, payload)
+    // Refresh employee data if needed, though projects are not currently displayed on this page
   }
 
   if (isLoading) {
@@ -139,7 +154,7 @@ export function EmployeeDetailPage() {
           className="gap-2 self-start -ml-2"
         >
           <ArrowLeft className="size-4" />
-          Danh sách nhân viên
+          {t("hr:employees.title")}
         </Button>
 
         <div className="flex gap-2">
@@ -152,19 +167,31 @@ export function EmployeeDetailPage() {
               className="gap-2"
             >
               <ShieldCheck className="size-4" />
-              Phân quyền
+              {t("hr:employees.actions.assign_role")}
             </Button>
           )}
           {isHR && (
-            <Button
-              id="btn-edit-employee"
-              size="sm"
-              onClick={() => setFormOpen(true)}
-              className="gap-2"
-            >
-              <Pencil className="size-4" />
-              Sửa thông tin
-            </Button>
+            <>
+              <Button
+                id="btn-assign-projects"
+                variant="outline"
+                size="sm"
+                onClick={() => setProjectDrawerOpen(true)}
+                className="gap-2 min-h-11 md:min-h-9"
+              >
+                <Briefcase className="size-4" />
+                {t("hr:employees.actions.assign_projects")}
+              </Button>
+              <Button
+                id="btn-edit-employee"
+                size="sm"
+                onClick={() => setFormOpen(true)}
+                className="gap-2 min-h-11 md:min-h-9"
+              >
+                <Pencil className="size-4" />
+                {t("common:actions.edit")}
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -197,7 +224,7 @@ export function EmployeeDetailPage() {
               variant={employee.is_active ? "success" : "outline"}
               className="text-sm py-1 px-3"
             >
-              {employee.is_active ? "Đang hoạt động" : "Đã nghỉ việc"}
+              {employee.is_active ? t("common:status.active") : t("common:status.inactive")}
             </Badge>
 
             {/* Roles */}
@@ -205,7 +232,7 @@ export function EmployeeDetailPage() {
               <div className="flex flex-wrap justify-center gap-1.5">
                 {employee.roles.map((role) => (
                   <Badge key={role} variant="secondary" className="text-xs">
-                    {ROLE_LABELS[role] ?? role}
+                    {ROLE_LABELS_KEYS[role] ? t(ROLE_LABELS_KEYS[role]) : role}
                   </Badge>
                 ))}
               </div>
@@ -216,16 +243,34 @@ export function EmployeeDetailPage() {
         {/* ── Right: Detail info ────────────────────────────────────────── */}
         <Card className="rounded-xl border bg-card md:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Thông tin chi tiết</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              {t("hr:employees.details_title")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col divide-y divide-border/60">
-            <InfoRow icon={Mail} label="Email" value={employee.email} />
-            <InfoRow icon={Phone} label="Số điện thoại" value={employee.phone} />
-            <InfoRow icon={Building2} label="Phòng ban" value={employee.department?.name} />
-            <InfoRow icon={User} label="Quản lý trực tiếp" value={employee.manager?.full_name} />
+            <InfoRow
+              icon={Mail}
+              label={t("hr:employees.form.fields.email")}
+              value={employee.email}
+            />
+            <InfoRow
+              icon={Phone}
+              label={t("hr:employees.form.fields.phone")}
+              value={employee.phone}
+            />
+            <InfoRow
+              icon={Building2}
+              label={t("hr:employees.form.fields.department")}
+              value={employee.department?.name}
+            />
+            <InfoRow
+              icon={User}
+              label={t("hr:employees.form.fields.manager")}
+              value={employee.manager?.full_name}
+            />
             <InfoRow
               icon={Calendar}
-              label="Ngày vào làm"
+              label={t("hr:employees.form.fields.hire_date")}
               value={
                 employee.hire_date
                   ? new Date(employee.hire_date).toLocaleDateString("vi-VN", {
@@ -239,16 +284,31 @@ export function EmployeeDetailPage() {
             {employee.resign_date && (
               <InfoRow
                 icon={Calendar}
-                label="Ngày nghỉ việc"
+                label={t("hr:employees.form.fields.resign_date")}
                 value={new Date(employee.resign_date).toLocaleDateString("vi-VN")}
               />
             )}
-            <InfoRow icon={MapPin} label="Địa chỉ" value={employee.address} />
-            <InfoRow icon={User} label="BHXH" value={employee.social_insurance} />
-            <InfoRow icon={User} label="CMND / CCCD" value={employee.national_id} />
+            <InfoRow
+              icon={MapPin}
+              label={t("hr:employees.form.fields.address")}
+              value={employee.address}
+            />
+            <InfoRow
+              icon={User}
+              label={t("hr:employees.form.fields.social_insurance")}
+              value={employee.social_insurance}
+            />
+            <InfoRow
+              icon={User}
+              label={t("hr:employees.form.fields.national_id")}
+              value={employee.national_id}
+            />
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Reports ───────────────────────────────────────────────────────── */}
+      <EmployeeReports employeeId={employee.id} />
 
       {/* ── Modals ────────────────────────────────────────────────────────── */}
       <EmployeeFormModal
@@ -265,6 +325,13 @@ export function EmployeeDetailPage() {
         onClose={() => setRoleModalOpen(false)}
         onSubmit={handleRoleSubmit}
         employee={employee}
+      />
+
+      <EmployeeProjectsDrawer
+        open={projectDrawerOpen}
+        onClose={() => setProjectDrawerOpen(false)}
+        onSubmit={handleAssignProjects}
+        employeeName={employee.full_name}
       />
     </div>
   )

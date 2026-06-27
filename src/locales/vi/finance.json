@@ -1,0 +1,132 @@
+{
+  "title": "Quản lý Tài chính",
+  "vouchers": "Chứng từ",
+  "receipt": "Phiếu thu",
+  "payment": "Phiếu chi",
+  "amount": "Số tiền",
+  "payer": "Người nộp",
+  "payee": "Người nhận",
+  "reason": "Lý do",
+  "date": "Ngày chứng từ",
+  "bankAccount": "Tài khoản ngân hàng",
+  "cash": "Tiền mặt",
+  "transactionType": "Loại giao dịch",
+  "balance": "Số dư",
+  "list": {
+    "title": "Quản lý Chứng từ Thu/Chi",
+    "description": "Lập kế hoạch thu, chi, phê duyệt hóa đơn, quyết toán tài chính phòng ban và dự án.",
+    "create": "Lập chứng từ mới",
+    "fetch_error": "Không thể tải danh sách chứng từ",
+    "create_success": "Lập chứng từ thành công",
+    "update_success": "Cập nhật chứng từ thành công",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa chứng từ này?",
+    "delete_success": "Đã xóa chứng từ",
+    "delete_error": "Xóa chứng từ thất bại",
+    "approve_success": "Đã phê duyệt chứng từ",
+    "approve_error": "Duyệt thất bại",
+    "reject_prompt": "Nhập lý do từ chối (bắt buộc):",
+    "reject_reason_required": "Lý do từ chối không được bỏ trống",
+    "reject_success": "Đã từ chối chứng từ",
+    "reject_error": "Từ chối thất bại",
+    "filters": {
+      "search": "Tìm kiếm",
+      "search_placeholder": "Mã chứng từ, lý do...",
+      "type": "Loại giao dịch",
+      "status": "Trạng thái",
+      "date_from": "Từ ngày",
+      "date_to": "Đến ngày"
+    },
+    "columns": {
+      "code": "Mã chứng từ",
+      "type": "Loại",
+      "date": "Ngày",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "description": "Diễn giải / Liên kết",
+      "attachments": "Tài liệu"
+    },
+    "actions": {
+      "approve": "Duyệt",
+      "reject": "Từ chối",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "history": "Lịch sử duyệt"
+    },
+    "types": {
+      "receipt": "Thu tiền (Receipt)",
+      "payment": "Chi tiền (Payment)",
+      "receipt_short": "Thu tiền",
+      "payment_short": "Chi tiền"
+    },
+    "linked": {
+      "project": "Dự án",
+      "contract": "Hợp đồng",
+      "customer": "Khách hàng",
+      "department": "Phòng ban"
+    }
+  },
+  "form": {
+    "title_add": "Lập Chứng từ Thu/Chi mới",
+    "title_edit": "Cập nhật Chứng từ: {{code}}",
+    "type": "Loại chứng từ *",
+    "type_placeholder": "Chọn loại...",
+    "amount": "Số tiền (VNĐ) *",
+    "amount_placeholder": "Nhập số tiền...",
+    "date": "Ngày chứng từ *",
+    "employee": "Nhân viên thanh toán / giao dịch",
+    "employee_placeholder": "Chọn nhân viên...",
+    "employee_hint": "Có thể chọn nhiều nhân viên tham gia",
+    "linked_title": "Liên kết Phân hệ (Chọn ít nhất một mục) *",
+    "project": "Dự án liên quan",
+    "project_placeholder": "Chọn dự án...",
+    "contract": "Hợp đồng liên quan",
+    "contract_placeholder": "Chọn hợp đồng...",
+    "customer": "Khách hàng liên quan",
+    "customer_placeholder": "Chọn khách hàng...",
+    "department": "Phòng ban chịu phí / thụ hưởng",
+    "department_placeholder": "Chọn phòng ban...",
+    "no_link": "— Không liên kết —",
+    "description": "Nội dung diễn giải chứng từ *",
+    "description_placeholder": "Mô tả cụ thể nội dung thu/chi...",
+    "notes": "Ghi chú nội bộ",
+    "notes_placeholder": "Ghi chú thêm về phương thức thanh toán, tài khoản nhận...",
+    "validation": {
+      "amount_invalid": "Vui lòng nhập số tiền hợp lệ",
+      "amount_gt0": "Số tiền phải lớn hơn 0",
+      "date_required": "Vui lòng chọn ngày chứng từ",
+      "description_required": "Vui lòng nhập lý do / mô tả chứng từ",
+      "description_max": "Mô tả tối đa 1000 ký tự",
+      "notes_max": "Ghi chú tối đa 2000 ký tự",
+      "linked_required": "Chứng từ phải liên kết với ít nhất một thông tin: Dự án, Hợp đồng, Khách hàng hoặc Phòng ban.",
+      "save_error": "Lỗi khi lưu chứng từ"
+    }
+  },
+  "history": {
+    "title": "Lịch sử thay đổi: {{code}}",
+    "fetch_error": "Không thể tải lịch sử chứng từ",
+    "empty": "Chưa ghi nhận hoạt động nào cho chứng từ này.",
+    "close": "Đóng",
+    "user_id": "Mã NV: {{id}}",
+    "opinion": "Ý kiến:",
+    "changes_title": "Chi tiết thay đổi:"
+  },
+  "attachments": {
+    "title": "Tài liệu đính kèm: {{code}}",
+    "fetch_error": "Không thể tải tài liệu chứng từ",
+    "upload_success": "Tải đính kèm thành công",
+    "upload_error": "Tải đính kèm thất bại",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa tài liệu đính kèm này?",
+    "delete_success": "Đã xóa tài liệu đính kèm",
+    "delete_error": "Xóa tài liệu thất bại",
+    "close": "Đóng",
+    "select_label": "Chọn tài liệu chứng từ mới",
+    "select_hint": "Hỗ trợ PDF, hình ảnh hoặc bảng tính Excel lên đến 10 MB",
+    "upload_button": "Tải lên tài liệu",
+    "uploading": "Đang tải lên...",
+    "list_title": "Danh sách đính kèm hiện tại",
+    "empty": "Chưa có tài liệu đính kèm nào.",
+    "validation": {
+      "file_required": "Vui lòng chọn tệp tin"
+    }
+  }
+}

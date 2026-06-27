@@ -4,7 +4,7 @@ import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "man
 import { Trash2, Edit } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { RowActions } from "@/components/common/RowActions"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import type { Customer } from "../types/sales"
+import { useTranslation } from "react-i18next"
 
 interface CustomerTableProps {
   customers: Customer[]
@@ -54,13 +55,14 @@ export function CustomerTable({
   isAdmin = false,
 }: CustomerTableProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null)
 
   const columns = useMemo<MRT_ColumnDef<Customer>[]>(
     () => [
       {
         accessorKey: "customer_name",
-        header: "Khách hàng",
+        header: t("sales:customer_list.columns.customer"),
         size: 200,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
@@ -75,19 +77,19 @@ export function CustomerTable({
       },
       {
         accessorKey: "classification",
-        header: "Phân loại",
+        header: t("sales:customer_list.columns.classification"),
         size: 110,
         Cell: ({ cell }) => getClassificationBadge(cell.getValue<string | null>()),
       },
       {
         accessorKey: "phone",
-        header: "SĐT",
+        header: t("sales:customer_list.columns.phone"),
         size: 120,
         Cell: ({ cell }) => <span className="text-sm">{cell.getValue<string>()}</span>,
       },
       {
         accessorKey: "email",
-        header: "Email",
+        header: t("sales:customer_list.columns.email"),
         size: 180,
         Cell: ({ cell }) => (
           <span className="text-sm text-muted-foreground">{cell.getValue<string>() || "—"}</span>
@@ -95,7 +97,7 @@ export function CustomerTable({
       },
       {
         accessorKey: "sales_rep.full_name",
-        header: "Sales phụ trách",
+        header: t("sales:customer_list.columns.sales_rep"),
         size: 150,
         Cell: ({ row }) => (
           <span className="text-sm font-medium">{row.original.sales_rep?.full_name ?? "—"}</span>
@@ -106,35 +108,32 @@ export function CustomerTable({
         header: "",
         size: 100,
         Cell: ({ row }) => {
+          const actions: import("@/components/common/RowActions").RowAction[] = [
+            {
+              label: t("common:actions.edit", { defaultValue: "Sửa" }),
+              icon: <Edit className="size-4" />,
+              onClick: () => onEdit(row.original),
+              className: "text-muted-foreground hover:text-foreground",
+            },
+          ]
+          if (isAdmin) {
+            actions.push({
+              label: t("common:actions.delete", { defaultValue: "Xóa" }),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => setDeleteTarget(row.original),
+              className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+              variant: "destructive" as const,
+            })
+          }
           return (
-            <div
-              className="flex items-center justify-end gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit(row.original)}
-              >
-                <Edit className="size-4" />
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteTarget(row.original)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <RowActions actions={actions} />
             </div>
           )
         },
       },
     ],
-    [isAdmin, onEdit],
+    [isAdmin, onEdit, t],
   )
 
   const table = useMantineReactTable({
@@ -179,17 +178,15 @@ export function CustomerTable({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa khách hàng?</AlertDialogTitle>
+            <AlertDialogTitle>{t("sales:customer_list.delete_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa khách hàng{" "}
-              <span className="font-semibold text-foreground">
-                {deleteTarget?.customer_name ?? deleteTarget?.name}
-              </span>{" "}
-              không? Hành động này không thể hoàn tác.
+              {t("sales:customer_list.delete_confirm", {
+                name: deleteTarget?.customer_name ?? deleteTarget?.name ?? "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={async () => {
@@ -199,7 +196,7 @@ export function CustomerTable({
                 }
               }}
             >
-              Xóa
+              {t("common:actions.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

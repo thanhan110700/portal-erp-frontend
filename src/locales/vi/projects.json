@@ -1,0 +1,264 @@
+{
+  "title": "Quản lý Dự án",
+  "project": "Dự án",
+  "projectsList": "Danh sách dự án",
+  "task": "Công việc",
+  "milestone": "Giai đoạn",
+  "member": "Thành viên",
+  "progress": "Tiến độ",
+  "budget": "Ngân sách",
+  "expense": "Chi phí dự án",
+  "assignProject": "Phân công dự án",
+  "startDate": "Ngày bắt đầu",
+  "endDate": "Ngày kết thúc",
+  "list": {
+    "title": "Quản lý Dự án",
+    "create": "Tạo dự án mới",
+    "search": "Tìm kiếm dự án",
+    "search_placeholder": "Tên hoặc mã dự án...",
+    "filter_status": "Trạng thái",
+    "fetch_error": "Không thể tải danh sách dự án",
+    "delete_success": "Xóa dự án thành công",
+    "delete_error": "Xóa thất bại"
+  },
+  "columns": {
+    "code": "Mã DA",
+    "name": "Tên dự án",
+    "customer": "Khách hàng",
+    "contract_value": "Giá trị (VNĐ)",
+    "status": "Trạng thái"
+  },
+  "form": {
+    "update_title": "Cập nhật Dự án",
+    "create_title": "Tạo Dự án mới",
+    "submit_create": "Tạo dự án",
+    "submit_update": "Cập nhật",
+    "name": "Tên dự án *",
+    "customer": "Khách hàng",
+    "customer_placeholder": "Chọn khách hàng",
+    "contract": "Hợp đồng (Tùy chọn)",
+    "contract_none": "--- Không liên kết ---",
+    "contract_placeholder": "Chọn hợp đồng",
+    "start_date": "Ngày bắt đầu",
+    "end_date": "Ngày kết thúc (dự kiến)",
+    "value": "Giá trị hợp đồng (VNĐ) *",
+    "status": "Trạng thái",
+    "status_placeholder": "Chọn...",
+    "description": "Mô tả dự án",
+    "fetch_error": "Không thể tải thông tin dự án",
+    "update_success": "Cập nhật dự án thành công",
+    "create_success": "Tạo dự án thành công",
+    "update_error": "Lỗi khi cập nhật",
+    "create_error": "Lỗi khi tạo mới",
+    "validation": {
+      "name_required": "Vui lòng nhập tên",
+      "date_required": "Vui lòng chọn ngày",
+      "value_required": "Vui lòng nhập giá trị"
+    }
+  },
+  "detail": {
+    "not_found": "Không tìm thấy thông tin dự án.",
+    "fetch_error": "Không thể tải thông tin dự án",
+    "status_update_success": "Cập nhật trạng thái dự án thành công",
+    "status_update_error": "Lỗi cập nhật trạng thái",
+    "customer": "Khách hàng:",
+    "contract_value_title": "GIÁ TRỊ HỢP ĐỒNG",
+    "currency_unit": "VNĐ",
+    "contract": "Hợp đồng:",
+    "received_title": "ĐÃ THU TIỀN",
+    "received_progress": "Tiến độ thu:",
+    "spent_title": "ĐÃ CHI TIÊU",
+    "spent_ratio": "Tỷ lệ chi/HĐ:",
+    "profit_title": "LỢI NHUẬN DỰ ÁN",
+    "profit_margin": "Biên lợi nhuận:",
+    "change_status": "Thay đổi trạng thái dự án",
+    "select_status": "Chọn trạng thái...",
+    "time_info": "Thời gian thực hiện",
+    "start_date": "Ngày bắt đầu:",
+    "end_date_expected": "Ngày kết thúc (Dự kiến):",
+    "progress": "Tiến độ hoàn thành:",
+    "description": "Mô tả dự án",
+    "no_description": "Không có mô tả chi tiết.",
+    "tabs": {
+      "members": "Thành viên",
+      "milestones": "Cột mốc",
+      "expenses": "Chi phí",
+      "files": "Tài liệu",
+      "vouchers": "Chứng từ"
+    }
+  },
+  "members": {
+    "title": "Thành viên tham gia",
+    "add_member": "Thêm thành viên",
+    "update_success": "Cập nhật thành viên thành công",
+    "add_success": "Thêm thành viên thành công",
+    "process_error": "Lỗi xử lý yêu cầu",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa thành viên này khỏi dự án?",
+    "delete_success": "Đã xóa thành viên khỏi dự án",
+    "delete_error": "Xóa thành viên thất bại",
+    "columns": {
+      "full_name": "Họ và tên",
+      "role": "Vai trò",
+      "start_date": "Ngày bắt đầu",
+      "end_date": "Ngày kết thúc",
+      "labor_cost": "Chi phí nhân công (tháng)"
+    },
+    "no_role": "Chưa phân vai trò",
+    "form": {
+      "title_add": "Thêm Thành viên vào dự án",
+      "title_edit": "Cập nhật Thành viên dự án",
+      "employee": "Nhân viên *",
+      "employee_placeholder": "Chọn nhân viên...",
+      "role": "Vai trò / Nhiệm vụ",
+      "role_placeholder": "Ví dụ: Dev, PM, Tester...",
+      "labor_cost": "Chi phí nhân công (VNĐ/tháng)",
+      "labor_cost_placeholder": "Nhập chi phí...",
+      "start_date": "Ngày bắt đầu tham gia",
+      "end_date": "Ngày kết thúc",
+      "notes": "Ghi chú",
+      "notes_placeholder": "Ghi chú chi tiết công việc...",
+      "validation": {
+        "employee_required": "Vui lòng chọn nhân viên",
+        "role_max": "Vai trò không vượt quá 100 ký tự",
+        "labor_cost_min": "Chi phí nhân công phải >= 0",
+        "notes_max": "Ghi chú không vượt quá 1000 ký tự",
+        "date_invalid": "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu",
+        "save_error": "Lỗi khi lưu thông tin thành viên"
+      }
+    }
+  },
+  "milestones": {
+    "title": "Cột mốc dự án",
+    "add_milestone": "Thêm cột mốc",
+    "update_success": "Cập nhật cột mốc thành công",
+    "add_success": "Thêm cột mốc thành công",
+    "process_error": "Lỗi xử lý yêu cầu",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa cột mốc này?",
+    "delete_success": "Đã xóa cột mốc",
+    "delete_error": "Xóa cột mốc thất bại",
+    "columns": {
+      "name": "Tên cột mốc",
+      "due_date": "Ngày đến hạn",
+      "status": "Trạng thái",
+      "notes": "Ghi chú / Tiêu chí nghiệm thu"
+    },
+    "form": {
+      "title_add": "Thêm Cột mốc mới",
+      "title_edit": "Cập nhật Cột mốc",
+      "name": "Tên cột mốc *",
+      "name_placeholder": "Ví dụ: Bàn giao thiết kế, Handoff UAT...",
+      "due_date": "Ngày đến hạn *",
+      "status": "Trạng thái *",
+      "status_placeholder": "Chọn trạng thái...",
+      "notes": "Ghi chú / Mô tả tiêu chí",
+      "notes_placeholder": "Ghi chú chi tiết công việc hoặc tiêu chí nghiệm thu của cột mốc...",
+      "validation": {
+        "name_required": "Vui lòng nhập tên cột mốc",
+        "name_max": "Tên cột mốc tối đa 255 ký tự",
+        "date_required": "Vui lòng chọn ngày đến hạn",
+        "notes_max": "Ghi chú tối đa 1000 ký tự",
+        "save_error": "Lỗi khi lưu cột mốc"
+      }
+    }
+  },
+  "expenses": {
+    "title": "Chi phí dự án",
+    "add_expense": "Yêu cầu chi phí",
+    "submit_success": "Gửi yêu cầu chi phí thành công",
+    "submit_error": "Gửi yêu cầu chi phí thất bại",
+    "approve_success": "Đã phê duyệt yêu cầu chi phí",
+    "approve_error": "Phê duyệt thất bại",
+    "reject_prompt": "Nhập lý do từ chối (tùy chọn):",
+    "reject_success": "Đã từ chối yêu cầu chi phí",
+    "reject_error": "Từ chối thất bại",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa yêu cầu chi phí này?",
+    "delete_success": "Đã xóa khoản chi",
+    "delete_error": "Xóa khoản chi thất bại",
+    "columns": {
+      "type": "Phân loại",
+      "date": "Ngày chi",
+      "description": "Lý do / Mô tả",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "approvers": "Người yêu cầu / duyệt"
+    },
+    "approvers": {
+      "requester": "Yêu cầu:",
+      "approver": "Duyệt:"
+    },
+    "actions": {
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "delete": "Xóa yêu cầu"
+    },
+    "form": {
+      "title": "Yêu cầu Chi phí dự án",
+      "type": "Phân loại chi phí *",
+      "type_placeholder": "Chọn phân loại chi...",
+      "amount": "Số tiền (VNĐ) *",
+      "amount_placeholder": "Nhập số tiền...",
+      "date": "Ngày chi *",
+      "description": "Lý do chi / Mô tả chi tiết *",
+      "description_placeholder": "Mô tả cụ thể lý do chi và nội dung chi tiêu...",
+      "submit": "Gửi yêu cầu",
+      "submitting": "Đang gửi...",
+      "validation": {
+        "type_required": "Vui lòng chọn phân loại chi phí",
+        "amount_invalid": "Vui lòng nhập số tiền hợp lệ",
+        "amount_gt0": "Số tiền phải lớn hơn 0",
+        "date_required": "Vui lòng chọn ngày chi",
+        "description_required": "Vui lòng nhập lý do / mô tả khoản chi",
+        "description_max": "Mô tả tối đa 1000 ký tự",
+        "save_error": "Lỗi khi gửi yêu cầu chi phí"
+      }
+    }
+  },
+  "files": {
+    "title": "Tài liệu đính kèm",
+    "upload": "Tải lên tài liệu",
+    "upload_title": "Tải tài liệu mới lên dự án",
+    "upload_success": "Tải tệp lên thành công",
+    "upload_error": "Tải tệp lên thất bại",
+    "delete_confirm": "Bạn có chắc chắn muốn xóa tệp này?",
+    "delete_success": "Đã xóa tệp",
+    "delete_error": "Xóa tệp thất bại",
+    "category": "Phân loại tài liệu *",
+    "category_placeholder": "Chọn phân loại...",
+    "notes": "Mô tả / Ghi chú",
+    "notes_placeholder": "Mô tả tài liệu này (ví dụ: Bản vẽ kỹ thuật tầng 1...)",
+    "file_label": "Tệp tin đính kèm *",
+    "file_hint": "PDF, hình ảnh hoặc tài liệu Office lên đến 10 MB",
+    "uploading": "Đang tải lên...",
+    "submit": "Tải lên",
+    "columns": {
+      "name": "Tên tài liệu",
+      "category": "Phân loại",
+      "notes": "Ghi chú",
+      "size": "Dung lượng",
+      "uploaded_at": "Ngày tải",
+      "employee_code": "Mã NV"
+    },
+    "validation": {
+      "file_required": "Vui lòng chọn tệp tin",
+      "category_required": "Vui lòng chọn phân loại tài liệu",
+      "notes_max": "Ghi chú tối đa 500 ký tự"
+    }
+  },
+  "vouchers": {
+    "title": "Chứng từ liên quan",
+    "info": "Chỉ xem liên kết. Quản lý chứng từ tại phân hệ Tài chính.",
+    "fetch_error": "Không thể tải danh sách chứng từ",
+    "columns": {
+      "code": "Mã chứng từ",
+      "type": "Loại",
+      "date": "Ngày chứng từ",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "description": "Diễn giải / Ghi chú"
+    },
+    "types": {
+      "receipt": "Thu tiền",
+      "payment": "Chi tiền"
+    }
+  }
+}
