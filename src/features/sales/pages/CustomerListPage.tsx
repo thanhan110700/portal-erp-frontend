@@ -11,14 +11,15 @@ import type { Customer, CreateCustomerPayload, UpdateCustomerPayload } from "../
 import { CustomerTable } from "../components/CustomerTable"
 import { CustomerFormModal } from "../components/CustomerFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { useTranslation } from "react-i18next"
 
 export function CustomerListPage() {
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isSales = user?.roles?.includes("sales") ?? false
-  const canEdit = isAdmin || isSales
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateCustomers)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditCustomers)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteCustomers)
 
   const { t } = useTranslation()
 
@@ -187,7 +188,7 @@ export function CustomerListPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          {canEdit && (
+          {canCreate && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
               {t("sales:customer_list.add_new")}
@@ -209,7 +210,8 @@ export function CustomerListPage() {
         <CustomerTable
           customers={customers}
           isLoading={isLoading}
-          isAdmin={isAdmin}
+          canEdit={canEdit}
+          canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
         />

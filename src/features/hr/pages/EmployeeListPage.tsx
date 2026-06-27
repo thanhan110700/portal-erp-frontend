@@ -7,6 +7,7 @@ import { TablePagination } from "@/components/common/TablePagination"
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { employeeApi } from "../api/employeeApi"
 import { departmentApi } from "../api/departmentApi"
 import { EmployeeTable } from "../components/EmployeeTable"
@@ -19,12 +20,10 @@ const PER_PAGE = 20
 export function EmployeeListPage() {
   const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isHR =
-    user?.roles?.includes("admin") ||
-    user?.roles?.includes("director") ||
-    user?.roles?.includes("hr") ||
-    false
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateEmployees)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditEmployees)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteEmployees)
+  const canAssignRole = hasPermission(user?.permissions, PermissionSlugs.EditPermissions)
 
   // ── Data state ────────────────────────────────────────────────────────────
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -175,7 +174,7 @@ export function EmployeeListPage() {
             </p>
           </div>
         </div>
-        {isHR && (
+        {canCreate && (
           <Button
             id="btn-create-employee"
             onClick={() => {
@@ -202,9 +201,9 @@ export function EmployeeListPage() {
       <EmployeeTable
         employees={employees}
         isLoading={isLoading}
-        canEdit={isHR}
-        canDelete={isAdmin}
-        canAssignRole={isAdmin}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        canAssignRole={canAssignRole}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onAssignRole={handleAssignRole}

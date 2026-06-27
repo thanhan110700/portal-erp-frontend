@@ -16,6 +16,7 @@ import { TablePagination } from "@/components/common/TablePagination"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { timesheetApi } from "../api/timesheetApi"
 import { employeeApi } from "../api/employeeApi"
 import { TimesheetTable } from "../components/TimesheetTable"
@@ -54,12 +55,9 @@ function StatsCard({
 export function TimesheetListPage() {
   const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isManager =
-    isAdmin ||
-    (user?.roles?.includes("director") ?? false) ||
-    (user?.roles?.includes("hr") ?? false)
-  const canApprove = isAdmin || user?.permissions?.includes("approve.timesheets") || false
+  const canApprove = hasPermission(user?.permissions, PermissionSlugs.ApproveTimesheets)
+  const isManager = canApprove
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateTimesheets)
 
   // ── Data state ──────────────────────────────────────────────────────────
   const [timesheets, setTimesheets] = useState<Timesheet[]>([])
@@ -256,15 +254,17 @@ export function TimesheetListPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          <Button
-            id="btn-submit-timesheet"
-            size="sm"
-            onClick={() => setSubmitOpen(true)}
-            className="gap-2"
-          >
-            <Plus className="size-4" />
-            {t("hr:timesheet.create")}
-          </Button>
+          {canCreate && (
+            <Button
+              id="btn-submit-timesheet"
+              size="sm"
+              onClick={() => setSubmitOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="size-4" />
+              {t("hr:timesheet.create")}
+            </Button>
+          )}
         </div>
       </div>
 

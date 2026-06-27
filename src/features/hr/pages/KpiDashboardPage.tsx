@@ -15,6 +15,7 @@ import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPane
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { kpiApi } from "../api/kpiApi"
 import { employeeApi } from "../api/employeeApi"
 import type { Employee } from "../types/employee"
@@ -378,7 +379,7 @@ function UpsertKpiModal({
 export function KpiDashboardPage() {
   const { t } = useTranslation(["hr", "common"])
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditKpis)
 
   const now = new Date()
   const [month, setMonth] = useState(now.getMonth() + 1)
@@ -425,13 +426,13 @@ export function KpiDashboardPage() {
 
   // Load employees for upsert form
   useEffect(() => {
-    if (isAdmin) {
+    if (canEdit) {
       employeeApi
         .list({ per_page: 100 })
         .then((r) => setEmployees(r.data))
         .catch(console.error)
     }
-  }, [isAdmin])
+  }, [canEdit])
 
   const handleUpsert = async (payload: UpsertKpiPayload) => {
     try {
@@ -528,7 +529,7 @@ export function KpiDashboardPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          {isAdmin && (
+          {canEdit && (
             <Button
               size="sm"
               onClick={() => {
@@ -603,7 +604,7 @@ export function KpiDashboardPage() {
           <KpiTable
             kpis={kpis}
             isLoading={isLoading}
-            isAdmin={isAdmin}
+            isAdmin={canEdit}
             onEdit={(kpi) => {
               setEditKpi(kpi)
               setUpsertOpen(true)
@@ -618,7 +619,7 @@ export function KpiDashboardPage() {
       </div>
 
       {/* ── Upsert Modal ─────────────────────────────────────────────────── */}
-      {isAdmin && (
+      {canEdit && (
         <UpsertKpiModal
           open={upsertOpen}
           onClose={() => {

@@ -13,14 +13,18 @@ interface ProjectMembersTabProps {
   projectId: number
   members: ProjectMember[]
   onRefresh: () => void
-  canEdit: boolean
+  canCreate?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
 export function ProjectMembersTab({
   projectId,
   members,
   onRefresh,
-  canEdit,
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
 }: ProjectMembersTabProps) {
   const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
@@ -108,7 +112,7 @@ export function ProjectMembersTab({
       },
     ]
 
-    if (canEdit) {
+    if (canEdit || canDelete) {
       cols.push({
         id: "actions",
         header: t("common:table.actions"),
@@ -120,25 +124,29 @@ export function ProjectMembersTab({
               className="flex items-center justify-center gap-1.5"
               onClick={(e) => e.stopPropagation()}
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-11 md:size-8"
-                onClick={() => {
-                  setSelectedMember(member)
-                  setModalOpen(true)
-                }}
-              >
-                <Edit2 className="size-4 text-muted-foreground hover:text-foreground" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-11 md:size-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                onClick={() => handleRemove(member.id)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-11 md:size-8"
+                  onClick={() => {
+                    setSelectedMember(member)
+                    setModalOpen(true)
+                  }}
+                >
+                  <Edit2 className="size-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-11 md:size-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  onClick={() => handleRemove(member.id)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </div>
           )
         },
@@ -146,7 +154,7 @@ export function ProjectMembersTab({
     }
 
     return cols
-  }, [canEdit, handleRemove, setSelectedMember, setModalOpen, t])
+  }, [canEdit, canDelete, handleRemove, setSelectedMember, setModalOpen, t])
 
   const table = useMantineReactTable({
     renderEmptyRowsFallback: () => (
@@ -183,7 +191,7 @@ export function ProjectMembersTab({
         <h3 className="text-lg font-semibold">
           {t("projects:members.title")} ({members.length})
         </h3>
-        {canEdit && (
+        {canCreate && (
           <Button
             size="sm"
             onClick={() => {

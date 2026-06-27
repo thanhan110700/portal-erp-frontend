@@ -11,15 +11,16 @@ import type { Contract, CreateContractPayload, UpdateContractPayload } from "../
 import { ContractTable } from "../components/ContractTable"
 import { ContractFormModal } from "../components/ContractFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { useTranslation } from "react-i18next"
 
 export function ContractListPage() {
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isSales = user?.roles?.includes("sales") ?? false
-  const canEdit = isAdmin || isSales
+  const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateContracts)
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditContracts)
+  const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteContracts)
 
   const [contracts, setContracts] = useState<Contract[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -190,7 +191,7 @@ export function ContractListPage() {
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
             {t("common:actions.refresh")}
           </Button>
-          {canEdit && (
+          {canCreate && (
             <Button size="sm" onClick={handleOpenCreate} className="gap-2">
               <Plus className="size-4" />
               {t("sales:contract.create")}
@@ -212,7 +213,8 @@ export function ContractListPage() {
         <ContractTable
           contracts={contracts}
           isLoading={isLoading}
-          isAdmin={isAdmin}
+          canEdit={canEdit}
+          canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
           onRefresh={() => void loadData()}
