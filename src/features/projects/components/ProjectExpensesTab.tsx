@@ -13,8 +13,9 @@ interface ProjectExpensesTabProps {
   projectId: number
   expenses: ProjectExpense[]
   onRefresh: () => void
-  canEdit: boolean
-  isAdmin: boolean
+  canCreate?: boolean
+  canApprove?: boolean
+  canDelete?: boolean
 }
 
 const EXPENSE_TYPE_LABELS: Record<string, string> = {
@@ -44,8 +45,9 @@ export function ProjectExpensesTab({
   projectId,
   expenses,
   onRefresh,
-  canEdit,
-  isAdmin,
+  canCreate = false,
+  canApprove = false,
+  canDelete = false,
 }: ProjectExpensesTabProps) {
   const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
@@ -195,7 +197,7 @@ export function ProjectExpensesTab({
         Cell: ({ row }) => {
           const expense = row.original
           const isPending = expense.status === "pending"
-          const canApproveReject = canEdit && isPending
+          const canApproveReject = canApprove && isPending
 
           return (
             <div
@@ -224,7 +226,7 @@ export function ProjectExpensesTab({
                   </Button>
                 </>
               )}
-              {(isAdmin || isPending) && (
+              {canDelete && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -240,7 +242,7 @@ export function ProjectExpensesTab({
         },
       },
     ],
-    [canEdit, isAdmin, handleApprove, handleReject, handleRemove, t],
+    [canApprove, canDelete, handleApprove, handleReject, handleRemove, t],
   )
 
   const table = useMantineReactTable({
@@ -278,10 +280,16 @@ export function ProjectExpensesTab({
         <h3 className="text-lg font-semibold">
           {t("projects:expenses.title")} ({expenses.length})
         </h3>
-        <Button size="sm" onClick={() => setModalOpen(true)} className="gap-2 min-h-11 md:min-h-9">
-          <Plus className="size-4" />
-          {t("projects:expenses.add_expense")}
-        </Button>
+        {canCreate && (
+          <Button
+            size="sm"
+            onClick={() => setModalOpen(true)}
+            className="gap-2 min-h-11 md:min-h-9"
+          >
+            <Plus className="size-4" />
+            {t("projects:expenses.add_expense")}
+          </Button>
+        )}
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">

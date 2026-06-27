@@ -26,7 +26,8 @@ interface ContractTableProps {
   onEdit: (contract: Contract) => void
   onDelete: (id: number) => Promise<void>
   onRefresh: () => void
-  isAdmin?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
 export function ContractTable({
@@ -34,7 +35,8 @@ export function ContractTable({
   isLoading = false,
   onEdit,
   onDelete,
-  isAdmin = false,
+  canEdit = false,
+  canDelete = false,
   onRefresh,
 }: ContractTableProps) {
   const { t } = useTranslation()
@@ -134,14 +136,16 @@ export function ContractTable({
               onClick: () => {},
               className: "text-muted-foreground hover:text-foreground",
             },
-            {
+          ]
+          if (canEdit) {
+            actions.push({
               label: t("common:actions.edit", { defaultValue: "Sửa" }),
               icon: <Edit className="size-4" />,
               onClick: () => onEdit(row.original),
               className: "text-muted-foreground hover:text-foreground",
-            },
-          ]
-          if (isAdmin) {
+            })
+          }
+          if (canDelete) {
             actions.push({
               label: t("common:actions.delete", { defaultValue: "Xóa" }),
               icon: <Trash2 className="size-4" />,
@@ -158,7 +162,7 @@ export function ContractTable({
         },
       },
     ],
-    [isAdmin, onEdit, t],
+    [canEdit, canDelete, onEdit, t],
   )
 
   const table = useMantineReactTable({

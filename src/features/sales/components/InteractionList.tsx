@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 interface InteractionListProps {
   interactions: Interaction[]
   onDelete: (id: number) => Promise<void>
-  isAdmin?: boolean
+  canDelete?: boolean
 }
 
 function getInteractionIcon(type: string) {
@@ -22,7 +22,11 @@ function getInteractionIcon(type: string) {
   }
 }
 
-export function InteractionList({ interactions, onDelete, isAdmin = false }: InteractionListProps) {
+export function InteractionList({
+  interactions,
+  onDelete,
+  canDelete = false,
+}: InteractionListProps) {
   const { t } = useTranslation()
   if (!interactions.length) {
     return (
@@ -56,7 +60,7 @@ export function InteractionList({ interactions, onDelete, isAdmin = false }: Int
                   <Calendar className="size-3" />
                   {interaction.interaction_date}
                 </span>
-                {isAdmin && (
+                {canDelete && (
                   <Button
                     variant="ghost"
                     size="icon-sm"

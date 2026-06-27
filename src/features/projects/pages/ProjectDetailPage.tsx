@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { PageLoader } from "@/components/common/PageLoader"
 import { useAuthStore } from "@/hooks/useAuthStore"
+import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 
 import { projectApi } from "../api/projectApi"
 import type { Project } from "../types/project"
@@ -60,9 +61,17 @@ export function ProjectDetailPage() {
   const projectId = parseInt(id || "0")
 
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.roles?.includes("admin") ?? false
-  const isManager = user?.roles?.includes("project_manager") ?? false
-  const canEdit = isAdmin || isManager
+  const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditProjects)
+
+  // Members
+  const canCreateMember = hasPermission(user?.permissions, PermissionSlugs.CreateProjectMembers)
+  const canEditMember = hasPermission(user?.permissions, PermissionSlugs.EditProjectMembers)
+  const canDeleteMember = hasPermission(user?.permissions, PermissionSlugs.DeleteProjectMembers)
+
+  // Expenses
+  const canCreateExpense = hasPermission(user?.permissions, PermissionSlugs.CreateProjectExpenses)
+  const canApproveExpense = hasPermission(user?.permissions, PermissionSlugs.ApproveProjectExpenses)
+  const canDeleteExpense = hasPermission(user?.permissions, PermissionSlugs.DeleteProjectExpenses)
 
   const [project, setProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -336,7 +345,9 @@ export function ProjectDetailPage() {
                   projectId={project.id}
                   members={project.members || []}
                   onRefresh={loadProjectData}
-                  canEdit={canEdit}
+                  canCreate={canCreateMember}
+                  canEdit={canEditMember}
+                  canDelete={canDeleteMember}
                 />
               </TabsContent>
 
@@ -354,8 +365,9 @@ export function ProjectDetailPage() {
                   projectId={project.id}
                   expenses={project.expenses || []}
                   onRefresh={loadProjectData}
-                  canEdit={canEdit}
-                  isAdmin={isAdmin}
+                  canCreate={canCreateExpense}
+                  canApprove={canApproveExpense}
+                  canDelete={canDeleteExpense}
                 />
               </TabsContent>
 
@@ -365,7 +377,7 @@ export function ProjectDetailPage() {
                   files={project.files || []}
                   onRefresh={loadProjectData}
                   canEdit={canEdit}
-                  isAdmin={isAdmin}
+                  isAdmin={canEdit} // Reusing canEdit for admin file powers for now
                 />
               </TabsContent>
 
