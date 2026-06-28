@@ -26,7 +26,20 @@ export interface Employee {
   is_active: boolean
   department: Department | null
   manager: EmployeeManager | null
-  roles: string[]
+  roles?: string[]
+  role?: {
+    id: number
+    name: string
+  } | null
+  projects?: {
+    project_id: number
+    name: string
+    role: string | null
+    start_date: string | null
+    end_date: string | null
+    labor_cost: number | null
+    notes: string | null
+  }[]
 }
 
 export interface EmployeePaginationMeta {

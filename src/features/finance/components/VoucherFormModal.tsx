@@ -51,7 +51,7 @@ const getVoucherSchema = (t: any) =>
 interface VoucherFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: any) => Promise<void>
+  onSubmit: (payload: CreateVoucherPayload | UpdateVoucherPayload) => Promise<void>
   editData?: Voucher | null
 }
 
@@ -64,6 +64,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
   const [customers, setCustomers] = useState<OptionItem[]>([])
   const [departments, setDepartments] = useState<OptionItem[]>([])
   const [employees, setEmployees] = useState<OptionItem[]>([])
+  const [voucherTypes, setVoucherTypes] = useState<OptionItem[]>([])
 
   const {
     register,
@@ -96,13 +97,15 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         optionApi.getCustomers(),
         optionApi.getDepartments(),
         optionApi.getEmployees(),
+        optionApi.getVoucherTypes(),
       ])
-        .then(([p, con, cus, d, emp]) => {
+        .then(([p, con, cus, d, emp, vt]) => {
           setProjects(p)
           setContracts(con)
           setCustomers(cus)
           setDepartments(d)
           setEmployees(emp)
+          setVoucherTypes(vt)
         })
         .catch(console.error)
 
@@ -136,7 +139,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
     }
   }, [open, editData, reset])
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: z.infer<ReturnType<typeof getVoucherSchema>>) => {
     try {
       const payload: CreateVoucherPayload | UpdateVoucherPayload = {
         voucher_type: data.voucher_type,
@@ -170,7 +173,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
           ? t("finance:form.title_edit", { code: editData.voucher_code })
           : t("finance:form.title_add")
       }
-      size="xl"
+      size="full"
       primaryAction={{
         label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
         type: "submit",
@@ -183,7 +186,11 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         onClick: onClose,
       }}
     >
-      <form id="voucher-form" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-2">
+      <form
+        id="voucher-form"
+        onSubmit={(e) => void handleSubmit(handleFormSubmit)(e)}
+        className="space-y-4 py-2"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <Label>{t("finance:form.type")}</Label>
@@ -194,10 +201,10 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                 <SearchableSelect
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={[
-                    { value: "receipt", label: t("finance:list.types.receipt") },
-                    { value: "payment", label: t("finance:list.types.payment") },
-                  ]}
+                  options={voucherTypes.map((v) => ({
+                    value: v.value.toString(),
+                    label: v.label,
+                  }))}
                   placeholder={t("finance:form.type_placeholder")}
                   disabled={isEditing}
                 />

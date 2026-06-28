@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { ProjectExpense } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
+import { ProjectExpenseDetailDialog } from "./ProjectExpenseDetailDialog"
 import { useTranslation } from "react-i18next"
 
 interface ProjectExpensesTabProps {
@@ -51,6 +52,8 @@ export function ProjectExpensesTab({
 }: ProjectExpensesTabProps) {
   const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [selectedExpense, setSelectedExpense] = useState<ProjectExpense | null>(null)
 
   const handleCreate = async (payload: any) => {
     try {
@@ -68,6 +71,7 @@ export function ProjectExpensesTab({
       try {
         await projectApi.updateExpenseStatus(projectId, expenseId, { status: "approved" })
         toast.success(t("projects:expenses.approve_success"))
+        setDetailOpen(false)
         onRefresh()
       } catch {
         toast.error(t("projects:expenses.approve_error"))
@@ -86,6 +90,7 @@ export function ProjectExpensesTab({
           notes: reason || undefined,
         })
         toast.success(t("projects:expenses.reject_success"))
+        setDetailOpen(false)
         onRefresh()
       } catch {
         toast.error(t("projects:expenses.reject_error"))
@@ -266,6 +271,13 @@ export function ProjectExpensesTab({
       withBorder: false,
       withColumnBorders: false,
     },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => {
+        setSelectedExpense(row.original)
+        setDetailOpen(true)
+      },
+      sx: { cursor: "pointer" },
+    }),
     mantineTableContainerProps: {
       onScroll: (e: React.UIEvent<HTMLDivElement>) => {
         e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
@@ -301,6 +313,17 @@ export function ProjectExpensesTab({
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           onSubmit={handleCreate}
+        />
+      )}
+
+      {detailOpen && selectedExpense && (
+        <ProjectExpenseDetailDialog
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          expense={selectedExpense}
+          canApprove={canApprove}
+          onApprove={handleApprove}
+          onReject={handleReject}
         />
       )}
     </div>

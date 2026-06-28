@@ -10,7 +10,8 @@ interface LoginUserRaw {
   username: string
   full_name: string
   email: string
-  roles: string[]
+  role?: string
+  roles?: string[]
   permissions?: string[]
 }
 
@@ -20,7 +21,8 @@ interface MeUserRaw {
   name: string | null
   email: string
   is_active: boolean
-  roles: string[]
+  role?: string
+  roles?: string[]
   permissions: string[]
   avatar_url?: string | null
 }
@@ -33,6 +35,7 @@ function normalizeLoginUser(raw: LoginUserRaw): User {
     full_name: raw.full_name,
     name: raw.full_name ?? raw.username ?? null,
     email: raw.email,
+    role: raw.role,
     roles: raw.roles ?? [],
     permissions: Array.isArray(raw.permissions) ? raw.permissions : [],
     avatar_url: null,
@@ -46,6 +49,7 @@ function normalizeMeUser(raw: MeUserRaw): User {
     name: raw.name,
     email: raw.email,
     is_active: raw.is_active,
+    role: raw.role,
     roles: raw.roles ?? [],
     permissions: Array.isArray(raw.permissions) ? raw.permissions : [],
     avatar_url: raw.avatar_url ?? null,

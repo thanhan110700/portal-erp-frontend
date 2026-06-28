@@ -23,6 +23,8 @@ export type DrawerDirection = "bottom" | "top" | "left" | "right"
 export interface DrawerAction {
   /** Button label */
   label: string
+  /** Optional icon to render before label */
+  icon?: React.ReactNode
   /** Called when the button is clicked */
   onClick?: () => void
   /** Button variant forwarded to <Button> */
@@ -248,6 +250,7 @@ export function CommonDrawer({
 function ActionButton({ action, onClose }: { action: DrawerAction; onClose: () => void }) {
   const {
     label,
+    icon,
     onClick,
     variant = "default",
     disabled,
@@ -273,7 +276,7 @@ function ActionButton({ action, onClose }: { action: DrawerAction; onClose: () =
       className={cn("min-w-[80px]", className)}
       onClick={onClick ? handleClick : undefined}
     >
-      {loading ? <LoadingSpinner /> : null}
+      {loading ? <LoadingSpinner /> : icon}
       {label}
     </Button>
   )

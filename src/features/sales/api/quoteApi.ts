@@ -43,9 +43,10 @@ export const quoteApi = {
     await axiosInstance.delete(`/v1/quotes/${id}`)
   },
 
-  async updateStatus(id: number, status: string): Promise<Quote> {
+  async updateStatus(id: number, status: string, notes?: string): Promise<Quote> {
     const response = await axiosInstance.patch<ApiResponse<Quote>>(`/v1/quotes/${id}/status`, {
       status,
+      ...(notes ? { notes } : {}),
     })
     return response.data.data
   },

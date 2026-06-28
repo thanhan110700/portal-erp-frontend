@@ -499,6 +499,9 @@ export function KpiDashboardPage() {
       : null
   const totalTarget = kpis.reduce((s, k) => s + (toNum(k.target_revenue) ?? 0), 0)
   const totalActual = kpis.reduce((s, k) => s + (toNum(k.actual_revenue) ?? 0), 0)
+  const totalQuotes = kpis.reduce((s, k) => s + (k.quote_count ?? 0), 0)
+  const totalContracts = kpis.reduce((s, k) => s + (k.contract_count ?? 0), 0)
+  const conversionRate = totalQuotes > 0 ? (totalContracts / totalQuotes) * 100 : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -580,9 +583,11 @@ export function KpiDashboardPage() {
             color: "text-primary",
           },
           {
-            label: t("hr:kpi.dashboard.stats.achieved"),
-            value: `${kpis.filter((k) => (k.kpi_percent ?? 0) >= 100).length}/${kpis.length}`,
-            color: "text-success",
+            label: t("hr:kpi.dashboard.stats.conversion_rate", {
+              defaultValue: "Tỷ lệ chuyển đổi",
+            }),
+            value: conversionRate != null ? `${conversionRate.toFixed(1)}%` : "—",
+            color: "text-purple-600 dark:text-purple-400",
           },
         ].map((stat) => (
           <div

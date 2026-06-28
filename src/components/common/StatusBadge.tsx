@@ -21,6 +21,7 @@ const DEFAULT_STATUS_MAP: Record<
 > = {
   // Success states
   active: { variant: "success", label: "Active", pulse: true },
+  accepted: { variant: "success", label: "Accepted" },
   published: { variant: "success", label: "Published" },
   visible: { variant: "success", label: "Visible" },
   wordpress: { variant: "success", label: "WordPress" },
@@ -31,6 +32,7 @@ const DEFAULT_STATUS_MAP: Record<
   paid: { variant: "success", label: "Paid" },
 
   // Warning states
+  waiting: { variant: "warning", label: "Waiting", pulse: true },
   archived: { variant: "warning", label: "Archived" },
   hidden: { variant: "warning", label: "Hidden" },
   ai: { variant: "warning", label: "AI" },
@@ -73,8 +75,10 @@ export function StatusBadge({ status, label, className, pulse: explicitPulse }: 
     return <span className="text-muted-foreground/50">—</span>
   }
 
-  // Handle boolean/number (e.g. is_hidden)
-  const normalizedStatus = String(status).toLowerCase()
+  // Handle boolean/number and prefixes like 'Status.Accepted'
+  const normalizedStatus = String(status)
+    .toLowerCase()
+    .replace(/^status\./, "")
 
   const config = DEFAULT_STATUS_MAP[normalizedStatus]
   const variant = config?.variant || "outline"

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
@@ -6,13 +6,13 @@ import {
   Building2,
   Calendar,
   Mail,
-  MapPin,
   Pencil,
   Phone,
-  ShieldCheck,
   User,
   Briefcase,
+  MapPin,
 } from "lucide-react"
+import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,8 +25,7 @@ import { PATHS } from "@/constants/paths"
 import { employeeApi } from "../api/employeeApi"
 import { departmentApi } from "../api/departmentApi"
 import { EmployeeFormModal } from "../components/EmployeeFormModal"
-import { AssignRoleModal } from "../components/AssignRoleModal"
-import { EmployeeProjectsDrawer } from "../components/EmployeeProjectsDrawer"
+import { EmployeeProjectsDialog } from "../components/EmployeeProjectsDialog"
 import { EmployeeReports } from "../components/EmployeeReports"
 import type { CreateEmployeePayload, Department, Employee } from "../types/employee"
 import type { AssignEmployeeProjectsPayload } from "../api/employeeApi"
@@ -70,7 +69,6 @@ export function EmployeeDetailPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditEmployees)
-  const canAssignRole = hasPermission(user?.permissions, PermissionSlugs.EditPermissions)
   const canAssignProjects = hasPermission(user?.permissions, PermissionSlugs.EditProjectMembers)
 
   const [employee, setEmployee] = useState<Employee | null>(null)
@@ -78,7 +76,6 @@ export function EmployeeDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   const [formOpen, setFormOpen] = useState(false)
-  const [roleModalOpen, setRoleModalOpen] = useState(false)
   const [projectDrawerOpen, setProjectDrawerOpen] = useState(false)
 
   const fetchEmployee = useCallback(async () => {
@@ -100,10 +97,16 @@ export function EmployeeDetailPage() {
     departmentApi.list().then(setDepartments).catch(console.error)
   }, [fetchEmployee])
 
-  const handleUpdate = async (payload: CreateEmployeePayload) => {
+  const handleUpdate = async (payload: CreateEmployeePayload & { role?: string }) => {
     if (!employee) return
     try {
-      const updated = await employeeApi.update(employee.id, payload)
+      const { role, ...updateData } = payload
+      let updated = await employeeApi.update(employee.id, updateData)
+
+      if (role && (!employee.roles?.length || employee?.roles[0] !== role)) {
+        updated = await employeeApi.assignRole(employee.id, { role })
+      }
+
       setEmployee(updated)
       setFormOpen(false)
       toast.success(t("common:messages.update_success"))
@@ -113,23 +116,57 @@ export function EmployeeDetailPage() {
     }
   }
 
-  const handleRoleSubmit = async (role: string) => {
-    if (!employee) return
-    try {
-      const updated = await employeeApi.assignRole(employee.id, { role })
-      setEmployee(updated)
-      setRoleModalOpen(false)
-      toast.success(t("hr:employees.assign_role_success", { role: t(`common:roles.${role}`) }))
-    } catch {
-      toast.error(t("hr:employees.assign_role_error"))
-    }
-  }
-
   const handleAssignProjects = async (payload: AssignEmployeeProjectsPayload) => {
     if (!employee) return
     await employeeApi.assignProjects(employee.id, payload)
-    // Refresh employee data if needed, though projects are not currently displayed on this page
+    await fetchEmployee()
   }
+
+  const columns = useMemo<MRT_ColumnDef<NonNullable<Employee["projects"]>[number]>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: t("hr:employees.assign_projects.fields.project"),
+        Cell: ({ cell, row }) => cell.getValue<string>() || `Project #${row.original.project_id}`,
+      },
+      {
+        accessorKey: "role",
+        header: t("hr:employees.assign_projects.fields.role"),
+        Cell: ({ cell }) => cell.getValue<string>() || "—",
+      },
+      {
+        accessorKey: "labor_cost",
+        header: t("hr:employees.assign_projects.fields.labor_cost"),
+        Cell: ({ cell }) => {
+          const val = cell.getValue<number | null>()
+          return val ? val.toLocaleString("vi-VN") + " ₫" : "—"
+        },
+        muiTableHeadCellProps: { align: "right" },
+        muiTableBodyCellProps: { align: "right" },
+      },
+      {
+        accessorKey: "start_date",
+        header: t("hr:employees.assign_projects.fields.start_date"),
+        Cell: ({ cell }) => {
+          const val = cell.getValue<string | null>()
+          return val ? new Date(val).toLocaleDateString("vi-VN") : "—"
+        },
+      },
+    ],
+    [t],
+  )
+
+  const table = useMantineReactTable({
+    columns,
+    data: employee?.projects || [],
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enablePagination: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    mantineTableProps: { striped: true, highlightOnHover: true },
+    mantinePaperProps: { shadow: "none", radius: "md", withBorder: true },
+  })
 
   if (isLoading) {
     return (
@@ -160,18 +197,6 @@ export function EmployeeDetailPage() {
         </Button>
 
         <div className="flex gap-2">
-          {canAssignRole && (
-            <Button
-              id="btn-assign-role"
-              variant="outline"
-              size="sm"
-              onClick={() => setRoleModalOpen(true)}
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <ShieldCheck className="size-4" />
-              {t("hr:employees.actions.assign_role")}
-            </Button>
-          )}
           {canAssignProjects && (
             <>
               <Button
@@ -232,15 +257,19 @@ export function EmployeeDetailPage() {
             </Badge>
 
             {/* Roles */}
-            {employee.roles.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-1.5">
-                {employee.roles.map((role) => (
-                  <Badge key={role} variant="secondary" className="text-xs">
-                    {ROLE_LABELS_KEYS[role] ? t(ROLE_LABELS_KEYS[role]) : role}
-                  </Badge>
-                ))}
-              </div>
-            )}
+            {(() => {
+              const roleName = employee.role?.name
+              const roles = employee.roles || (roleName ? [roleName] : [])
+              return roles.length > 0 ? (
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {roles.map((r) => (
+                    <Badge key={r} variant="secondary" className="text-xs">
+                      {ROLE_LABELS_KEYS[r] ? t(ROLE_LABELS_KEYS[r]) : r}
+                    </Badge>
+                  ))}
+                </div>
+              ) : null
+            })()}
           </CardContent>
         </Card>
 
@@ -309,6 +338,37 @@ export function EmployeeDetailPage() {
             />
           </CardContent>
         </Card>
+
+        {/* ── Projects Card ─────────────────────────────────────────────── */}
+        <Card className="rounded-xl border bg-card md:col-span-3">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-semibold">
+              {t("hr:employees.projects_title", { defaultValue: "Dự án tham gia" })}
+            </CardTitle>
+            {canAssignProjects && (
+              <Button variant="ghost" size="sm" onClick={() => setProjectDrawerOpen(true)}>
+                {t("hr:employees.actions.assign_projects")}
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {employee.projects && employee.projects.length > 0 ? (
+              <div className="overflow-x-auto rounded-md">
+                <MantineReactTable table={table} />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 rounded-lg border border-dashed">
+                <Briefcase className="size-8 text-muted-foreground/50 mb-3" />
+                <h3 className="text-sm font-medium">{t("common:table.noData")}</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("hr:employees.no_projects", {
+                    defaultValue: "Nhân sự chưa tham gia dự án nào",
+                  })}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Reports ───────────────────────────────────────────────────────── */}
@@ -324,14 +384,7 @@ export function EmployeeDetailPage() {
         editData={employee}
       />
 
-      <AssignRoleModal
-        open={roleModalOpen}
-        onClose={() => setRoleModalOpen(false)}
-        onSubmit={handleRoleSubmit}
-        employee={employee}
-      />
-
-      <EmployeeProjectsDrawer
+      <EmployeeProjectsDialog
         open={projectDrawerOpen}
         onClose={() => setProjectDrawerOpen(false)}
         onSubmit={handleAssignProjects}

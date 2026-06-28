@@ -108,18 +108,29 @@ export function VoucherHistoryDialog({
                     <p className="font-semibold text-muted-foreground mb-1">
                       {t("finance:history.changes_title")}
                     </p>
-                    {Object.entries(log.changes).map(([field, delta]: [string, any]) => {
-                      const from = delta.old ?? "—"
-                      const to = delta.new ?? "—"
-                      return (
-                        <div key={field} className="flex items-center gap-2 truncate">
-                          <span className="font-mono text-muted-foreground">{field}:</span>
-                          <span className="line-through text-rose-500">{String(from)}</span>
-                          <ArrowRight className="size-3 text-muted-foreground shrink-0" />
-                          <span className="text-emerald-600 font-semibold">{String(to)}</span>
-                        </div>
-                      )
-                    })}
+                    {Object.entries(log.changes).map(
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      ([field, delta]: [string, any]) => {
+                        const from = delta.old ?? "—"
+                        const to = delta.new ?? "—"
+                        const fromStr =
+                          typeof from === "object"
+                            ? JSON.stringify(from)
+                            : String(from as string | number | boolean | null | undefined)
+                        const toStr =
+                          typeof to === "object"
+                            ? JSON.stringify(to)
+                            : String(to as string | number | boolean | null | undefined)
+                        return (
+                          <div key={field} className="flex items-center gap-2 truncate">
+                            <span className="font-mono text-muted-foreground">{field}:</span>
+                            <span className="line-through text-rose-500">{fromStr}</span>
+                            <ArrowRight className="size-3 text-muted-foreground shrink-0" />
+                            <span className="text-emerald-600 font-semibold">{toStr}</span>
+                          </div>
+                        )
+                      },
+                    )}
                   </div>
                 )}
               </div>

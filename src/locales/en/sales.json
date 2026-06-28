@@ -153,6 +153,20 @@
     "delete_error": "Failed to delete quote",
     "update_success": "Quote updated",
     "create_success": "New quote created",
+    "status_update_success": "Quote status updated",
+    "status_update_error": "Failed to update quote status",
+    "status": {
+      "reject_title": "Reason for Rejection",
+      "reject_description": "Please provide a reason for rejecting this quote.",
+      "reject_placeholder": "Enter detailed reason...",
+      "reject_reason_required": "Please enter a reason for rejection"
+    },
+    "detail_description": "Quote Details",
+    "change_status": "Change Status",
+    "no_description": "No description",
+    "no_notes": "No notes",
+    "upload_label": "Select attachment",
+    "upload_hint": "PDF, Word, Excel, Images",
     "filters": {
       "search_placeholder": "Quote code, Customer...",
       "all_customers": "All customers",
@@ -173,7 +187,8 @@
       "delete_title": "Delete quote?",
       "delete_confirm": "Are you sure you want to delete quote",
       "delete_warning": "? This action cannot be undone.",
-      "delete": "Delete"
+      "delete": "Delete",
+      "convert": "Convert to Contract"
     },
     "form": {
       "edit_title": "Update Quote — {{code}}",

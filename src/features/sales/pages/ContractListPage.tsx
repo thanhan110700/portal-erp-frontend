@@ -10,6 +10,7 @@ import { contractApi, type ListContractsParams } from "../api/contractApi"
 import type { Contract, CreateContractPayload, UpdateContractPayload } from "../types/sales"
 import { ContractTable } from "../components/ContractTable"
 import { ContractFormModal } from "../components/ContractFormModal"
+import { ContractDetailDialog } from "../components/ContractDetailDialog"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -43,6 +44,10 @@ export function ContractListPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Contract | null>(null)
+
+  // Drawer state
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -217,7 +222,10 @@ export function ContractListPage() {
           canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
-          onRefresh={() => void loadData()}
+          onViewDetail={(contract) => {
+            setSelectedContract(contract)
+            setDetailOpen(true)
+          }}
         />
 
         <TablePagination
@@ -240,6 +248,16 @@ export function ContractListPage() {
           customers={customers}
           salesReps={salesReps}
           quotes={quotes}
+        />
+      )}
+
+      {/* ── Detail Drawer ───────────────────────────────────────────────── */}
+      {detailOpen && selectedContract && (
+        <ContractDetailDialog
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+          contractId={selectedContract.id}
+          onRefresh={() => void loadData()}
         />
       )}
     </div>

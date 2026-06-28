@@ -84,7 +84,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
       open={open}
       onClose={onClose}
       title={t("projects:expenses.form.title")}
-      size="lg"
+      size="full"
       primaryAction={{
         label: isSubmitting
           ? t("projects:expenses.form.submitting")

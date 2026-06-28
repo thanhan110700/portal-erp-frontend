@@ -132,7 +132,7 @@ export function CommonDialog({
   primaryAction,
   cancelAction = true,
   extraActions,
-  size = "sm",
+  size = "2xl",
   showCloseButton = true,
   contentClassName,
   headerClassName,
