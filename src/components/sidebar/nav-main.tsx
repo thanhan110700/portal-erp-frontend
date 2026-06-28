@@ -37,6 +37,13 @@ export function NavMain({
     if (isMobile) setOpenMobile(false)
   }
 
+  const isRouteActive = (url: string) => {
+    if (url === "/") {
+      return pathname === "/"
+    }
+    return pathname === url || pathname.startsWith(url + "/")
+  }
+
   return (
     <SidebarGroup>
       {!isCollapsed && (
@@ -48,7 +55,7 @@ export function NavMain({
         {items.map((item) => {
           const hasChildren = item.items && item.items.length > 0
           const isCurrentActive =
-            pathname === item.url || (item.items?.some((sub) => pathname === sub.url) ?? false)
+            isRouteActive(item.url) || (item.items?.some((sub) => isRouteActive(sub.url)) ?? false)
 
           if (!hasChildren) {
             return (
@@ -56,7 +63,7 @@ export function NavMain({
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  isActive={pathname === item.url}
+                  isActive={isRouteActive(item.url)}
                   className="group/menu-btn h-10 px-3 transition-all duration-300 hover:bg-sidebar-accent hover:text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground"
                 >
                   <Link to={item.url} onClick={handleNavigate}>
@@ -130,7 +137,7 @@ export function NavMain({
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={pathname === subItem.url}
+                          isActive={isRouteActive(subItem.url)}
                           className="group/sub-btn h-9 rounded-md transition-all duration-300 hover:bg-sidebar-accent hover:translate-x-1"
                         >
                           <Link

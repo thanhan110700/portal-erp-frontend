@@ -24,6 +24,8 @@ export type DialogSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "full"
 export interface DialogAction {
   /** Button label */
   label: string
+  /** Optional icon to display before the label */
+  icon?: React.ReactNode
   /** Called when the button is clicked */
   onClick?: () => void
   /** Button variant forwarded to <Button> */
@@ -224,6 +226,7 @@ export function CommonDialog({
 function ActionButton({ action, onClose }: { action: DialogAction; onClose: () => void }) {
   const {
     label,
+    icon,
     onClick,
     variant = "default",
     disabled,
@@ -250,6 +253,7 @@ function ActionButton({ action, onClose }: { action: DialogAction; onClose: () =
       onClick={onClick ? handleClick : undefined}
     >
       {loading ? <LoadingSpinner /> : null}
+      {icon ? <span className="mr-1.5">{icon}</span> : null}
       {label}
     </Button>
   )

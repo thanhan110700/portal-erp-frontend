@@ -2,8 +2,9 @@ import { useState, useMemo, useCallback } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { Plus, Trash2, Edit2, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+
 import { toast } from "sonner"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import type { ProjectMilestone } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMilestoneFormModal } from "./ProjectMilestoneFormModal"
@@ -14,20 +15,6 @@ interface ProjectMilestonesTabProps {
   milestones: ProjectMilestone[]
   onRefresh: () => void
   canEdit: boolean
-}
-
-const STATUS_VARIANTS: Record<string, any> = {
-  planned: "secondary",
-  in_progress: "info",
-  completed: "success",
-  delayed: "danger",
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  planned: "Lên kế hoạch",
-  in_progress: "Đang thực hiện",
-  completed: "Hoàn thành",
-  delayed: "Bị trễ",
 }
 
 export function ProjectMilestonesTab({
@@ -102,13 +89,7 @@ export function ProjectMilestonesTab({
         size: 150,
         Cell: ({ cell }) => {
           const status = cell.getValue<string>() || "planned"
-          return (
-            <Badge variant={STATUS_VARIANTS[status] || "default"}>
-              {t(`common:status.${status}`, {
-                defaultValue: STATUS_LABELS[status] || status || "",
-              })}
-            </Badge>
-          )
+          return <StatusBadge status={status} />
         },
       },
       {
