@@ -27,7 +27,8 @@ export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRol
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const currentRoles = employee?.roles ?? []
+  const roleName = employee?.role?.name
+  const currentRoles = employee?.roles ?? (roleName ? [roleName] : [])
 
   const roleSelectOptions = useMemo(() => {
     return ROLE_OPTIONS_KEYS.map((r) => ({

@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit, FileSignature, Download, Paperclip } from "lucide-react"
-
-import { ContractFilesDialog } from "./ContractFilesDialog"
-import { useTranslation } from "react-i18next"
+import { Trash2, Edit, FileSignature } from "lucide-react"
 
 import { RowActions } from "@/components/common/RowActions"
 import { StatusBadge } from "@/components/common/StatusBadge"
@@ -19,13 +16,15 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import type { Contract } from "../types/sales"
+import { useTranslation } from "react-i18next"
 
 interface ContractTableProps {
   contracts: Contract[]
   isLoading?: boolean
   onEdit: (contract: Contract) => void
   onDelete: (id: number) => Promise<void>
-  onRefresh: () => void
+
+  onViewDetail?: (contract: Contract) => void
   canEdit?: boolean
   canDelete?: boolean
 }
@@ -37,11 +36,10 @@ export function ContractTable({
   onDelete,
   canEdit = false,
   canDelete = false,
-  onRefresh,
+  onViewDetail,
 }: ContractTableProps) {
   const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Contract | null>(null)
-  const [fileTarget, setFileTarget] = useState<Contract | null>(null)
 
   const columns = useMemo<MRT_ColumnDef<Contract>[]>(
     () => [
@@ -114,29 +112,16 @@ export function ContractTable({
         header: "",
         size: 100,
         Cell: ({ row }) => {
-          const actions: import("@/components/common/RowActions").RowAction[] = [
-            {
-              label: t("sales:contract.actions.attachments", { defaultValue: "Đính kèm" }),
-              icon: (
-                <div className="relative">
-                  <Paperclip className="size-4" />
-                  {row.original.files && row.original.files.length > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                      {row.original.files.length}
-                    </span>
-                  )}
-                </div>
-              ),
-              onClick: () => setFileTarget(row.original),
+          const actions: import("@/components/common/RowActions").RowAction[] = []
+
+          if (onViewDetail) {
+            actions.push({
+              label: t("common:action.view", { defaultValue: "Xem chi tiết" }),
+              icon: <FileSignature className="size-4" />,
+              onClick: () => onViewDetail(row.original),
               className: "text-muted-foreground hover:text-foreground",
-            },
-            {
-              label: t("sales:contract.actions.download_file", { defaultValue: "Tải file" }),
-              icon: <Download className="size-4" />,
-              onClick: () => {},
-              className: "text-muted-foreground hover:text-foreground",
-            },
-          ]
+            })
+          }
           if (canEdit) {
             actions.push({
               label: t("common:actions.edit", { defaultValue: "Sửa" }),
@@ -162,7 +147,7 @@ export function ContractTable({
         },
       },
     ],
-    [canEdit, canDelete, onEdit, t],
+    [canEdit, canDelete, onEdit, onViewDetail, t],
   )
 
   const table = useMantineReactTable({
@@ -189,6 +174,12 @@ export function ContractTable({
       withBorder: false,
       withColumnBorders: false,
     },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => {
+        if (onViewDetail) onViewDetail(row.original)
+      },
+      sx: { cursor: onViewDetail ? "pointer" : "default" },
+    }),
     mantineTableContainerProps: {
       onScroll: (e: React.UIEvent<HTMLDivElement>) => {
         e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
@@ -229,14 +220,6 @@ export function ContractTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <ContractFilesDialog
-        open={!!fileTarget}
-        onClose={() => setFileTarget(null)}
-        contractId={fileTarget?.id ?? 0}
-        contractTitle={fileTarget?.contract_code ?? ""}
-        onRefresh={onRefresh}
-      />
     </>
   )
 }

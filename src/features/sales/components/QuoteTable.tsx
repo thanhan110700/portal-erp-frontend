@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit, FileText, Download, Paperclip } from "lucide-react"
+import { Trash2, Edit, FileText } from "lucide-react"
 
-import { QuoteFilesDialog } from "./QuoteFilesDialog"
 import { useTranslation } from "react-i18next"
 
 import { RowActions } from "@/components/common/RowActions"
@@ -25,7 +24,8 @@ interface QuoteTableProps {
   isLoading?: boolean
   onEdit: (quote: Quote) => void
   onDelete: (id: number) => Promise<void>
-  onRefresh: () => void
+
+  onViewDetail?: (quote: Quote) => void
   canEdit?: boolean
   canDelete?: boolean
 }
@@ -37,11 +37,10 @@ export function QuoteTable({
   onDelete,
   canEdit = false,
   canDelete = false,
-  onRefresh,
+  onViewDetail,
 }: QuoteTableProps) {
   const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Quote | null>(null)
-  const [fileTarget, setFileTarget] = useState<Quote | null>(null)
 
   const columns = useMemo<MRT_ColumnDef<Quote>[]>(
     () => [
@@ -106,29 +105,16 @@ export function QuoteTable({
         header: "",
         size: 100,
         Cell: ({ row }) => {
-          const actions: import("@/components/common/RowActions").RowAction[] = [
-            {
-              label: t("sales:quote.actions.attachments", { defaultValue: "Đính kèm" }),
-              icon: (
-                <div className="relative">
-                  <Paperclip className="size-4" />
-                  {row.original.files && row.original.files.length > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                      {row.original.files.length}
-                    </span>
-                  )}
-                </div>
-              ),
-              onClick: () => setFileTarget(row.original),
+          const actions: import("@/components/common/RowActions").RowAction[] = []
+
+          if (onViewDetail) {
+            actions.push({
+              label: t("common:action.view", { defaultValue: "Xem chi tiết" }),
+              icon: <FileText className="size-4" />,
+              onClick: () => onViewDetail(row.original),
               className: "text-muted-foreground hover:text-foreground",
-            },
-            {
-              label: t("sales:quote.actions.download_pdf", { defaultValue: "Tải PDF" }),
-              icon: <Download className="size-4" />,
-              onClick: () => {},
-              className: "text-muted-foreground hover:text-foreground",
-            },
-          ]
+            })
+          }
           if (canEdit) {
             actions.push({
               label: t("common:actions.edit", { defaultValue: "Sửa" }),
@@ -154,7 +140,7 @@ export function QuoteTable({
         },
       },
     ],
-    [canEdit, canDelete, onEdit, t],
+    [canEdit, canDelete, onEdit, onViewDetail, t],
   )
 
   const table = useMantineReactTable({
@@ -181,6 +167,12 @@ export function QuoteTable({
       withBorder: false,
       withColumnBorders: false,
     },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => {
+        if (onViewDetail) onViewDetail(row.original)
+      },
+      sx: { cursor: onViewDetail ? "pointer" : "default" },
+    }),
     mantineTableContainerProps: {
       onScroll: (e: React.UIEvent<HTMLDivElement>) => {
         e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
@@ -221,14 +213,6 @@ export function QuoteTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <QuoteFilesDialog
-        open={!!fileTarget}
-        onClose={() => setFileTarget(null)}
-        quoteId={fileTarget?.id ?? 0}
-        quoteTitle={fileTarget?.quote_code ?? ""}
-        onRefresh={onRefresh}
-      />
     </>
   )
 }

@@ -169,7 +169,7 @@ export function CustomerFormModal({
           ? t("sales:customer_form.edit_title", { name: editData.customer_name ?? editData.name })
           : t("sales:customer_form.add_title")
       }
-      size="xl"
+      size="full"
       primaryAction={{
         label: isSubmitting ? t("sales:customer_form.saving") : t("sales:customer_form.save"),
         type: "submit",

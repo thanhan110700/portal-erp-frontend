@@ -12,7 +12,6 @@ import { employeeApi } from "../api/employeeApi"
 import { departmentApi } from "../api/departmentApi"
 import { EmployeeTable } from "../components/EmployeeTable"
 import { EmployeeFormModal } from "../components/EmployeeFormModal"
-import { AssignRoleModal } from "../components/AssignRoleModal"
 import type { CreateEmployeePayload, Department, Employee } from "../types/employee"
 
 const PER_PAGE = 20
@@ -23,7 +22,6 @@ export function EmployeeListPage() {
   const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateEmployees)
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditEmployees)
   const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteEmployees)
-  const canAssignRole = hasPermission(user?.permissions, PermissionSlugs.EditPermissions)
 
   // ── Data state ────────────────────────────────────────────────────────────
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -40,8 +38,6 @@ export function EmployeeListPage() {
   // ── Modal state ───────────────────────────────────────────────────────────
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Employee | null>(null)
-  const [roleModalOpen, setRoleModalOpen] = useState(false)
-  const [roleTarget, setRoleTarget] = useState<Employee | null>(null)
 
   // ── Fetch departments on mount ────────────────────────────────────────────
   useEffect(() => {
@@ -73,15 +69,22 @@ export function EmployeeListPage() {
   }, [fetchEmployees])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleCreateOrUpdate = async (payload: CreateEmployeePayload) => {
+  const handleCreateOrUpdate = async (payload: CreateEmployeePayload & { role?: string }) => {
     try {
+      const { role, ...employeeData } = payload
+      let finalEmployee
+
       if (editTarget) {
-        await employeeApi.update(editTarget.id, payload)
-        toast.success(t("common:messages.success"))
+        finalEmployee = await employeeApi.update(editTarget.id, employeeData)
       } else {
-        await employeeApi.create(payload)
-        toast.success(t("common:messages.success"))
+        finalEmployee = await employeeApi.create(employeeData)
       }
+
+      if (role) {
+        await employeeApi.assignRole(finalEmployee.id, { role })
+      }
+
+      toast.success(t("common:messages.success"))
       setFormOpen(false)
       setEditTarget(null)
       fetchEmployees()
@@ -107,24 +110,6 @@ export function EmployeeListPage() {
   const handleEdit = (employee: Employee) => {
     setEditTarget(employee)
     setFormOpen(true)
-  }
-
-  const handleAssignRole = (employee: Employee) => {
-    setRoleTarget(employee)
-    setRoleModalOpen(true)
-  }
-
-  const handleRoleSubmit = async (role: string) => {
-    if (!roleTarget) return
-    try {
-      await employeeApi.assignRole(roleTarget.id, { role })
-      toast.success(t("common:messages.success"))
-      setRoleModalOpen(false)
-      setRoleTarget(null)
-      fetchEmployees()
-    } catch {
-      toast.error(t("common:messages.error"))
-    }
   }
 
   const handleResetFilters = () => {
@@ -203,10 +188,8 @@ export function EmployeeListPage() {
         isLoading={isLoading}
         canEdit={canEdit}
         canDelete={canDelete}
-        canAssignRole={canAssignRole}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onAssignRole={handleAssignRole}
       />
 
       {/* ── Pagination ────────────────────────────────────────────────────── */}
@@ -229,16 +212,6 @@ export function EmployeeListPage() {
         departments={departments}
         employees={employees}
         editData={editTarget}
-      />
-
-      <AssignRoleModal
-        open={roleModalOpen}
-        onClose={() => {
-          setRoleModalOpen(false)
-          setRoleTarget(null)
-        }}
-        onSubmit={handleRoleSubmit}
-        employee={roleTarget}
       />
     </div>
   )

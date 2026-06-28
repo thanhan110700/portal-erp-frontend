@@ -8,9 +8,11 @@
     "search": "Tìm kiếm...",
     "confirm": "Xác nhận",
     "back": "Quay lại",
-    "refresh": "Làm mới"
+    "refresh": "Làm mới",
+    "saving": "Đang lưu..."
   },
   "status": {
+    "status": "Trạng thái",
     "draft": "Nháp",
     "sent": "Đã gửi",
     "pending": "Chờ duyệt",
@@ -19,6 +21,8 @@
     "in_progress": "Đang thực hiện",
     "completed": "Hoàn thành",
     "cancelled": "Đã hủy",
+    "waiting": "Đang chờ",
+    "accepted": "Đã chốt",
     "active": "Hoạt động",
     "inactive": "Ngừng hoạt động",
     "paused": "Tạm dừng",
@@ -112,5 +116,6 @@
     "sales": "Kinh doanh",
     "technician": "Kỹ thuật",
     "employee": "Nhân viên"
-  }
+  },
+  "currency": "VNĐ"
 }

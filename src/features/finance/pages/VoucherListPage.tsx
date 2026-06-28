@@ -1,38 +1,25 @@
 import { useEffect, useState, useCallback, useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Plus, Trash2, Edit2, History, Paperclip, Check, X } from "lucide-react"
+import { Plus, Trash2, Edit2, Paperclip, Check, X, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
 import { RowActions } from "@/components/common/RowActions"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { voucherApi } from "../api/voucherApi"
-import type { Voucher, ListVouchersParams } from "../types/voucher"
+import type {
+  Voucher,
+  ListVouchersParams,
+  CreateVoucherPayload,
+  UpdateVoucherPayload,
+} from "../types/voucher"
 import { VoucherFormModal } from "../components/VoucherFormModal"
-import { VoucherHistoryDialog } from "../components/VoucherHistoryDialog"
-import { VoucherAttachmentsDialog } from "../components/VoucherAttachmentsDialog"
+import { VoucherDetailDialog } from "../components/VoucherDetailDialog"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
-
-const STATUS_VARIANTS: Record<string, any> = {
-  draft: "secondary",
-  pending: "warning",
-  approved: "success",
-  paid: "info",
-  rejected: "danger",
-  cancelled: "muted",
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Lưu nháp",
-  pending: "Chờ duyệt",
-  approved: "Đã duyệt",
-  paid: "Đã chi",
-  rejected: "Từ chối",
-  cancelled: "Đã hủy",
-}
+import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 
 export function VoucherListPage() {
   const { t } = useTranslation(["finance", "common"])
@@ -49,7 +36,7 @@ export function VoucherListPage() {
   const [pageSize] = useState(15)
 
   // Filters state
-  const [filters, setFilters] = useState<Record<string, any>>({
+  const [filters, setFilters] = useState<Record<string, unknown>>({
     search: "",
     voucher_type: "",
     status: "",
@@ -59,9 +46,21 @@ export function VoucherListPage() {
 
   // Modals state
   const [formOpen, setFormOpen] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [attachmentsOpen, setAttachmentsOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null)
+
+  // Options state
+  const [voucherTypes, setVoucherTypes] = useState<OptionItem[]>([])
+  const [voucherStatuses, setVoucherStatuses] = useState<OptionItem[]>([])
+
+  useEffect(() => {
+    Promise.all([optionApi.getVoucherTypes(), optionApi.getVoucherStatuses()])
+      .then(([types, statuses]) => {
+        setVoucherTypes(types)
+        setVoucherStatuses(statuses)
+      })
+      .catch(console.error)
+  }, [])
 
   const fetchVouchers = useCallback(async () => {
     setLoading(true)
@@ -69,11 +68,11 @@ export function VoucherListPage() {
       const params: ListVouchersParams = {
         page: currentPage,
         per_page: pageSize,
-        search: filters.search || undefined,
-        voucher_type: filters.voucher_type || undefined,
-        status: filters.status || undefined,
-        date_from: filters.date_from || undefined,
-        date_to: filters.date_to || undefined,
+        search: (filters.search as string) || undefined,
+        voucher_type: (filters.voucher_type as string) || undefined,
+        status: (filters.status as string) || undefined,
+        date_from: (filters.date_from as string) || undefined,
+        date_to: (filters.date_to as string) || undefined,
       }
       const data = await voucherApi.list(params)
       setVouchers(data.data || [])
@@ -89,65 +88,78 @@ export function VoucherListPage() {
     void fetchVouchers()
   }, [fetchVouchers])
 
-  const handleCreateOrUpdate = async (payload: any) => {
+  const handleCreateOrUpdate = async (payload: CreateVoucherPayload | UpdateVoucherPayload) => {
     try {
       if (selectedVoucher) {
-        await voucherApi.update(selectedVoucher.id, payload)
+        await voucherApi.update(selectedVoucher.id, payload as UpdateVoucherPayload)
         toast.success(t("finance:list.update_success"))
       } else {
-        await voucherApi.create(payload)
+        await voucherApi.create(payload as CreateVoucherPayload)
         toast.success(t("finance:list.create_success"))
       }
       setFormOpen(false)
       void fetchVouchers()
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errMsg =
-        err.response?.data?.message ||
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
         t("finance:list.update_error", { defaultValue: "Lỗi xử lý chứng từ" })
       toast.error(errMsg)
     }
   }
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm(t("finance:list.delete_confirm"))) return
-    try {
-      await voucherApi.delete(id)
-      toast.success(t("finance:list.delete_success"))
-      void fetchVouchers()
-    } catch {
-      toast.error(t("finance:list.delete_error"))
-    }
-  }
+  const handleDelete = useCallback(
+    async (id: number) => {
+      if (!window.confirm(t("finance:list.delete_confirm"))) return
+      try {
+        await voucherApi.delete(id)
+        toast.success(t("finance:list.delete_success"))
+        void fetchVouchers()
+      } catch {
+        toast.error(t("finance:list.delete_error"))
+      }
+    },
+    [t, fetchVouchers],
+  )
 
-  const handleApprove = async (id: number) => {
-    try {
-      await voucherApi.approve(id, "approve")
-      toast.success(t("finance:list.approve_success"))
-      void fetchVouchers()
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || t("finance:list.approve_error")
-      toast.error(errMsg)
-    }
-  }
+  const handleApprove = useCallback(
+    async (id: number) => {
+      try {
+        await voucherApi.approve(id, "approve")
+        toast.success(t("finance:list.approve_success"))
+        void fetchVouchers()
+      } catch (err: unknown) {
+        const errMsg =
+          (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          t("finance:list.approve_error")
+        toast.error(errMsg)
+      }
+    },
+    [t, fetchVouchers],
+  )
 
-  const handleReject = async (id: number) => {
-    const reason = window.prompt(t("finance:list.reject_prompt"))
-    if (reason === null) return
-    if (!reason.trim()) {
-      toast.error(t("finance:list.reject_reason_required"))
-      return
-    }
-    try {
-      await voucherApi.approve(id, "reject", reason)
-      toast.success(t("finance:list.reject_success"))
-      void fetchVouchers()
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || t("finance:list.reject_error")
-      toast.error(errMsg)
-    }
-  }
+  const handleReject = useCallback(
+    async (id: number) => {
+      const reason = window.prompt(t("finance:list.reject_prompt"))
+      if (reason === null) return
+      if (!reason.trim()) {
+        toast.error(t("finance:list.reject_reason_required"))
+        return
+      }
+      try {
+        await voucherApi.approve(id, "reject", reason)
+        toast.success(t("finance:list.reject_success"))
+        void fetchVouchers()
+      } catch (err: unknown) {
+        const errMsg =
+          (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          t("finance:list.reject_error")
+        toast.error(errMsg)
+      }
+    },
+    [t, fetchVouchers],
+  )
 
-  const handleFilterSubmit = (newFilters: Record<string, any>) => {
+  const handleFilterSubmit = (newFilters: Record<string, unknown>) => {
     setFilters(newFilters)
     setCurrentPage(1)
   }
@@ -159,48 +171,38 @@ export function VoucherListPage() {
         label: t("finance:list.filters.search"),
         type: "input",
         placeholder: t("finance:list.filters.search_placeholder"),
-        value: filters.search || "",
+        value: (filters.search as string) || "",
       },
       {
         field: "voucher_type",
         label: t("finance:list.filters.type"),
         type: "select",
         placeholder: t("common:filter.all"),
-        value: filters.voucher_type || "",
-        options: [
-          { label: t("finance:list.types.receipt"), value: "receipt" },
-          { label: t("finance:list.types.payment"), value: "payment" },
-        ],
+        value: (filters.voucher_type as string) || "",
+        options: voucherTypes.map((t) => ({ label: t.label, value: t.value.toString() })),
       },
       {
         field: "status",
         label: t("finance:list.filters.status"),
         type: "select",
         placeholder: t("common:filter.all"),
-        value: filters.status || "",
-        options: [
-          { label: t("common:status.draft", { defaultValue: "Lưu nháp" }), value: "draft" },
-          { label: t("common:status.pending", { defaultValue: "Chờ duyệt" }), value: "pending" },
-          { label: t("common:status.approved", { defaultValue: "Đã duyệt" }), value: "approved" },
-          { label: t("common:status.paid", { defaultValue: "Đã chi" }), value: "paid" },
-          { label: t("common:status.rejected", { defaultValue: "Từ chối" }), value: "rejected" },
-          { label: t("common:status.cancelled", { defaultValue: "Đã hủy" }), value: "cancelled" },
-        ],
+        value: (filters.status as string) || "",
+        options: voucherStatuses.map((s) => ({ label: s.label, value: s.value.toString() })),
       },
       {
         field: "date_from",
         label: t("finance:list.filters.date_from"),
         type: "datepicker",
-        value: filters.date_from || null,
+        value: (filters.date_from as string) || null,
       },
       {
         field: "date_to",
         label: t("finance:list.filters.date_to"),
         type: "datepicker",
-        value: filters.date_to || null,
+        value: (filters.date_to as string) || null,
       },
     ]
-  }, [filters, t])
+  }, [filters, t, voucherTypes, voucherStatuses])
 
   const columns = useMemo<MRT_ColumnDef<Voucher>[]>(
     () => [
@@ -264,9 +266,7 @@ export function VoucherListPage() {
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
-              <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
-              </Badge>
+              <StatusBadge status={status} />
             </div>
           )
         },
@@ -322,9 +322,10 @@ export function VoucherListPage() {
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-1 min-w-[50px]"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation()
                   setSelectedVoucher(voucher)
-                  setAttachmentsOpen(true)
+                  setDetailOpen(true)
                 }}
               >
                 <Paperclip className="size-3.5" />
@@ -349,13 +350,13 @@ export function VoucherListPage() {
             actions.push({
               label: t("finance:list.actions.approve", { defaultValue: "Duyệt" }),
               icon: <Check className="size-4" />,
-              onClick: () => handleApprove(voucher.id),
+              onClick: () => void handleApprove(voucher.id),
               className: "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50",
             })
             actions.push({
               label: t("finance:list.actions.reject", { defaultValue: "Từ chối" }),
               icon: <X className="size-4" />,
-              onClick: () => handleReject(voucher.id),
+              onClick: () => void handleReject(voucher.id),
               className: "text-rose-600 hover:text-rose-700 hover:bg-rose-50",
             })
           }
@@ -374,20 +375,19 @@ export function VoucherListPage() {
             actions.push({
               label: t("finance:list.actions.delete", { defaultValue: "Xóa" }),
               icon: <Trash2 className="size-4" />,
-              onClick: () => handleDelete(voucher.id),
+              onClick: () => void handleDelete(voucher.id),
               className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
               variant: "destructive" as const,
             })
           }
 
-          actions.push({
-            label: t("finance:list.actions.history", { defaultValue: "Lịch sử" }),
-            icon: <History className="size-4" />,
+          actions.unshift({
+            label: t("common:action.view", { defaultValue: "Xem chi tiết" }),
+            icon: <Eye className="size-4" />,
             onClick: () => {
               setSelectedVoucher(voucher)
-              setHistoryOpen(true)
+              setDetailOpen(true)
             },
-            className: "text-muted-foreground hover:text-foreground",
           })
 
           return (
@@ -398,7 +398,7 @@ export function VoucherListPage() {
         },
       },
     ],
-    [canApprove, canEdit, canDelete, t],
+    [canApprove, canEdit, canDelete, t, handleApprove, handleReject, handleDelete],
   )
 
   const table = useMantineReactTable({
@@ -425,6 +425,13 @@ export function VoucherListPage() {
       withBorder: false,
       withColumnBorders: false,
     },
+    mantineTableBodyRowProps: ({ row }) => ({
+      onClick: () => {
+        setSelectedVoucher(row.original)
+        setDetailOpen(true)
+      },
+      sx: { cursor: "pointer" },
+    }),
     mantineTableContainerProps: {
       onScroll: (e: React.UIEvent<HTMLDivElement>) => {
         e.currentTarget.style.setProperty("--mrt-scroll-left", `${e.currentTarget.scrollLeft}px`)
@@ -491,22 +498,16 @@ export function VoucherListPage() {
         />
       )}
 
-      {historyOpen && selectedVoucher && (
-        <VoucherHistoryDialog
-          open={historyOpen}
-          onClose={() => setHistoryOpen(false)}
+      {detailOpen && selectedVoucher && (
+        <VoucherDetailDialog
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
           voucherId={selectedVoucher.id}
-          voucherCode={selectedVoucher.voucher_code}
-        />
-      )}
-
-      {attachmentsOpen && selectedVoucher && (
-        <VoucherAttachmentsDialog
-          open={attachmentsOpen}
-          onClose={() => setAttachmentsOpen(false)}
-          voucherId={selectedVoucher.id}
-          voucherCode={selectedVoucher.voucher_code}
-          onRefresh={fetchVouchers}
+          onRefresh={() => void fetchVouchers()}
+          onEdit={(v) => {
+            setSelectedVoucher(v)
+            setFormOpen(true)
+          }}
         />
       )}
     </div>

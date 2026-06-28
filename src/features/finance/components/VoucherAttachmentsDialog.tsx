@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -20,11 +20,12 @@ interface VoucherAttachmentsDialogProps {
   onRefresh: () => void
 }
 
-const getFileSchema = (t: any) =>
+const getFileSchema = (t: (key: string) => string) =>
   z.object({
-    file: z
-      .any()
-      .refine((val) => val instanceof File, t("finance:attachments.validation.file_required")),
+    file: z.custom<File>(
+      (val) => val instanceof File,
+      t("finance:attachments.validation.file_required"),
+    ),
   })
 
 export function VoucherAttachmentsDialog({
@@ -41,7 +42,7 @@ export function VoucherAttachmentsDialog({
   const form = useForm({
     resolver: zodResolver(getFileSchema(t)),
     defaultValues: {
-      file: null,
+      file: undefined,
     },
   })
 
@@ -52,7 +53,7 @@ export function VoucherAttachmentsDialog({
     formState: { isSubmitting },
   } = form
 
-  const loadVoucher = async () => {
+  const loadVoucher = useCallback(async () => {
     setIsLoading(true)
     try {
       const data = await voucherApi.get(voucherId)
@@ -62,20 +63,20 @@ export function VoucherAttachmentsDialog({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [voucherId, t])
 
   useEffect(() => {
     if (open && voucherId) {
-      loadVoucher()
+      void loadVoucher()
     }
-  }, [open, voucherId])
+  }, [open, voucherId, loadVoucher])
 
-  const handleUpload = async (data: any) => {
+  const handleUpload = async (data: { file: File }) => {
     try {
       await voucherApi.uploadFile(voucherId, data.file)
       toast.success(t("finance:attachments.upload_success"))
-      reset({ file: null })
-      loadVoucher()
+      reset({ file: undefined } as unknown as { file: File })
+      void loadVoucher()
       onRefresh()
     } catch {
       toast.error(t("finance:attachments.upload_error"))
@@ -87,7 +88,7 @@ export function VoucherAttachmentsDialog({
     try {
       await voucherApi.deleteFile(voucherId, fileId)
       toast.success(t("finance:attachments.delete_success"))
-      loadVoucher()
+      void loadVoucher()
       onRefresh()
     } catch {
       toast.error(t("finance:attachments.delete_error"))
@@ -107,7 +108,12 @@ export function VoucherAttachmentsDialog({
     >
       <div className="space-y-6 py-2">
         <Form {...form}>
-          <form onSubmit={handleSubmit(handleUpload)} className="space-y-3">
+          <form
+            onSubmit={(e) => {
+              void handleSubmit(handleUpload)(e)
+            }}
+            className="space-y-3"
+          >
             <FileUploadField
               control={control}
               name="file"
@@ -162,7 +168,7 @@ export function VoucherAttachmentsDialog({
                       variant="ghost"
                       size="icon"
                       className="size-11 md:size-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(file.id)}
+                      onClick={() => void handleDelete(file.id)}
                     >
                       <Trash2 className="size-4" />
                     </Button>

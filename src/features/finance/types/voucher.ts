@@ -57,7 +57,7 @@ export interface VoucherAuditLog {
   action: string
   action_label: string
   user: { id: number; full_name: string }
-  changes: Record<string, any> | null
+  changes: Record<string, unknown> | null
   notes: string | null
   created_at: string
 }

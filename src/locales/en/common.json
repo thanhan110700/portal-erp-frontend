@@ -8,9 +8,11 @@
     "search": "Search...",
     "confirm": "Confirm",
     "back": "Back",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "saving": "Saving..."
   },
   "status": {
+    "status": "Status",
     "draft": "Draft",
     "sent": "Sent",
     "pending": "Pending",
@@ -19,6 +21,8 @@
     "in_progress": "In Progress",
     "completed": "Completed",
     "cancelled": "Cancelled",
+    "waiting": "Waiting",
+    "accepted": "Accepted",
     "active": "Active",
     "inactive": "Inactive",
     "paused": "Paused",
@@ -112,5 +116,6 @@
     "sales": "Sales",
     "technician": "Technician",
     "employee": "Employee"
-  }
+  },
+  "currency": "VND"
 }
