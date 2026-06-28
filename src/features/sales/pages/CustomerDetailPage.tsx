@@ -23,6 +23,7 @@ import { ContactTable } from "../components/ContactTable"
 import { ContactFormModal } from "../components/ContactFormModal"
 import { InteractionList } from "../components/InteractionList"
 import { InteractionFormModal } from "../components/InteractionFormModal"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { useTranslation } from "react-i18next"
 
 export function CustomerDetailPage() {
@@ -157,118 +158,117 @@ export function CustomerDetailPage() {
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="text-sm px-3 py-1 bg-background">
-            {customer.classification || t("sales:customer_detail.unclassified")}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* ── Overview Sidebar ────────────────────────────────────────────── */}
-        <div className="col-span-1 space-y-4">
-          <div className="rounded-xl border bg-card p-5 space-y-4">
-            <h3 className="font-semibold border-b pb-2">
-              {t("sales:customer_detail.contact_info")}
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-3">
-                <Phone className="size-4 text-muted-foreground mt-0.5" />
-                <span className="font-medium">{customer.phone}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Mail className="size-4 text-muted-foreground mt-0.5" />
-                <span>{customer.email || "—"}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="size-4 text-muted-foreground mt-0.5" />
-                <span>{customer.address || "—"}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Briefcase className="size-4 text-muted-foreground mt-0.5" />
-                <span>
-                  {t("sales:customer_detail.sales_rep")}:{" "}
-                  <span className="font-medium">
-                    {customer.sales_rep?.full_name || t("sales:customer_detail.unassigned")}
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {customer.notes && (
-            <div className="rounded-xl border bg-card p-5 space-y-2">
-              <h3 className="font-semibold">{t("sales:customer_detail.notes")}</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
-            </div>
+          {customer.classification ? (
+            <StatusBadge
+              status={customer.classification}
+              className="text-sm px-3 py-1 bg-background"
+            />
+          ) : (
+            <Badge variant="outline" className="text-sm px-3 py-1 bg-background">
+              {t("sales:customer_detail.unclassified")}
+            </Badge>
           )}
         </div>
+      </div>
 
-        {/* ── Main Content Tabs ───────────────────────────────────────────── */}
-        <div className="col-span-1 md:col-span-2">
-          <Tabs defaultValue="contacts" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="contacts" className="gap-2">
-                {t("sales:customer_detail.contacts_tab")}{" "}
-                <Badge variant="secondary">{contacts.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="interactions" className="gap-2">
-                {t("sales:customer_detail.interactions_tab")}{" "}
-                <Badge variant="secondary">{interactions.length}</Badge>
-              </TabsTrigger>
-            </TabsList>
+      {/* ── Top Overview ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="rounded-xl border bg-card p-5 space-y-4 lg:col-span-1">
+          <h3 className="font-semibold border-b pb-2">{t("sales:customer_detail.contact_info")}</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-3">
+              <Phone className="size-4 text-muted-foreground mt-0.5" />
+              <span className="font-medium">{customer.phone}</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <Mail className="size-4 text-muted-foreground mt-0.5" />
+              <span>{customer.email || "—"}</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <MapPin className="size-4 text-muted-foreground mt-0.5" />
+              <span>{customer.address || "—"}</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <Briefcase className="size-4 text-muted-foreground mt-0.5" />
+              <span>
+                {t("sales:customer_detail.sales_rep")}:{" "}
+                <span className="font-medium">
+                  {customer.sales_rep?.full_name || t("sales:customer_detail.unassigned")}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
 
-            <TabsContent value="contacts" className="space-y-4 outline-none">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">
-                  {t("sales:customer_detail.contacts_list")}
-                </h3>
-                {canEdit && (
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setSelectedContact(null)
-                      setContactModalOpen(true)
-                    }}
-                    className="gap-2"
-                  >
-                    <UserPlus className="size-4" />
-                    {t("sales:customer_detail.add_contact")}
-                  </Button>
-                )}
-              </div>
-              <ContactTable
-                contacts={contacts}
-                onEdit={(contact) => {
-                  setSelectedContact(contact)
+        {customer.notes && (
+          <div className="rounded-xl border bg-card p-5 space-y-2 lg:col-span-2">
+            <h3 className="font-semibold border-b pb-2">{t("sales:customer_detail.notes")}</h3>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Main Content Tabs ───────────────────────────────────────────── */}
+      <Tabs defaultValue="contacts" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="contacts" className="gap-2">
+            {t("sales:customer_detail.contacts_tab")}{" "}
+            <Badge variant="secondary">{contacts.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="interactions" className="gap-2">
+            {t("sales:customer_detail.interactions_tab")}{" "}
+            <Badge variant="secondary">{interactions.length}</Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="contacts" className="space-y-4 outline-none">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">{t("sales:customer_detail.contacts_list")}</h3>
+            {canEdit && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedContact(null)
                   setContactModalOpen(true)
                 }}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                onDelete={handleDeleteContact}
-              />
-            </TabsContent>
+                className="gap-2"
+              >
+                <UserPlus className="size-4" />
+                {t("sales:customer_detail.add_contact")}
+              </Button>
+            )}
+          </div>
+          <ContactTable
+            contacts={contacts}
+            onEdit={(contact) => {
+              setSelectedContact(contact)
+              setContactModalOpen(true)
+            }}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            onDelete={handleDeleteContact}
+          />
+        </TabsContent>
 
-            <TabsContent value="interactions" className="space-y-4 outline-none">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">
-                  {t("sales:customer_detail.interactions_list")}
-                </h3>
-                {canEdit && (
-                  <Button size="sm" onClick={() => setInteractionModalOpen(true)} className="gap-2">
-                    <Plus className="size-4" />
-                    {t("sales:customer_detail.add_interaction")}
-                  </Button>
-                )}
-              </div>
-              <InteractionList
-                interactions={interactions}
-                onDelete={handleDeleteInteraction}
-                canDelete={canDelete}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+        <TabsContent value="interactions" className="space-y-4 outline-none">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">
+              {t("sales:customer_detail.interactions_list")}
+            </h3>
+            {canEdit && (
+              <Button size="sm" onClick={() => setInteractionModalOpen(true)} className="gap-2">
+                <Plus className="size-4" />
+                {t("sales:customer_detail.add_interaction")}
+              </Button>
+            )}
+          </div>
+          <InteractionList
+            interactions={interactions}
+            onDelete={handleDeleteInteraction}
+            canDelete={canDelete}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* ── Modals ──────────────────────────────────────────────────────── */}
       {contactModalOpen && (

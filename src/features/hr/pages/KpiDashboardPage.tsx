@@ -548,79 +548,82 @@ export function KpiDashboardPage() {
         </div>
       </div>
 
-      {/* ── Filters ─────────────────────────────────────────────────────── */}
-      <FilterPanel
-        applyMode
-        fields={filterFields}
-        onApply={handleApplyFilters}
-        onReset={handleResetFilters}
-        title={t("hr:kpi.dashboard.filter_time")}
-      />
-
-      {/* ── Summary Stats ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          {
-            label: t("hr:kpi.dashboard.stats.avg"),
-            value: avgKpi != null ? `${avgKpi.toFixed(1)}%` : "—",
-            color:
-              avgKpi != null
-                ? avgKpi >= 100
-                  ? "text-success"
-                  : avgKpi >= 70
-                    ? "text-warning"
-                    : "text-destructive"
-                : "text-muted-foreground",
-          },
-          {
-            label: t("hr:kpi.dashboard.stats.target"),
-            value: formatCurrency(totalTarget),
-            color: "text-foreground",
-          },
-          {
-            label: t("hr:kpi.dashboard.stats.actual"),
-            value: formatCurrency(totalActual),
-            color: "text-primary",
-          },
-          {
-            label: t("hr:kpi.dashboard.stats.conversion_rate", {
-              defaultValue: "Tỷ lệ chuyển đổi",
-            }),
-            value: conversionRate != null ? `${conversionRate.toFixed(1)}%` : "—",
-            color: "text-purple-600 dark:text-purple-400",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-xl border bg-card px-4 py-3 flex flex-col gap-0.5"
-          >
-            <span className="text-xs text-muted-foreground">{stat.label}</span>
-            <span className={`text-xl font-bold ${stat.color}`}>{stat.value}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── KPI Table ─────────────────────────────────────────────────── */}
-        <div className="lg:col-span-2 flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            {t("hr:kpi.dashboard.table_title", { month, year })}
-          </h2>
-          <KpiTable
-            kpis={kpis}
-            isLoading={isLoading}
-            isAdmin={canEdit}
-            onEdit={(kpi) => {
-              setEditKpi(kpi)
-              setUpsertOpen(true)
-            }}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* ── Left Column: Filters & Stats ──────────────────────────────── */}
+        <div className="xl:col-span-2 flex flex-col gap-6">
+          {/* ── Filters ─────────────────────────────────────────────────────── */}
+          <FilterPanel
+            applyMode
+            fields={filterFields}
+            onApply={handleApplyFilters}
+            onReset={handleResetFilters}
+            title={t("hr:kpi.dashboard.filter_time")}
           />
+
+          {/* ── Summary Stats ──────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                label: t("hr:kpi.dashboard.stats.avg"),
+                value: avgKpi != null ? `${avgKpi.toFixed(1)}%` : "—",
+                color:
+                  avgKpi != null
+                    ? avgKpi >= 100
+                      ? "text-success"
+                      : avgKpi >= 70
+                        ? "text-warning"
+                        : "text-destructive"
+                    : "text-muted-foreground",
+              },
+              {
+                label: t("hr:kpi.dashboard.stats.target"),
+                value: formatCurrency(totalTarget),
+                color: "text-foreground",
+              },
+              {
+                label: t("hr:kpi.dashboard.stats.actual"),
+                value: formatCurrency(totalActual),
+                color: "text-primary",
+              },
+              {
+                label: t("hr:kpi.dashboard.stats.conversion_rate", {
+                  defaultValue: "Tỷ lệ chuyển đổi",
+                }),
+                value: conversionRate != null ? `${conversionRate.toFixed(1)}%` : "—",
+                color: "text-purple-600 dark:text-purple-400",
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border bg-card px-4 py-3 flex flex-col gap-0.5"
+              >
+                <span className="text-xs text-muted-foreground">{stat.label}</span>
+                <span className={`text-xl font-bold ${stat.color}`}>{stat.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ── Right sidebar ─────────────────────────────────────────────── */}
+        {/* ── Right Column: Top Performers ─────────────────────────────── */}
         <div className="flex flex-col gap-4">
           <TopPerformersCard performers={topPerformers} isLoading={isTopLoading} t={t} />
         </div>
+      </div>
+
+      {/* ── KPI Table (Full Width) ────────────────────────────────────── */}
+      <div className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          {t("hr:kpi.dashboard.table_title", { month, year })}
+        </h2>
+        <KpiTable
+          kpis={kpis}
+          isLoading={isLoading}
+          isAdmin={canEdit}
+          onEdit={(kpi) => {
+            setEditKpi(kpi)
+            setUpsertOpen(true)
+          }}
+        />
       </div>
 
       {/* ── Upsert Modal ─────────────────────────────────────────────────── */}
