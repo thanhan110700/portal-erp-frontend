@@ -116,7 +116,7 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
           ? t("sales:quote.form.edit_title", { code: editData.quote_code })
           : t("sales:quote.form.add_title")
       }
-      size="xl"
+      size="full"
       primaryAction={{
         label: isSubmitting ? t("sales:quote.form.saving") : t("sales:quote.form.save"),
         type: "submit",

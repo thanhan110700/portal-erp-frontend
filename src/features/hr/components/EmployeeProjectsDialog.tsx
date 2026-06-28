@@ -5,7 +5,7 @@ import * as z from "zod"
 import dayjs from "dayjs"
 import { Trash2, Plus } from "lucide-react"
 
-import { CommonDrawer } from "@/components/common/CommonDrawer"
+import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Input } from "@/components/ui/input"
@@ -64,19 +64,19 @@ const createAssignProjectsSchema = (t: TFunction) =>
 
 export type AssignProjectsFormValues = z.infer<ReturnType<typeof createAssignProjectsSchema>>
 
-interface EmployeeProjectsDrawerProps {
+interface EmployeeProjectsDialogProps {
   open: boolean
   onClose: () => void
   onSubmit: (payload: AssignEmployeeProjectsPayload) => Promise<void>
   employeeName: string
 }
 
-export function EmployeeProjectsDrawer({
+export function EmployeeProjectsDialog({
   open,
   onClose,
   onSubmit,
   employeeName,
-}: EmployeeProjectsDrawerProps) {
+}: EmployeeProjectsDialogProps) {
   const { t } = useTranslation(["hr", "common"])
   const [projectOptions, setProjectOptions] = useState<OptionItem[]>([])
 
@@ -124,12 +124,11 @@ export function EmployeeProjectsDrawer({
   }
 
   return (
-    <CommonDrawer
+    <CommonDialog
       open={open}
       onClose={onClose}
       title={t("hr:employees.assign_projects.title", { name: employeeName })}
-      direction="right"
-      width="600px"
+      size="full"
       primaryAction={{
         label: isSubmitting
           ? t("hr:employees.form.saving")
@@ -267,6 +266,6 @@ export function EmployeeProjectsDrawer({
           {t("hr:employees.assign_projects.add_project")}
         </Button>
       </form>
-    </CommonDrawer>
+    </CommonDialog>
   )
 }

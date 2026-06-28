@@ -234,10 +234,17 @@ export function TimesheetTable({
                 : t("hr:timesheet.actions.reject_confirm_title")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {/* Not fully translated, generic text could be fine, or just remove dynamic name/date interpolation if not specified. Keeping dynamic interpolation for now. */}
               {confirmTarget?.action === "approve"
-                ? `Duyệt chấm công ngày ${formatDate(confirmTarget.timesheet.timesheet_date)} của ${confirmTarget.timesheet.user?.full_name}?`
-                : `Từ chối chấm công ngày ${formatDate(confirmTarget?.timesheet.timesheet_date ?? null)} của ${confirmTarget?.timesheet.user?.full_name}?`}
+                ? t("hr:timesheet.actions.approve_confirm_desc", {
+                    date: formatDate(confirmTarget.timesheet.timesheet_date),
+                    name: confirmTarget.timesheet.user?.full_name,
+                    defaultValue: `Duyệt chấm công ngày ${formatDate(confirmTarget.timesheet.timesheet_date)} của ${confirmTarget.timesheet.user?.full_name}?`,
+                  })
+                : t("hr:timesheet.actions.reject_confirm_desc", {
+                    date: formatDate(confirmTarget?.timesheet.timesheet_date ?? null),
+                    name: confirmTarget?.timesheet.user?.full_name,
+                    defaultValue: `Từ chối chấm công ngày ${formatDate(confirmTarget?.timesheet.timesheet_date ?? null)} của ${confirmTarget?.timesheet.user?.full_name}?`,
+                  })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

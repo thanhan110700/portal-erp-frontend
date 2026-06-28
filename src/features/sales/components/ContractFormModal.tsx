@@ -156,7 +156,7 @@ export function ContractFormModal({
           ? t("sales:contract.form.edit_title", { code: editData.contract_code })
           : t("sales:contract.form.add_title")
       }
-      size="2xl"
+      size="full"
       primaryAction={{
         label: isSubmitting ? t("sales:contract.form.saving") : t("sales:contract.form.save"),
         type: "submit",
@@ -222,7 +222,6 @@ export function ContractFormModal({
             )}
           </div>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="c-sales">{t("sales:contract.form.fields.sales_rep")} *</Label>
@@ -275,7 +274,6 @@ export function ContractFormModal({
             {errors.status && <p className="text-xs text-destructive">{errors.status.message}</p>}
           </div>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="flex flex-col gap-1.5">
             <Controller
@@ -323,7 +321,6 @@ export function ContractFormModal({
             )}
           </div>
         </div>
-
         <div className="space-y-1.5">
           <Label htmlFor="c-content">{t("sales:contract.form.fields.content")}</Label>
           <Textarea
@@ -336,7 +333,6 @@ export function ContractFormModal({
           />
           {errors.content && <p className="text-xs text-destructive">{errors.content.message}</p>}
         </div>
-
         <div className="space-y-1.5">
           <Label htmlFor="c-terms">{t("sales:contract.form.fields.terms")}</Label>
           <Textarea

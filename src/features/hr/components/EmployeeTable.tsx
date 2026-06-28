@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Pencil, Trash2, ShieldCheck, Eye } from "lucide-react"
+import { Pencil, Trash2, Eye } from "lucide-react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { useTranslation } from "react-i18next"
 
@@ -43,10 +43,8 @@ interface EmployeeTableProps {
   isLoading?: boolean
   canEdit?: boolean
   canDelete?: boolean
-  canAssignRole?: boolean
   onEdit: (employee: Employee) => void
   onDelete: (employee: Employee) => void
-  onAssignRole: (employee: Employee) => void
 }
 
 export function EmployeeTable({
@@ -54,10 +52,9 @@ export function EmployeeTable({
   isLoading = false,
   canEdit = true,
   canDelete = false,
-  canAssignRole = false,
+
   onEdit,
   onDelete,
-  onAssignRole,
 }: EmployeeTableProps) {
   const { t } = useTranslation(["hr", "common"])
   const navigate = useNavigate()
@@ -118,15 +115,20 @@ export function EmployeeTable({
         accessorKey: "roles",
         header: t("hr:employees.columns.roles"),
         size: 150,
-        Cell: ({ row }) => (
-          <div className="flex flex-wrap gap-1">
-            {row.original.roles.length > 0 ? (
-              row.original.roles.map((role) => <RoleBadge key={role} role={role} />)
-            ) : (
-              <span className="text-xs text-muted-foreground">—</span>
-            )}
-          </div>
-        ),
+        Cell: ({ row }) => {
+          const roleName = row.original.role?.name
+          const roles = row.original.roles || (roleName ? [roleName] : [])
+
+          return (
+            <div className="flex flex-wrap gap-1">
+              {roles.length > 0 ? (
+                roles.map((r) => <RoleBadge key={r} role={r} />)
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
+            </div>
+          )
+        },
       },
       {
         accessorKey: "is_active",
@@ -156,13 +158,7 @@ export function EmployeeTable({
               onClick: () => onEdit(emp),
             })
           }
-          if (canAssignRole) {
-            actions.push({
-              label: t("hr:employees.actions.assign_role", { defaultValue: "Phân quyền" }),
-              icon: <ShieldCheck className="size-3.5" />,
-              onClick: () => onAssignRole(emp),
-            })
-          }
+
           if (canDelete) {
             actions.push({
               label: t("hr:employees.actions.delete", { defaultValue: "Xóa" }),
@@ -180,7 +176,7 @@ export function EmployeeTable({
         },
       },
     ],
-    [canEdit, canDelete, canAssignRole, onEdit, onAssignRole, navigate, t],
+    [canEdit, canDelete, onEdit, navigate, t],
   )
 
   const table = useMantineReactTable({

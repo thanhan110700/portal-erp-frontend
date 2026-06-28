@@ -153,6 +153,20 @@
     "delete_error": "Xóa thất bại",
     "update_success": "Đã cập nhật báo giá",
     "create_success": "Đã tạo báo giá mới",
+    "status_update_success": "Đã cập nhật trạng thái báo giá",
+    "status_update_error": "Cập nhật trạng thái báo giá thất bại",
+    "status": {
+      "reject_title": "Lý do từ chối",
+      "reject_description": "Vui lòng nhập lý do từ chối báo giá này để cập nhật.",
+      "reject_placeholder": "Nhập lý do chi tiết...",
+      "reject_reason_required": "Vui lòng nhập lý do từ chối"
+    },
+    "detail_description": "Chi tiết Báo giá",
+    "change_status": "Chuyển trạng thái",
+    "no_description": "Không có mô tả",
+    "no_notes": "Không có ghi chú",
+    "upload_label": "Chọn file đính kèm",
+    "upload_hint": "PDF, Word, Excel, Hình ảnh",
     "filters": {
       "search_placeholder": "Mã BG, Khách hàng...",
       "all_customers": "Tất cả khách hàng",
@@ -173,7 +187,8 @@
       "delete_title": "Xóa báo giá?",
       "delete_confirm": "Bạn có chắc chắn muốn xóa báo giá",
       "delete_warning": "không? Hành động này không thể hoàn tác.",
-      "delete": "Xóa"
+      "delete": "Xóa",
+      "convert": "Tạo Hợp đồng"
     },
     "form": {
       "edit_title": "Cập nhật Báo giá — {{code}}",

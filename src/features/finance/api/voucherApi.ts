@@ -48,10 +48,10 @@ export const voucherApi = {
     return response.data.data
   },
 
-  async uploadFile(voucherId: number, file: File): Promise<any> {
+  async uploadFile(voucherId: number, file: File): Promise<unknown> {
     const formData = new FormData()
     formData.append("file", file)
-    const response = await axiosInstance.post<ApiResponse<any>>(
+    const response = await axiosInstance.post<ApiResponse<unknown>>(
       `/v1/vouchers/${voucherId}/files`,
       formData,
       {

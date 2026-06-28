@@ -41,30 +41,27 @@ export function InteractionList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pl-2 py-2">
       {interactions.map((interaction) => (
-        <div
-          key={interaction.id}
-          className="relative flex gap-4 p-4 rounded-xl border bg-card transition-colors hover:bg-accent/5"
-        >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div key={interaction.id} className="relative flex gap-4 transition-colors group">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary/10 text-primary z-10 shadow-sm relative">
             {getInteractionIcon(interaction.type || "")}
           </div>
-          <div className="flex-1 space-y-1">
+          <div className="flex-1 space-y-2 p-4 rounded-xl border bg-card shadow-sm group-hover:border-primary/50 transition-all">
             <div className="flex items-center justify-between">
-              <h4 className="font-semibold text-sm">
+              <h4 className="font-semibold text-sm capitalize text-primary">
                 {interaction.type || t("sales:interaction.default_type")}
               </h4>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                <span className="flex items-center gap-1 text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                   <Calendar className="size-3" />
                   {interaction.interaction_date}
                 </span>
                 {canDelete && (
                   <Button
                     variant="ghost"
-                    size="icon-sm"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     onClick={() => void onDelete(interaction.id)}
                   >
                     <Trash2 className="size-3.5" />
@@ -72,11 +69,11 @@ export function InteractionList({
                 )}
               </div>
             </div>
-            <p className="text-sm text-foreground/80 whitespace-pre-wrap">{interaction.content}</p>
+            <p className="text-sm text-foreground/90 whitespace-pre-wrap">{interaction.content}</p>
             {interaction.user && (
-              <p className="text-xs text-muted-foreground pt-1">
+              <p className="text-xs text-muted-foreground pt-2 mt-2 border-t flex items-center gap-1">
                 {t("sales:interaction.recorded_by")}:{" "}
-                <span className="font-medium">{interaction.user.full_name}</span>
+                <span className="font-medium text-foreground">{interaction.user.full_name}</span>
               </p>
             )}
           </div>

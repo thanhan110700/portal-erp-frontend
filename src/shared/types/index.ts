@@ -10,7 +10,8 @@ export interface User {
   email: string
   is_active?: boolean
   avatar_url?: string | null
-  roles: string[]
+  role?: string
+  roles?: string[]
   permissions: string[]
 }
 

@@ -55,6 +55,7 @@ const createEmployeeFormSchema = (t: TFunction) =>
         .or(z.literal("")),
       manager_id: z.string().optional().nullable().or(z.literal("")),
       password: z.string().optional().nullable().or(z.literal("")),
+      role: z.string().optional().nullable().or(z.literal("")),
     })
     .refine(
       (data) => {
@@ -88,7 +89,7 @@ type EmployeeFormData = z.infer<ReturnType<typeof createEmployeeFormSchema>>
 interface EmployeeFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: CreateEmployeePayload) => Promise<void>
+  onSubmit: (payload: CreateEmployeePayload & { role?: string }) => Promise<void>
   departments: Department[]
   employees: Employee[] // for manager select
   editData?: Employee | null
@@ -131,11 +132,13 @@ export function EmployeeFormModal({
       national_id: "",
       manager_id: "",
       password: "",
+      role: "",
     },
   })
 
   const deptValue = watch("department_id")
   const managerValue = watch("manager_id")
+  const roleValue = watch("role")
 
   // Populate form when editing
   useEffect(() => {
@@ -153,6 +156,7 @@ export function EmployeeFormModal({
         national_id: editData.national_id ?? "",
         manager_id: editData.manager?.id?.toString() ?? "",
         password: "",
+        role: editData.role?.name ?? editData.roles?.[0] ?? "",
       })
     } else if (open && !editData) {
       reset()
@@ -167,7 +171,7 @@ export function EmployeeFormModal({
   }, [open])
 
   const handleFormSubmit = async (data: EmployeeFormData) => {
-    const payload: CreateEmployeePayload = {
+    const payload = {
       full_name: data.full_name,
       email: data.email,
       phone: data.phone || null,
@@ -180,7 +184,8 @@ export function EmployeeFormModal({
       national_id: data.national_id || null,
       manager_id: data.manager_id ? parseInt(data.manager_id) : null,
       password: data.password || null,
-    }
+      role: data.role || undefined,
+    } as CreateEmployeePayload & { role?: string }
     await onSubmit(payload)
   }
 
@@ -203,7 +208,7 @@ export function EmployeeFormModal({
           ? t("hr:employees.form.edit_title", { name: editData?.full_name })
           : t("hr:employees.form.add_title")
       }
-      size="2xl"
+      size="full"
       primaryAction={{
         label: isSubmitting
           ? t("hr:employees.form.saving")
@@ -327,13 +332,33 @@ export function EmployeeFormModal({
           </FormField>
         </div>
 
+        {/* Roles */}
+        <FormField
+          label={t("hr:employees.form.fields.role", { defaultValue: "Vai trò / Quyền" })}
+          id="emp-role"
+        >
+          <input type="hidden" {...register("role")} />
+          <SearchableSelect
+            value={roleValue || ""}
+            onValueChange={(val) => setValue("role", val)}
+            options={[
+              { label: t("common:roles.admin"), value: "admin" },
+              { label: t("common:roles.director"), value: "director" },
+              { label: t("common:roles.accountant"), value: "accountant" },
+              { label: t("common:roles.sales"), value: "sales" },
+              { label: t("common:roles.technician"), value: "technician" },
+              { label: t("common:roles.employee"), value: "employee" },
+            ]}
+            placeholder={t("hr:employees.form.fields.role_placeholder", {
+              defaultValue: "Chọn vai trò",
+            })}
+            className="h-9"
+          />
+        </FormField>
+
         {/* Dates */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            label={`${t("hr:employees.form.fields.hire_date")} *`}
-            error={errors.hire_date?.message}
-            id="emp-hire"
-          >
+          <FormField label={`${t("hr:employees.form.fields.hire_date")} *`} id="emp-hire">
             <Controller
               name="hire_date"
               control={control}
@@ -347,11 +372,7 @@ export function EmployeeFormModal({
             />
           </FormField>
 
-          <FormField
-            label={t("hr:employees.form.fields.resign_date")}
-            id="emp-resign"
-            error={errors.resign_date?.message}
-          >
+          <FormField label={t("hr:employees.form.fields.resign_date")} id="emp-resign">
             <Controller
               name="resign_date"
               control={control}

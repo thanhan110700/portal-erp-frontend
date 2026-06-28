@@ -111,7 +111,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
       open={open}
       onClose={onClose}
       title={isEdit ? t("projects:form.update_title") : t("projects:form.create_title")}
-      size="2xl"
+      size="full"
       primaryAction={{
         label: isSubmitting
           ? t("common:table.loading")
