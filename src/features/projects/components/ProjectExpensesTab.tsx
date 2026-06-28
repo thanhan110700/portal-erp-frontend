@@ -2,8 +2,9 @@ import { useState, useMemo, useCallback } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { Plus, Trash2, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+
 import { toast } from "sonner"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import type { ProjectExpense } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
@@ -26,20 +27,6 @@ const EXPENSE_TYPE_LABELS: Record<string, string> = {
   material: "Vật tư",
   labor: "Nhân công",
   other: "Khác",
-}
-
-const STATUS_VARIANTS: Record<string, any> = {
-  pending: "warning",
-  approved: "success",
-  paid: "info",
-  rejected: "danger",
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Chờ duyệt",
-  approved: "Đã duyệt",
-  paid: "Đã chi",
-  rejected: "Từ chối",
 }
 
 export function ProjectExpensesTab({
@@ -164,9 +151,7 @@ export function ProjectExpensesTab({
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
-              <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
-              </Badge>
+              <StatusBadge status={status} />
             </div>
           )
         },

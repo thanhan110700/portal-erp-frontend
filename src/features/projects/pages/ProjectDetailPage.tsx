@@ -9,14 +9,20 @@ import {
   TrendingDown,
   Percent,
   Compass,
-  ArrowRightLeft,
+  ChevronDown,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SearchableSelect } from "@/components/common/SearchableSelect"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { PageLoader } from "@/components/common/PageLoader"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
@@ -30,19 +36,6 @@ import { ProjectMilestonesTab } from "../components/ProjectMilestonesTab"
 import { ProjectExpensesTab } from "../components/ProjectExpensesTab"
 import { ProjectFilesTab } from "../components/ProjectFilesTab"
 import { ProjectVouchersTab } from "../components/ProjectVouchersTab"
-
-const STATUS_VARIANTS: Record<
-  string,
-  "default" | "secondary" | "success" | "warning" | "destructive" | "outline"
-> = {
-  planning: "secondary",
-  quoting: "secondary",
-  signed: "default",
-  ongoing: "warning",
-  testing: "warning",
-  settled: "success",
-  completed: "success",
-}
 
 const STATUS_OPTIONS = [
   { value: "planning", label: "Đang báo giá" },
@@ -163,14 +156,36 @@ export function ProjectDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge
-              variant={STATUS_VARIANTS[project.status] || "outline"}
-              className="text-sm px-3 py-1"
-            >
-              {t(`common:status.${project.status}`, {
-                defaultValue: project.status,
-              })}
-            </Badge>
+            {canEdit ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-1.5 px-3 gap-2 hover:bg-muted/50 rounded-full"
+                    disabled={statusUpdating}
+                  >
+                    <StatusBadge status={project.status} />
+                    <ChevronDown className="size-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[180px]">
+                  {STATUS_OPTIONS.map((s) => (
+                    <DropdownMenuItem
+                      key={s.value}
+                      onClick={() => handleStatusChange(s.value)}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <StatusBadge status={s.value} />
+                      <span className="text-xs text-muted-foreground flex-1 text-right">
+                        {t(`common:status.${s.value}`, { defaultValue: s.label })}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <StatusBadge status={project.status} />
+            )}
           </div>
         </div>
       </div>
@@ -254,139 +269,131 @@ export function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Left Sidebar: General Info & Actions ─────────────────────────── */}
-        <div className="col-span-1 space-y-4">
-          {canEdit && (
-            <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-              <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
-                <ArrowRightLeft className="size-4 text-muted-foreground" />
-                {t("projects:detail.change_status")}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <SearchableSelect
-                  value={project.status}
-                  onValueChange={handleStatusChange}
-                  options={STATUS_OPTIONS.map((s) => ({
-                    ...s,
-                    label: t(`common:status.${s.value}`, { defaultValue: s.label }),
-                  }))}
-                  placeholder={t("projects:detail.select_status")}
-                  disabled={statusUpdating}
-                />
-              </div>
+      {/* ── Overview Info ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="col-span-1 rounded-xl border bg-card p-5 space-y-4 shadow-sm">
+          <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
+            <Calendar className="size-4 text-muted-foreground" />
+            {t("projects:detail.time_info")}
+          </h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">{t("projects:detail.start_date")}</span>
+              <span className="font-medium text-foreground">{project.start_date || "—"}</span>
             </div>
-          )}
-
-          <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-            <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
-              <Calendar className="size-4 text-muted-foreground" />
-              {t("projects:detail.time_info")}
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">{t("projects:detail.start_date")}</span>
-                <span className="font-medium text-foreground">{project.start_date || "—"}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">
-                  {t("projects:detail.end_date_expected")}
-                </span>
-                <span className="font-medium text-foreground">{project.end_date || "—"}</span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-muted-foreground">{t("projects:detail.progress")}</span>
-                <span className="font-semibold text-primary">{project.progress_percent || 0}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-primary h-full transition-all duration-300"
-                  style={{ width: `${project.progress_percent || 0}%` }}
-                />
-              </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">
+                {t("projects:detail.end_date_expected")}
+              </span>
+              <span className="font-medium text-foreground">{project.end_date || "—"}</span>
             </div>
-          </div>
-
-          <div className="rounded-xl border bg-card p-5 space-y-3 shadow-sm">
-            <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
-              <Compass className="size-4 text-muted-foreground" />
-              {t("projects:detail.description")}
-            </h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-              {project.description || t("projects:detail.no_description")}
-            </p>
+            <div className="flex justify-between items-center pt-2 border-t">
+              <span className="text-muted-foreground">{t("projects:detail.progress")}</span>
+              <span className="font-semibold text-primary">{project.progress_percent || 0}%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-primary h-full transition-all duration-300"
+                style={{ width: `${project.progress_percent || 0}%` }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* ── Main Area: Tabs for Members, Milestones, Expenses, Files, Vouchers ── */}
-        <div className="col-span-1 lg:col-span-2">
-          <Tabs defaultValue="members" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 p-1 rounded-xl bg-muted/50 h-12 overflow-x-auto scrollbar-none whitespace-nowrap">
-              <TabsTrigger value="members" className="rounded-lg py-2 text-xs md:text-sm">
-                {t("projects:detail.tabs.members")}
-              </TabsTrigger>
-              <TabsTrigger value="milestones" className="rounded-lg py-2 text-xs md:text-sm">
-                {t("projects:detail.tabs.milestones")}
-              </TabsTrigger>
-              <TabsTrigger value="expenses" className="rounded-lg py-2 text-xs md:text-sm">
-                {t("projects:detail.tabs.expenses")}
-              </TabsTrigger>
-              <TabsTrigger value="files" className="rounded-lg py-2 text-xs md:text-sm">
-                {t("projects:detail.tabs.files")}
-              </TabsTrigger>
-              <TabsTrigger value="vouchers" className="rounded-lg py-2 text-xs md:text-sm">
-                {t("projects:detail.tabs.vouchers")}
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="mt-4 p-5 rounded-xl border bg-card min-h-[400px]">
-              <TabsContent value="members" className="m-0 focus-visible:outline-none">
-                <ProjectMembersTab
-                  projectId={project.id}
-                  members={project.members || []}
-                  onRefresh={loadProjectData}
-                  canCreate={canCreateMember}
-                  canEdit={canEditMember}
-                  canDelete={canDeleteMember}
-                />
-              </TabsContent>
-
-              <TabsContent value="milestones" className="m-0 focus-visible:outline-none">
-                <ProjectMilestonesTab
-                  projectId={project.id}
-                  milestones={project.milestones || []}
-                  onRefresh={loadProjectData}
-                  canEdit={canEdit}
-                />
-              </TabsContent>
-
-              <TabsContent value="expenses" className="m-0 focus-visible:outline-none">
-                <ProjectExpensesTab
-                  projectId={project.id}
-                  expenses={project.expenses || []}
-                  onRefresh={loadProjectData}
-                  canCreate={canCreateExpense}
-                  canApprove={canApproveExpense}
-                  canDelete={canDeleteExpense}
-                />
-              </TabsContent>
-
-              <TabsContent value="files" className="m-0 focus-visible:outline-none">
-                <ProjectFilesTab
-                  projectId={project.id}
-                  files={project.files || []}
-                  onRefresh={loadProjectData}
-                  canEdit={canEdit}
-                  isAdmin={canEdit} // Reusing canEdit for admin file powers for now
-                />
-              </TabsContent>
-
-              <TabsContent value="vouchers" className="m-0 focus-visible:outline-none">
-                <ProjectVouchersTab projectId={project.id} />
-              </TabsContent>
-            </div>
-          </Tabs>
+        <div className="col-span-1 lg:col-span-2 rounded-xl border bg-card p-5 space-y-3 shadow-sm">
+          <h3 className="font-semibold text-sm border-b pb-2 flex items-center gap-2">
+            <Compass className="size-4 text-muted-foreground" />
+            {t("projects:detail.description")}
+          </h3>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            {project.description || t("projects:detail.no_description")}
+          </p>
         </div>
+      </div>
+
+      {/* ── Main Area: Tabs for Members, Milestones, Expenses, Files, Vouchers ── */}
+      <div className="w-full">
+        <Tabs defaultValue="members" className="w-full">
+          <TabsList className="w-full flex justify-start md:grid md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto min-h-[48px] overflow-x-auto scrollbar-none whitespace-nowrap">
+            <TabsTrigger
+              value="members"
+              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+            >
+              {t("projects:detail.tabs.members")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="milestones"
+              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+            >
+              {t("projects:detail.tabs.milestones")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="expenses"
+              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+            >
+              {t("projects:detail.tabs.expenses")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="files"
+              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+            >
+              {t("projects:detail.tabs.files")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="vouchers"
+              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+            >
+              {t("projects:detail.tabs.vouchers")}
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="mt-4 p-5 rounded-xl border bg-card min-h-[400px]">
+            <TabsContent value="members" className="m-0 focus-visible:outline-none">
+              <ProjectMembersTab
+                projectId={project.id}
+                members={project.members || []}
+                onRefresh={loadProjectData}
+                canCreate={canCreateMember}
+                canEdit={canEditMember}
+                canDelete={canDeleteMember}
+              />
+            </TabsContent>
+
+            <TabsContent value="milestones" className="m-0 focus-visible:outline-none">
+              <ProjectMilestonesTab
+                projectId={project.id}
+                milestones={project.milestones || []}
+                onRefresh={loadProjectData}
+                canEdit={canEdit}
+              />
+            </TabsContent>
+
+            <TabsContent value="expenses" className="m-0 focus-visible:outline-none">
+              <ProjectExpensesTab
+                projectId={project.id}
+                expenses={project.expenses || []}
+                onRefresh={loadProjectData}
+                canCreate={canCreateExpense}
+                canApprove={canApproveExpense}
+                canDelete={canDeleteExpense}
+              />
+            </TabsContent>
+
+            <TabsContent value="files" className="m-0 focus-visible:outline-none">
+              <ProjectFilesTab
+                projectId={project.id}
+                files={project.files || []}
+                onRefresh={loadProjectData}
+                canEdit={canEdit}
+                isAdmin={canEdit} // Reusing canEdit for admin file powers for now
+              />
+            </TabsContent>
+
+            <TabsContent value="vouchers" className="m-0 focus-visible:outline-none">
+              <ProjectVouchersTab projectId={project.id} />
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </div>
   )

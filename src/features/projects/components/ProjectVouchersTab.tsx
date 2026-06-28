@@ -2,27 +2,14 @@ import { useEffect, useState } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { useMemo } from "react"
 import { Calendar, Receipt, Info } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+
 import { projectApi } from "../api/projectApi"
 import { toast } from "sonner"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { useTranslation } from "react-i18next"
 
 interface ProjectVouchersTabProps {
   projectId: number
-}
-
-const STATUS_VARIANTS: Record<string, any> = {
-  draft: "secondary",
-  pending: "warning",
-  approved: "success",
-  rejected: "danger",
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Lưu nháp",
-  pending: "Chờ duyệt",
-  approved: "Đã duyệt",
-  rejected: "Từ chối",
 }
 
 export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
@@ -113,9 +100,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
           const status = cell.getValue<string>()
           return (
             <div className="flex justify-center">
-              <Badge variant={STATUS_VARIANTS[status] || "default"}>
-                {t(`common:status.${status}`, { defaultValue: STATUS_LABELS[status] || status })}
-              </Badge>
+              <StatusBadge status={status} />
             </div>
           )
         },
