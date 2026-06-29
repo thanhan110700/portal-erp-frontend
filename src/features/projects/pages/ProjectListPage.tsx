@@ -14,6 +14,7 @@ import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import type { Project } from "../types/project"
 import { useTranslation } from "react-i18next"
+import dayjs from "@/lib/dayjs"
 
 export function ProjectListPage() {
   const { t } = useTranslation(["projects", "common"])
@@ -39,6 +40,7 @@ export function ProjectListPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const [statuses, setStatuses] = useState<OptionItem[]>([])
+  const [customers, setCustomers] = useState<OptionItem[]>([])
 
   const loadProjects = async () => {
     setIsLoading(true)
@@ -55,6 +57,7 @@ export function ProjectListPage() {
 
   useEffect(() => {
     optionApi.getProjectStatuses().then(setStatuses).catch(console.error)
+    optionApi.getCustomers().then(setCustomers).catch(console.error)
   }, [])
 
   useEffect(() => {
@@ -62,11 +65,24 @@ export function ProjectListPage() {
   }, [queryParams])
 
   const handleApplyFilters = (values: Record<string, any>) => {
-    setQueryParams((prev) => ({
-      ...prev,
+    const newParams: ListProjectsParams = {
+      ...queryParams,
       ...values,
       page: 1,
-    }))
+    }
+    if (values.dateRange) {
+      newParams.date_from = values.dateRange.from
+        ? dayjs(values.dateRange.from).format("YYYY-MM-DD")
+        : undefined
+      newParams.date_to = values.dateRange.to
+        ? dayjs(values.dateRange.to).format("YYYY-MM-DD")
+        : undefined
+      delete (newParams as any).dateRange
+    } else {
+      newParams.date_from = undefined
+      newParams.date_to = undefined
+    }
+    setQueryParams(newParams)
   }
 
   const handleResetFilters = () => {
@@ -75,6 +91,9 @@ export function ProjectListPage() {
       per_page: 10,
       search: "",
       status: "",
+      customer_id: undefined,
+      date_from: undefined,
+      date_to: undefined,
     })
   }
 
@@ -112,6 +131,26 @@ export function ProjectListPage() {
           value: s.value.toString(),
         })),
       ],
+    },
+    {
+      field: "customer_id",
+      label: t("projects:list.filter_customer", { defaultValue: "Khách hàng" }),
+      type: "select",
+      placeholder: t("common:filter.all"),
+      value: queryParams.customer_id?.toString() || "",
+      options: customers.map((c) => ({
+        label: c.label,
+        value: (c.value ?? c.id)?.toString() || "",
+      })),
+    },
+    {
+      field: "dateRange",
+      label: t("projects:list.filter_date", { defaultValue: "Thời gian" }),
+      type: "daterange",
+      value:
+        queryParams.date_from && queryParams.date_to
+          ? { from: queryParams.date_from, to: queryParams.date_to }
+          : null,
     },
   ]
 

@@ -1,6 +1,8 @@
 # Portal ERP — Frontend Agent Rules
 
-> **Read this file before writing any code in the frontend project.**
+> [!IMPORTANT]
+> **READ THIS FILE AND COMPLY 100% BEFORE WRITING ANY CODE.**
+> Every agent, developer, and automated prompt **MUST** follow these rules without exception.
 
 ---
 
@@ -119,28 +121,31 @@ src/
 
 > **CRITICAL RULE**: You **MUST** use the components provided in the `src/components/common/` folder instead of creating custom ones or using native HTML/shadcn equivalents.
 >
-> - **Selects**: All select inputs **MUST** use the `SearchableSelect` component. Do not use standard `<Select>` or native `<select>`.
+> - **Selects**: All select inputs **MUST** use the `SearchableSelect` or `MultiSearchableSelect` component. Do not use standard `<Select>` or native `<select>`.
 > - **Modals & Drawers**: You **MUST** use `CommonDialog` for modals and `CommonDrawer` for sheets/drawers.
+> - **Confirmations**: You **MUST** use `ConfirmDialog` for all user confirmation actions (e.g. deletion, cancellation, status updates, or critical actions). Using native `window.confirm` is **strictly prohibited**.
 > - **Date Pickers**: You **MUST** use `CommonDatePicker` or `CommonDateRangePicker`.
 
-| Component                | Purpose                                                  |
-| ------------------------ | -------------------------------------------------------- |
-| `CommonDialog`           | Modal dialog with configurable actions, sizes, loading   |
-| `CommonDrawer`           | Sheet/drawer (left, right, top, bottom)                  |
-| `CommonDatePicker`       | Single date picker with validation, hints, clear         |
-| `CommonDateRangePicker`  | Date range (from/to) picker                              |
-| `DateRangePickerPresets` | Date range picker with preset filters (Today, Last 7d…)  |
-| `FilterPanel`            | Collapsible multi-field filter (input, select, date…)    |
-| `ActiveFilterChips`      | Display & remove active filter values                    |
-| `FileUploadField`        | Drag & drop file upload with preview and RHF integration |
-| `SearchableSelect`       | Searchable dropdown select                               |
-| `StatusBadge`            | Colored status indicator badge                           |
-| `TextEditor`             | Rich text editor (TipTap-based)                          |
-| `MobileBottomNav`        | Fixed bottom navigation bar for mobile                   |
-| `ScreenTitle`            | Page title auto-derived from route handle                |
-| `PageLoader`             | Full-page loading spinner                                |
-| `ThemeToggle`            | Dark/light mode toggle                                   |
-| `ImagePreviewDialog`     | Zoom/preview dialog for uploaded images                  |
+| Component                | Purpose                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| `CommonDialog`           | Modal dialog with configurable actions, sizes, loading      |
+| `CommonDrawer`           | Sheet/drawer (left, right, top, bottom)                     |
+| `ConfirmDialog`          | Standard confirmation dialog with customizable text/loading |
+| `CommonDatePicker`       | Single date picker with validation, hints, clear            |
+| `CommonDateRangePicker`  | Date range (from/to) picker                                 |
+| `DateRangePickerPresets` | Date range picker with preset filters (Today, Last 7d…)     |
+| `FilterPanel`            | Collapsible multi-field filter (input, select, date…)       |
+| `ActiveFilterChips`      | Display & remove active filter values                       |
+| `FileUploadField`        | Drag & drop file upload with preview and RHF integration    |
+| `SearchableSelect`       | Searchable dropdown select                                  |
+| `MultiSearchableSelect`  | Multi-select searchable dropdown select                     |
+| `StatusBadge`            | Colored status indicator badge                              |
+| `TextEditor`             | Rich text editor (TipTap-based)                             |
+| `MobileBottomNav`        | Fixed bottom navigation bar for mobile                      |
+| `ScreenTitle`            | Page title auto-derived from route handle                   |
+| `PageLoader`             | Full-page loading spinner                                   |
+| `ThemeToggle`            | Dark/light mode toggle                                      |
+| `ImagePreviewDialog`     | Zoom/preview dialog for uploaded images                     |
 
 ---
 
@@ -165,7 +170,7 @@ src/
 - Export components as **named exports** (no default exports).
 - Keep page components thin — delegate complex UI to feature components.
 - Use `cn()` for all conditional/merged class strings.
-- **Always use Common Components** from `src/components/common/` (e.g., `SearchableSelect`, `CommonDialog`, `CommonDatePicker`) instead of building custom equivalents.
+- **Always use Common Components** from `src/components/common/` (e.g., `SearchableSelect`, `CommonDialog`, `CommonDatePicker`, `ConfirmDialog`) instead of building custom equivalents.
 
 ### State Management
 
@@ -174,6 +179,29 @@ src/
 - **React Hook Form** for all form state.
   - **CRITICAL**: Always use **Zod** for form validation (`zodResolver`). You MUST verify expected payload types from the backend API to ensure 100% accurate data mapping before submission.
 - Use `useMemo` / `useCallback` where performance matters (large lists, expensive computations).
+
+### Confirmation Dialogs & Actions
+
+- **Rule**: Whenever any user action requires confirmation (e.g., deleting a record, discarding changes, reversing a status, canceling a transaction), you **MUST** use the `ConfirmDialog` component.
+- **Strict Prohibition**: Native `window.confirm()` or custom ad-hoc confirmation prompts are strictly forbidden.
+- **State Management Pattern**:
+  - For simple confirmations: Use a boolean state `const [confirmOpen, setConfirmOpen] = useState(false)`.
+  - For item-specific confirmations (e.g., list/table delete actions): Store the ID/object of the target item, e.g., `const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)`.
+  - Implement a loading/disabled state on the confirmation button if the operation is asynchronous, ensuring the button loading states function correctly.
+  - Always clean up the state (e.g., set to `false` or `null`) inside a `finally` block or after the operation finishes.
+
+### Localization & Internationalization (i18n)
+
+- **CRITICAL**: Hardcoding user-facing strings (e.g., text, titles, table headers, form labels, input placeholders, validation rules, success/error toasts) is **strictly forbidden**.
+- All user-facing strings **MUST** use the `useTranslation` hook:
+  ```tsx
+  const { t } = useTranslation(["feature_namespace", "common"])
+  ```
+- All translation keys MUST be defined and matching in both English (`src/locales/en/*.json`) and Vietnamese (`src/locales/vi/*.json`).
+- Standardize common actions and items using the `common` namespace:
+  - Actions: `t("common:actions.confirm")`, `t("common:actions.cancel")`, `t("common:actions.save")`, `t("common:actions.delete")`.
+  - Table headers & states: `t("common:table.actions")`, `t("common:table.noData")`.
+  - Toast & modal messages: `t("common:messages.success")`, `t("common:messages.error")`, `t("common:messages.deleteConfirm")`.
 
 ### API & Data
 
@@ -195,9 +223,11 @@ src/
 
 ### Verification
 
-After substantive edits, **always run:**
+After any code modifications, **always run:**
 
 ```bash
-pnpm format        # Fix formatting + lint
-pnpm build         # Verify TypeScript compilation
+pnpm format        # Fix formatting + run eslint checks
+pnpm build         # Verify full TypeScript compilation and build success
 ```
+
+You MUST fix all TypeScript warnings, compiler errors, and lint warnings before completing the task.

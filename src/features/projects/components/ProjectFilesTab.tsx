@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { FileUploadField } from "@/components/common/FileUploadField"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { ImagePreviewDialog } from "@/components/common/ImagePreviewDialog"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { projectApi } from "../api/projectApi"
 import type { ProjectFile } from "../types/project"
@@ -45,6 +46,10 @@ export function ProjectFilesTab({
   const [categories, setCategories] = useState<OptionItem[]>([])
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const isImage = (url: string) => /\.(jpeg|jpg|gif|png|webp)$/i.test(url)
 
   const form = useForm<UploadFormData>({
     resolver: zodResolver(
@@ -123,6 +128,12 @@ export function ProjectFilesTab({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
+  const filteredFiles = useMemo(() => {
+    if (!searchQuery.trim()) return files
+    const q = searchQuery.toLowerCase()
+    return files.filter((f) => f.original_name.toLowerCase().includes(q))
+  }, [files, searchQuery])
+
   const columns = useMemo<MRT_ColumnDef<ProjectFile>[]>(
     () => [
       {
@@ -131,12 +142,19 @@ export function ProjectFilesTab({
         size: 250,
         Cell: ({ row }) => {
           const file = row.original
+          const handleNameClick = (e: React.MouseEvent) => {
+            if (isImage(file.url)) {
+              e.preventDefault()
+              setPreviewUrl(file.url)
+            }
+          }
           return (
             <a
               href={file.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-primary hover:underline max-w-xs truncate md:max-w-sm font-medium"
+              onClick={handleNameClick}
+              className="flex items-center gap-2 text-primary hover:underline max-w-xs truncate md:max-w-sm font-medium cursor-pointer"
             >
               <FileText className="size-4 shrink-0" />
               <span className="truncate">{file.original_name}</span>
@@ -150,8 +168,11 @@ export function ProjectFilesTab({
         size: 150,
         Cell: ({ row }) => {
           const file = row.original
+          const cat = file.pivot?.file_category || file.category
           return (
-            <span className="capitalize">{file.pivot?.file_category || file.category || "—"}</span>
+            <span className="capitalize">
+              {cat ? t(`projects:file_categories.${cat}`, { defaultValue: cat }) : "—"}
+            </span>
           )
         },
       },
@@ -244,7 +265,7 @@ export function ProjectFilesTab({
       </div>
     ),
     columns,
-    data: files,
+    data: filteredFiles,
     enableColumnActions: false,
     enableColumnFilters: false,
     enablePagination: false,
@@ -268,20 +289,28 @@ export function ProjectFilesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
-          {t("projects:files.title")} ({files.length})
+      <div className="flex justify-between items-center gap-4">
+        <h3 className="text-lg font-semibold whitespace-nowrap">
+          {t("projects:files.title")} ({filteredFiles.length})
         </h3>
-        {canEdit && !showUploadForm && (
-          <Button
-            size="sm"
-            onClick={() => setShowUploadForm(true)}
-            className="gap-2 min-h-11 md:min-h-9"
-          >
-            <Upload className="size-4" />
-            {t("projects:files.upload")}
-          </Button>
-        )}
+        <div className="flex-1 flex justify-end items-center gap-3">
+          <Input
+            placeholder={t("common:actions.search")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-xs h-9"
+          />
+          {canEdit && !showUploadForm && (
+            <Button
+              size="sm"
+              onClick={() => setShowUploadForm(true)}
+              className="gap-2 min-h-11 md:min-h-9"
+            >
+              <Upload className="size-4" />
+              {t("projects:files.upload")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {showUploadForm && (
@@ -378,6 +407,12 @@ export function ProjectFilesTab({
           if (deleteConfirmId !== null) return executeDelete(deleteConfirmId)
         }}
         title={t("projects:files.delete_confirm")}
+      />
+
+      <ImagePreviewDialog
+        open={previewUrl !== null}
+        onClose={() => setPreviewUrl(null)}
+        src={previewUrl}
       />
     </div>
   )
