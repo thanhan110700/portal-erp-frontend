@@ -19,7 +19,9 @@
     "filter_status": "Trạng thái",
     "fetch_error": "Không thể tải danh sách dự án",
     "delete_success": "Xóa dự án thành công",
-    "delete_error": "Xóa thất bại"
+    "delete_error": "Xóa thất bại",
+    "filter_customer": "Khách hàng",
+    "filter_date": "Ngày tháng"
   },
   "columns": {
     "code": "Mã DA",
@@ -53,8 +55,17 @@
     "validation": {
       "name_required": "Vui lòng nhập tên",
       "date_required": "Vui lòng chọn ngày",
-      "value_required": "Vui lòng nhập giá trị"
-    }
+      "value_required": "Vui lòng nhập giá trị",
+      "name_max": "Tên dự án tối đa 255 ký tự",
+      "desc_max": "Mô tả tối đa 1000 ký tự",
+      "customer_required": "Vui lòng chọn khách hàng",
+      "value_min": "Giá trị hợp đồng phải lớn hơn hoặc bằng 0",
+      "progress_invalid": "Tiến độ không hợp lệ",
+      "progress_min": "Tiến độ tối thiểu là 0",
+      "progress_max": "Tiến độ tối đa là 100",
+      "date_invalid": "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"
+    },
+    "progress_percent": "Tiến độ (%)"
   },
   "detail": {
     "not_found": "Không tìm thấy thông tin dự án.",
@@ -85,7 +96,12 @@
       "expenses": "Chi phí",
       "files": "Tài liệu",
       "vouchers": "Chứng từ"
-    }
+    },
+    "remaining_receivable": "Còn phải thu",
+    "creator": "Người tạo",
+    "status_update_prompt": "Cập nhật trạng thái",
+    "status_notes": "Ghi chú (Tùy chọn)",
+    "status_notes_placeholder": "Nhập ghi chú khi chuyển trạng thái..."
   },
   "members": {
     "title": "Thành viên tham gia",
@@ -101,7 +117,8 @@
       "role": "Vai trò",
       "start_date": "Ngày bắt đầu",
       "end_date": "Ngày kết thúc",
-      "labor_cost": "Chi phí nhân công (tháng)"
+      "labor_cost": "Chi phí nhân công (tháng)",
+      "notes": "Ghi chú"
     },
     "no_role": "Chưa phân vai trò",
     "form": {
@@ -174,6 +191,8 @@
     "delete_confirm": "Bạn có chắc chắn muốn xóa yêu cầu chi phí này?",
     "delete_success": "Đã xóa khoản chi",
     "delete_error": "Xóa khoản chi thất bại",
+    "detail_title": "Chi tiết yêu cầu chi phí",
+    "reject_reason_placeholder": "Nhập lý do từ chối...",
     "columns": {
       "type": "Phân loại",
       "date": "Ngày chi",
@@ -210,7 +229,8 @@
         "description_required": "Vui lòng nhập lý do / mô tả khoản chi",
         "description_max": "Mô tả tối đa 1000 ký tự",
         "save_error": "Lỗi khi gửi yêu cầu chi phí"
-      }
+      },
+      "notes": "Ghi chú (Tùy chọn)"
     }
   },
   "files": {

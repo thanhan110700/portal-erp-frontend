@@ -131,7 +131,9 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
     >
       <form id="quote-form" onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="q-customer">{t("sales:quote.form.fields.customer")} *</Label>
+          <Label htmlFor="q-customer" required>
+            {t("sales:quote.form.fields.customer")}
+          </Label>
           <Controller
             name="customer_id"
             control={control}
@@ -170,7 +172,9 @@ export function QuoteFormModal({ open, onClose, onSubmit, editData }: QuoteFormM
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="q-value">{t("sales:quote.form.fields.value")} *</Label>
+            <Label htmlFor="q-value" required>
+              {t("sales:quote.form.fields.value")}
+            </Label>
             <Input
               id="q-value"
               type="number"

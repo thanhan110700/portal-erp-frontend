@@ -127,7 +127,9 @@ export function ContactFormModal({ open, onClose, onSubmit, initialData }: Conta
     >
       <form id="contact-form" onSubmit={handleSubmit(handleFormSubmit)} className="grid gap-4 py-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ct-name">{t("sales:contact.columns.name")} *</Label>
+          <Label htmlFor="ct-name" required>
+            {t("sales:contact.columns.name")}
+          </Label>
           <Input id="ct-name" {...register("contact_name")} aria-invalid={!!errors.contact_name} />
           {errors.contact_name && (
             <p className="text-xs text-destructive">{errors.contact_name.message}</p>

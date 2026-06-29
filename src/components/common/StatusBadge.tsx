@@ -30,6 +30,9 @@ const DEFAULT_STATUS_MAP: Record<
   won: { variant: "success", label: "Won" },
   approved: { variant: "success", label: "Approved" },
   paid: { variant: "success", label: "Paid" },
+  signed: { variant: "success", label: "Signed" },
+  ongoing: { variant: "success", label: "Ongoing", pulse: true },
+  in_progress: { variant: "success", label: "In Progress", pulse: true },
 
   // Warning states
   waiting: { variant: "warning", label: "Waiting", pulse: true },
@@ -42,6 +45,8 @@ const DEFAULT_STATUS_MAP: Record<
   unpaid: { variant: "warning", label: "Unpaid" },
   partial: { variant: "warning", label: "Partial" },
   vip: { variant: "warning", label: "VIP", pulse: true },
+  quoting: { variant: "warning", label: "Quoting" },
+  testing: { variant: "warning", label: "Testing", pulse: true },
 
   // Secondary/Info states
   paused: { variant: "secondary", label: "Paused" },
@@ -53,6 +58,9 @@ const DEFAULT_STATUS_MAP: Record<
   new: { variant: "secondary", label: "New", pulse: true },
   open: { variant: "secondary", label: "Open" },
   regular: { variant: "secondary", label: "Regular" },
+  planning: { variant: "secondary", label: "Planning", pulse: true },
+  settled: { variant: "secondary", label: "Settled" },
+  planned: { variant: "secondary", label: "Planned" },
 
   // Destructive/Error states
   inactive: { variant: "destructive", label: "Inactive" },
@@ -63,6 +71,7 @@ const DEFAULT_STATUS_MAP: Record<
   lost: { variant: "destructive", label: "Lost" },
   rejected: { variant: "destructive", label: "Rejected" },
   cancelled: { variant: "destructive", label: "Cancelled" },
+  delayed: { variant: "destructive", label: "Delayed" },
 
   // Default
   unknown: { variant: "default", label: "Unknown" },

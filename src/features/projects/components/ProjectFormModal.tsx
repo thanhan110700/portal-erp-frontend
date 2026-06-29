@@ -199,7 +199,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
       <form id="project-form" onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 flex flex-col gap-1.5">
-            <Label htmlFor="p-name">{t("projects:form.name")}</Label>
+            <Label htmlFor="p-name" required>
+              {t("projects:form.name")}
+            </Label>
             <Input id="p-name" {...register("project_name")} aria-invalid={!!errors.project_name} />
             {errors.project_name && (
               <p className="text-xs text-destructive">{errors.project_name.message}</p>
@@ -207,7 +209,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-customer">{t("projects:form.customer")}</Label>
+            <Label htmlFor="p-customer" required>
+              {t("projects:form.customer")}
+            </Label>
             <Controller
               name="customer_id"
               control={control}
@@ -282,7 +286,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="p-value">{t("projects:form.value")}</Label>
+            <Label htmlFor="p-value" required>
+              {t("projects:form.value")}
+            </Label>
             <Input
               id="p-value"
               type="number"

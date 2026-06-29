@@ -130,7 +130,9 @@ export function ProjectMilestoneFormModal({
         className="grid gap-4 py-2"
       >
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ms-name">{t("projects:milestones.form.name")}</Label>
+          <Label htmlFor="ms-name" required>
+            {t("projects:milestones.form.name")}
+          </Label>
           <Input
             id="ms-name"
             placeholder={t("projects:milestones.form.name_placeholder")}

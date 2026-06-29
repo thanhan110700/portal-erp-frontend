@@ -106,7 +106,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>{t("projects:expenses.form.type")}</Label>
+            <Label required>{t("projects:expenses.form.type")}</Label>
             <Controller
               name="expense_type"
               control={control}
@@ -128,7 +128,9 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-amount">{t("projects:expenses.form.amount")}</Label>
+            <Label htmlFor="ex-amount" required>
+              {t("projects:expenses.form.amount")}
+            </Label>
             <Input
               id="ex-amount"
               type="number"
@@ -162,7 +164,9 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ex-desc">{t("projects:expenses.form.description")}</Label>
+          <Label htmlFor="ex-desc" required>
+            {t("projects:expenses.form.description")}
+          </Label>
           <Textarea
             id="ex-desc"
             rows={3}

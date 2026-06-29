@@ -233,7 +233,8 @@ export function EmployeeFormModal({
         {/* Basic info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
-            label={`${t("hr:employees.form.fields.full_name")} *`}
+            label={t("hr:employees.form.fields.full_name")}
+            required
             error={errors.full_name?.message}
             id="emp-full-name"
           >
@@ -252,7 +253,8 @@ export function EmployeeFormModal({
           </FormField>
 
           <FormField
-            label={`${t("hr:employees.form.fields.email")} *`}
+            label={t("hr:employees.form.fields.email")}
+            required
             error={errors.email?.message}
             id="emp-email"
           >
@@ -278,7 +280,8 @@ export function EmployeeFormModal({
           </FormField>
 
           <FormField
-            label={`${t("hr:employees.form.fields.position")} *`}
+            label={t("hr:employees.form.fields.position")}
+            required
             error={errors.position?.message}
             id="emp-position"
           >
@@ -295,7 +298,8 @@ export function EmployeeFormModal({
         {/* Department + Manager */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
-            label={`${t("hr:employees.form.fields.department")} *`}
+            label={t("hr:employees.form.fields.department")}
+            required
             error={errors.department_id?.message}
             id="emp-dept"
           >
@@ -358,7 +362,7 @@ export function EmployeeFormModal({
 
         {/* Dates */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label={`${t("hr:employees.form.fields.hire_date")} *`} id="emp-hire">
+          <FormField label={t("hr:employees.form.fields.hire_date")} required id="emp-hire">
             <Controller
               name="hire_date"
               control={control}
@@ -444,16 +448,18 @@ function FormField({
   label,
   id,
   error,
+  required,
   children,
 }: {
   label: string
   id: string
   error?: string
+  required?: boolean
   children: React.ReactNode
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id} className="text-sm font-medium">
+      <Label htmlFor={id} className="text-sm font-medium" required={required}>
         {label}
       </Label>
       {children}

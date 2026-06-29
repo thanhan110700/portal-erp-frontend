@@ -62,7 +62,9 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
       <form id="interaction-form" onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-2">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="i-type">{t("sales:interaction.fields.type")} *</Label>
+            <Label htmlFor="i-type" required>
+              {t("sales:interaction.fields.type")}
+            </Label>
             <Controller
               name="type"
               control={control}
@@ -109,7 +111,9 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="i-content">{t("sales:interaction.fields.content")} *</Label>
+          <Label htmlFor="i-content" required>
+            {t("sales:interaction.fields.content")}
+          </Label>
           <Textarea
             id="i-content"
             rows={4}
