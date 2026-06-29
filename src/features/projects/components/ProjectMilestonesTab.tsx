@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import type { ProjectMilestone } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMilestoneFormModal } from "./ProjectMilestoneFormModal"
@@ -26,6 +27,7 @@ export function ProjectMilestonesTab({
   const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedMilestone, setSelectedMilestone] = useState<ProjectMilestone | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const handleAddOrUpdate = async (payload: any) => {
     try {
@@ -43,19 +45,24 @@ export function ProjectMilestonesTab({
     }
   }
 
-  const handleRemove = useCallback(
+  const executeRemove = useCallback(
     async (milestoneId: number) => {
-      if (!window.confirm(t("projects:milestones.delete_confirm"))) return
       try {
         await projectApi.removeMilestone(projectId, milestoneId)
         toast.success(t("projects:milestones.delete_success"))
         onRefresh()
       } catch {
         toast.error(t("projects:milestones.delete_error"))
+      } finally {
+        setDeleteConfirmId(null)
       }
     },
     [projectId, onRefresh, t],
   )
+
+  const handleRemove = useCallback((milestoneId: number) => {
+    setDeleteConfirmId(milestoneId)
+  }, [])
 
   // Sort milestones by date chronologically
   const sortedMilestones = [...milestones].sort((a, b) => {
@@ -208,6 +215,15 @@ export function ProjectMilestonesTab({
           editData={selectedMilestone}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeRemove(deleteConfirmId)
+        }}
+        title={t("projects:milestones.delete_confirm")}
+      />
     </div>
   )
 }

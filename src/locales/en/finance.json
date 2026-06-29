@@ -128,5 +128,34 @@
     "validation": {
       "file_required": "Please select a file"
     }
+  },
+  "dashboard": {
+    "title": "Finance Dashboard",
+    "subtitle": "Overview of income, expenses, budget, and pending vouchers",
+    "cards": {
+      "total_income": "Total income this month",
+      "total_expense": "Total expense this month",
+      "profit_loss": "Profit / Loss this month"
+    },
+    "chart_title": "Income/Expense last 6 months",
+    "top_departments": "Top 5 spending departments",
+    "pending_alerts": "Pending Vouchers",
+    "no_pending": "No pending vouchers",
+    "department": "Department",
+    "total_expense": "Total Expense",
+    "fetch_error": "Failed to load dashboard data"
+  },
+  "reject_dialog": {
+    "title": "Reject Voucher",
+    "reason_label": "Rejection Reason *",
+    "reason_placeholder": "Enter reason for rejection...",
+    "confirm": "Confirm Rejection",
+    "cancel": "Cancel"
+  },
+  "detail": {
+    "creator": "Creator",
+    "approver": "Approver",
+    "rejection_reason": "Rejection Reason",
+    "fetch_error": "Failed to load voucher data"
   }
 }

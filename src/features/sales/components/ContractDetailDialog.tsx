@@ -17,6 +17,7 @@ import * as z from "zod"
 import { toast } from "sonner"
 
 import { CommonDialog } from "@/components/common/CommonDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Button } from "@/components/ui/button"
@@ -56,6 +57,7 @@ export function ContractDetailDialog({
   const [contract, setContract] = useState<Contract | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [statusUpdating, setStatusUpdating] = useState(false)
+  const [deleteFileConfirmId, setDeleteFileConfirmId] = useState<number | null>(null)
 
   const form = useForm({
     resolver: zodResolver(
@@ -120,8 +122,7 @@ export function ContractDetailDialog({
     }
   }
 
-  const handleDeleteFile = async (fileId: number) => {
-    if (!window.confirm(t("sales:contract.delete_file_confirm"))) return
+  const executeDeleteFile = async (fileId: number) => {
     try {
       await contractApi.deleteFile(contractId, fileId)
       toast.success(t("sales:contract.delete_file_success"))
@@ -129,7 +130,13 @@ export function ContractDetailDialog({
       onRefresh()
     } catch {
       toast.error(t("sales:contract.delete_file_error"))
+    } finally {
+      setDeleteFileConfirmId(null)
     }
+  }
+
+  const handleDeleteFile = (fileId: number) => {
+    setDeleteFileConfirmId(fileId)
   }
 
   if (isLoading || !contract) {
@@ -277,7 +284,7 @@ export function ContractDetailDialog({
                       >
                         <Upload className="size-4" />
                         {isSubmitting
-                          ? t("common:action.saving")
+                          ? t("common:actions.saving")
                           : t("sales:contract.actions.upload", { defaultValue: "Tải lên" })}
                       </Button>
                     </div>
@@ -326,6 +333,14 @@ export function ContractDetailDialog({
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteFileConfirmId !== null}
+        onClose={() => setDeleteFileConfirmId(null)}
+        onConfirm={() => {
+          if (deleteFileConfirmId !== null) return executeDeleteFile(deleteFileConfirmId)
+        }}
+        title={t("sales:contract.delete_file_confirm")}
+      />
     </CommonDialog>
   )
 }

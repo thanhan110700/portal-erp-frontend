@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { FileUploadField } from "@/components/common/FileUploadField"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { projectApi } from "../api/projectApi"
 import type { ProjectFile } from "../types/project"
@@ -43,6 +44,7 @@ export function ProjectFilesTab({
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [categories, setCategories] = useState<OptionItem[]>([])
   const [showUploadForm, setShowUploadForm] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const form = useForm<UploadFormData>({
     resolver: zodResolver(
@@ -94,19 +96,24 @@ export function ProjectFilesTab({
     }
   }
 
-  const handleDelete = useCallback(
+  const executeDelete = useCallback(
     async (fileId: number) => {
-      if (!window.confirm(t("projects:files.delete_confirm"))) return
       try {
         await projectApi.deleteFile(projectId, fileId)
         toast.success(t("projects:files.delete_success"))
         onRefresh()
       } catch {
         toast.error(t("projects:files.delete_error"))
+      } finally {
+        setDeleteConfirmId(null)
       }
     },
     [projectId, onRefresh, t],
   )
+
+  const handleDelete = useCallback((fileId: number) => {
+    setDeleteConfirmId(fileId)
+  }, [])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -349,7 +356,7 @@ export function ProjectFilesTab({
                   disabled={isSubmitting}
                   className="min-h-11 md:min-h-9"
                 >
-                  {t("common:action.cancel")}
+                  {t("common:actions.cancel")}
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="min-h-11 md:min-h-9">
                   {isSubmitting ? t("projects:files.uploading") : t("projects:files.submit")}
@@ -363,6 +370,15 @@ export function ProjectFilesTab({
       <div className="rounded-xl border bg-card overflow-hidden">
         <MantineReactTable table={table} />
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeDelete(deleteConfirmId)
+        }}
+        title={t("projects:files.delete_confirm")}
+      />
     </div>
   )
 }

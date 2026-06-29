@@ -249,6 +249,15 @@ export const router = createBrowserRouter([
                 ),
                 children: [
                   {
+                    path: routeSegment(PATHS.financeDashboard),
+                    lazy: async () => {
+                      const { FinanceDashboardPage } =
+                        await import("@/features/finance/pages/FinanceDashboardPage")
+                      return { Component: FinanceDashboardPage }
+                    },
+                    handle: { title: "common:routes.finance_dashboard" },
+                  },
+                  {
                     path: routeSegment(PATHS.financeVouchers),
                     lazy: async () => {
                       const { VoucherListPage } =

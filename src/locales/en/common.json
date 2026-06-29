@@ -9,7 +9,8 @@
     "confirm": "Confirm",
     "back": "Back",
     "refresh": "Refresh",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "view": "View Details"
   },
   "status": {
     "status": "Status",
@@ -50,7 +51,14 @@
     "on_hold": "On Hold",
     "vip": "VIP",
     "regular": "Regular",
-    "new": "New"
+    "new": "New",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "partial": "Partial",
+    "processing": "Processing",
+    "reviewing": "Reviewing",
+    "overdue": "Overdue",
+    "won": "Won"
   },
   "table": {
     "all": "All",
@@ -106,6 +114,7 @@
     "sales_customer_detail": "Customer Details",
     "sales_quotes": "Quotes",
     "sales_contracts": "Contracts",
+    "finance_dashboard": "Finance Dashboard",
     "finance_vouchers": "Vouchers",
     "reports": "Management Reports"
   },

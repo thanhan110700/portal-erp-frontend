@@ -92,27 +92,24 @@ export function VoucherHistoryDialog({
                   </div>
                 </div>
 
-                <div className="text-sm font-semibold text-foreground">
-                  {log.action_label || log.action}
-                </div>
+                <div className="text-sm font-semibold text-foreground capitalize">{log.action}</div>
 
-                {log.notes && (
+                {log.change_summary && (
                   <p className="text-xs text-muted-foreground bg-background p-2 rounded border-l-2 border-primary/50">
-                    {t("finance:history.opinion")} {log.notes}
+                    {t("finance:history.opinion")} {log.change_summary}
                   </p>
                 )}
 
-                {/* Render differences if changes exist */}
-                {log.changes && Object.keys(log.changes).length > 0 && (
+                {log.new_values && Object.keys(log.new_values).length > 0 && (
                   <div className="mt-2 text-xs space-y-1 bg-background p-2 rounded border border-dashed">
                     <p className="font-semibold text-muted-foreground mb-1">
                       {t("finance:history.changes_title")}
                     </p>
-                    {Object.entries(log.changes).map(
+                    {Object.entries(log.new_values).map(
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      ([field, delta]: [string, any]) => {
-                        const from = delta.old ?? "—"
-                        const to = delta.new ?? "—"
+                      ([field, newValue]: [string, any]) => {
+                        const from = log.old_values ? (log.old_values[field] ?? "—") : "—"
+                        const to = newValue ?? "—"
                         const fromStr =
                           typeof from === "object"
                             ? JSON.stringify(from)

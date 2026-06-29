@@ -46,6 +46,7 @@ export interface ListVouchersParams {
   status?: string
   project_id?: number
   customer_id?: number
+  department_id?: number
   date_from?: string
   date_to?: string
   per_page?: number
@@ -54,10 +55,14 @@ export interface ListVouchersParams {
 
 export interface VoucherAuditLog {
   id: number
+  user: { id: number; full_name: string } | null
+  module: string
   action: string
-  action_label: string
-  user: { id: number; full_name: string }
-  changes: Record<string, unknown> | null
-  notes: string | null
+  entity_type: string
+  entity_id: number
+  old_values: Record<string, unknown> | null
+  new_values: Record<string, unknown> | null
+  change_summary: string | null
+  ip_address: string | null
   created_at: string
 }

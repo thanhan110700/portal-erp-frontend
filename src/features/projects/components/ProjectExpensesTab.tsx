@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import type { ProjectExpense } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
@@ -41,6 +42,7 @@ export function ProjectExpensesTab({
   const [modalOpen, setModalOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<ProjectExpense | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const handleCreate = async (payload: any) => {
     try {
@@ -86,19 +88,24 @@ export function ProjectExpensesTab({
     [projectId, onRefresh, t],
   )
 
-  const handleRemove = useCallback(
+  const executeRemove = useCallback(
     async (expenseId: number) => {
-      if (!window.confirm(t("projects:expenses.delete_confirm"))) return
       try {
         await projectApi.removeExpense(projectId, expenseId)
         toast.success(t("projects:expenses.delete_success"))
         onRefresh()
       } catch {
         toast.error(t("projects:expenses.delete_error"))
+      } finally {
+        setDeleteConfirmId(null)
       }
     },
     [projectId, onRefresh, t],
   )
+
+  const handleRemove = useCallback((expenseId: number) => {
+    setDeleteConfirmId(expenseId)
+  }, [])
 
   const columns = useMemo<MRT_ColumnDef<ProjectExpense>[]>(
     () => [
@@ -311,6 +318,15 @@ export function ProjectExpensesTab({
           onReject={handleReject}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeRemove(deleteConfirmId)
+        }}
+        title={t("projects:expenses.delete_confirm")}
+      />
     </div>
   )
 }
