@@ -103,7 +103,7 @@ export function DepartmentFormModal({
               name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("hr:department.form.fields.code")} *</FormLabel>
+                  <FormLabel required>{t("hr:department.form.fields.code")}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t("hr:department.form.fields.code_placeholder")}
@@ -120,7 +120,7 @@ export function DepartmentFormModal({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("hr:department.form.fields.name")} *</FormLabel>
+                  <FormLabel required>{t("hr:department.form.fields.name")}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t("hr:department.form.fields.name_placeholder")}

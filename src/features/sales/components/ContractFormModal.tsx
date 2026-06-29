@@ -176,7 +176,9 @@ export function ContractFormModal({
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-customer">{t("sales:contract.form.fields.customer")} *</Label>
+            <Label htmlFor="c-customer" required>
+              {t("sales:contract.form.fields.customer")}
+            </Label>
             <Controller
               name="customer_id"
               control={control}
@@ -224,7 +226,9 @@ export function ContractFormModal({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-sales">{t("sales:contract.form.fields.sales_rep")} *</Label>
+            <Label htmlFor="c-sales" required>
+              {t("sales:contract.form.fields.sales_rep")}
+            </Label>
             <Controller
               name="sales_rep_id"
               control={control}
@@ -246,7 +250,9 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-status">{t("sales:contract.form.fields.status")} *</Label>
+            <Label htmlFor="c-status" required>
+              {t("sales:contract.form.fields.status")}
+            </Label>
             <Controller
               name="status"
               control={control}
@@ -307,7 +313,9 @@ export function ContractFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="c-value">{t("sales:contract.form.fields.value")} *</Label>
+            <Label htmlFor="c-value" required>
+              {t("sales:contract.form.fields.value")}
+            </Label>
             <Input
               id="c-value"
               type="number"

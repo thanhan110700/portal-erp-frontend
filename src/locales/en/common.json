@@ -58,7 +58,9 @@
     "processing": "Processing",
     "reviewing": "Reviewing",
     "overdue": "Overdue",
-    "won": "Won"
+    "won": "Won",
+    "planned": "Planned",
+    "delayed": "Delayed"
   },
   "table": {
     "all": "All",

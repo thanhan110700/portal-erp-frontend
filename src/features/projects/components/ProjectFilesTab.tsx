@@ -331,7 +331,7 @@ export function ProjectFilesTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1.5">
-                    <Label>{t("projects:files.category")}</Label>
+                    <Label required>{t("projects:files.category")}</Label>
                     <Controller
                       name="file_category"
                       control={control}

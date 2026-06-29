@@ -146,13 +146,13 @@ export function ProjectMemberFormModal({
       }
       size="lg"
       primaryAction={{
-        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
+        label: isSubmitting ? t("common:actions.saving") : t("common:actions.save"),
         type: "submit",
         form: "project-member-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: t("common:action.cancel"),
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -163,7 +163,7 @@ export function ProjectMemberFormModal({
         className="grid gap-4 py-2"
       >
         <div className="flex flex-col gap-1.5">
-          <Label>{t("projects:members.form.employee")}</Label>
+          <Label required>{t("projects:members.form.employee")}</Label>
           <Controller
             name="user_id"
             control={control}

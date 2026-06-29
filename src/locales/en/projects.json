@@ -19,7 +19,9 @@
     "filter_status": "Status",
     "fetch_error": "Failed to fetch project list",
     "delete_success": "Project deleted successfully",
-    "delete_error": "Failed to delete project"
+    "delete_error": "Failed to delete project",
+    "filter_customer": "Customer",
+    "filter_date": "Date"
   },
   "columns": {
     "code": "Proj. Code",
@@ -53,8 +55,17 @@
     "validation": {
       "name_required": "Please enter a name",
       "date_required": "Please select a date",
-      "value_required": "Please enter a value"
-    }
+      "value_required": "Please enter a value",
+      "name_max": "Project name maximum 255 characters",
+      "desc_max": "Description maximum 1000 characters",
+      "customer_required": "Please select customer",
+      "value_min": "Contract value must be greater than or equal to 0",
+      "progress_invalid": "Invalid progress",
+      "progress_min": "Progress minimum is 0",
+      "progress_max": "Progress maximum is 100",
+      "date_invalid": "End date must be greater than or equal to start date"
+    },
+    "progress_percent": "Progress (%)"
   },
   "detail": {
     "not_found": "Project info not found.",
@@ -85,7 +96,12 @@
       "expenses": "Expenses",
       "files": "Documents",
       "vouchers": "Vouchers"
-    }
+    },
+    "remaining_receivable": "Remaining Receivable",
+    "creator": "Creator",
+    "status_update_prompt": "Update Status",
+    "status_notes": "Notes (Optional)",
+    "status_notes_placeholder": "Enter notes when changing status..."
   },
   "members": {
     "title": "Participating Members",
@@ -101,7 +117,8 @@
       "role": "Role",
       "start_date": "Start Date",
       "end_date": "End Date",
-      "labor_cost": "Labor Cost (Month)"
+      "labor_cost": "Labor Cost (Month)",
+      "notes": "Notes"
     },
     "no_role": "Unassigned",
     "form": {
@@ -174,6 +191,8 @@
     "delete_confirm": "Are you sure you want to delete this expense request?",
     "delete_success": "Expense deleted",
     "delete_error": "Failed to delete expense",
+    "detail_title": "Expense Request Details",
+    "reject_reason_placeholder": "Enter rejection reason...",
     "columns": {
       "type": "Category",
       "date": "Expense Date",
@@ -210,7 +229,8 @@
         "description_required": "Please enter reason / description",
         "description_max": "Description maximum 1000 characters",
         "save_error": "Error submitting expense request"
-      }
+      },
+      "notes": "Notes (Optional)"
     }
   },
   "files": {

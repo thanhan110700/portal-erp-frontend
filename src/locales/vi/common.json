@@ -58,7 +58,9 @@
     "processing": "Đang xử lý",
     "reviewing": "Đang đánh giá",
     "overdue": "Quá hạn",
-    "won": "Thành công"
+    "won": "Thành công",
+    "planned": "Lên kế hoạch",
+    "delayed": "Chậm tiến độ"
   },
   "table": {
     "all": "Tất cả",
