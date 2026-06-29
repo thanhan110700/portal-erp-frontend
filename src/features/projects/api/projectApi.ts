@@ -15,13 +15,15 @@ import type {
   CreateProjectExpensePayload,
   UpdateProjectExpenseStatusPayload,
   ProjectFile,
+  ProjectVoucherPaginatedResponse,
 } from "../types/project"
 
 export interface ListProjectsParams {
   search?: string
   status?: string
   customer_id?: number
-  manager_id?: number
+  date_from?: string
+  date_to?: string
   per_page?: number
   page?: number
 }
@@ -52,10 +54,15 @@ export const projectApi = {
     await axiosInstance.delete(`/v1/projects/${id}`)
   },
 
-  async updateStatus(id: number, status: string): Promise<Project> {
-    const response = await axiosInstance.patch<ApiResponse<Project>>(`/v1/projects/${id}/status`, {
-      status,
-    })
+  async updateStatus(id: number, status: string, notes?: string): Promise<Project> {
+    const payload: any = { status }
+    if (notes !== undefined) {
+      payload.notes = notes
+    }
+    const response = await axiosInstance.patch<ApiResponse<Project>>(
+      `/v1/projects/${id}/status`,
+      payload,
+    )
     return response.data.data
   },
 
@@ -195,11 +202,14 @@ export const projectApi = {
   },
 
   // ── Project Vouchers ─────────────────────────────────────────────────────
-  async listVouchers(projectId: number, params: Record<string, unknown> = {}): Promise<any[]> {
-    const response = await axiosInstance.get<ApiResponse<any[]>>(
+  async listVouchers(
+    projectId: number,
+    params: Record<string, unknown> = {},
+  ): Promise<ProjectVoucherPaginatedResponse> {
+    const response = await axiosInstance.get<ProjectVoucherPaginatedResponse>(
       `/v1/projects/${projectId}/vouchers`,
       { params },
     )
-    return response.data.data
+    return response.data
   },
 }

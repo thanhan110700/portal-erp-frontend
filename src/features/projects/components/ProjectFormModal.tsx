@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { toast } from "sonner"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
@@ -11,6 +13,69 @@ import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import type { CreateProjectPayload, UpdateProjectPayload } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { useTranslation } from "react-i18next"
+
+const getProjectSchema = (t: any) =>
+  z
+    .object({
+      project_name: z
+        .string()
+        .min(1, t("projects:form.validation.name_required", { defaultValue: "Vui lòng nhập tên" }))
+        .max(255, t("projects:form.validation.name_max", { defaultValue: "Tối đa 255 ký tự" })),
+      description: z
+        .string()
+        .max(5000, t("projects:form.validation.desc_max", { defaultValue: "Tối đa 5000 ký tự" }))
+        .optional()
+        .nullable()
+        .or(z.literal("")),
+      customer_id: z.number({
+        message: t("projects:form.validation.customer_required", {
+          defaultValue: "Vui lòng chọn khách hàng",
+        }),
+      }),
+      contract_id: z.number().optional().nullable().or(z.literal(0)),
+      start_date: z
+        .string()
+        .min(
+          1,
+          t("projects:form.validation.date_required", { defaultValue: "Vui lòng chọn ngày" }),
+        ),
+      end_date: z.string().optional().nullable().or(z.literal("")),
+      contract_value: z
+        .number({ message: t("projects:form.validation.value_required") })
+        .gt(
+          0,
+          t("projects:form.validation.value_min", { defaultValue: "Giá trị hợp đồng phải > 0" }),
+        ),
+      status: z
+        .enum(["planning", "quoting", "signed", "ongoing", "testing", "settled", "completed"])
+        .optional()
+        .nullable()
+        .or(z.literal("")),
+      progress_percent: z
+        .number({
+          message: t("projects:form.validation.progress_invalid", {
+            defaultValue: "Không hợp lệ",
+          }),
+        })
+        .min(0, t("projects:form.validation.progress_min", { defaultValue: "Tối thiểu 0" }))
+        .max(100, t("projects:form.validation.progress_max", { defaultValue: "Tối đa 100" }))
+        .optional()
+        .nullable(),
+    })
+    .refine(
+      (data) => {
+        if (!data.end_date || !data.start_date) return true
+        return new Date(data.end_date) > new Date(data.start_date)
+      },
+      {
+        message: t("projects:form.validation.date_invalid", {
+          defaultValue: "Ngày kết thúc phải lớn hơn ngày bắt đầu",
+        }),
+        path: ["end_date"],
+      },
+    )
+
+type ProjectFormValues = z.infer<ReturnType<typeof getProjectSchema>>
 
 interface ProjectFormModalProps {
   open: boolean
@@ -33,7 +98,8 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateProjectPayload>({
+  } = useForm<ProjectFormValues>({
+    resolver: zodResolver(getProjectSchema(t)),
     defaultValues: {
       project_name: "",
       status: "planning",
@@ -63,15 +129,16 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
         .then((data) => {
           reset({
             project_name: data.project_name,
-            customer_id: data.customer_id,
-            contract_id: data.contract_id || undefined,
+            customer_id: data.customer_id || data.customer?.id || (undefined as unknown as number),
+            contract_id: data.contract_id || data.contract?.id || undefined,
             start_date: data.start_date || "",
             end_date: data.end_date || "",
             contract_value:
               typeof data.contract_value === "string"
                 ? parseFloat(data.contract_value)
                 : data.contract_value || 0,
-            status: data.status || "planning",
+            status: (data.status as any) || "planning",
+            progress_percent: data.progress_percent || 0,
             description: data.description || "",
           })
         })
@@ -86,17 +153,18 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
         end_date: "",
         status: "planning",
         description: "",
+        progress_percent: 0,
       })
     }
   }, [open, isEdit, editingId, reset])
 
-  const onSubmit = async (data: CreateProjectPayload) => {
+  const onSubmit = async (data: ProjectFormValues) => {
     try {
       if (isEdit && editingId) {
         await projectApi.update(editingId, data as UpdateProjectPayload)
         toast.success(t("projects:form.update_success"))
       } else {
-        await projectApi.create(data)
+        await projectApi.create(data as CreateProjectPayload)
         toast.success(t("projects:form.create_success"))
       }
       onSuccess()
@@ -132,13 +200,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 flex flex-col gap-1.5">
             <Label htmlFor="p-name">{t("projects:form.name")}</Label>
-            <Input
-              id="p-name"
-              {...register("project_name", {
-                required: t("projects:form.validation.name_required"),
-              })}
-              aria-invalid={!!errors.project_name}
-            />
+            <Input id="p-name" {...register("project_name")} aria-invalid={!!errors.project_name} />
             {errors.project_name && (
               <p className="text-xs text-destructive">{errors.project_name.message}</p>
             )}
@@ -161,6 +223,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                 />
               )}
             />
+            {errors.customer_id && (
+              <p className="text-xs text-destructive">{errors.customer_id.message as string}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -189,7 +254,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
             <Controller
               name="start_date"
               control={control}
-              rules={{ required: t("projects:form.validation.date_required") }}
               render={({ field, fieldState }) => (
                 <CommonDatePicker
                   label={t("projects:form.start_date")}
@@ -223,11 +287,11 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               id="p-value"
               type="number"
               inputMode="decimal"
-              {...register("contract_value", {
-                valueAsNumber: true,
-                required: t("projects:form.validation.value_required"),
-              })}
+              {...register("contract_value", { valueAsNumber: true })}
             />
+            {errors.contract_value && (
+              <p className="text-xs text-destructive">{errors.contract_value.message}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -244,8 +308,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
                   { value: "testing", label: t("common:status.testing") },
                   { value: "settled", label: t("common:status.settled") },
                   { value: "completed", label: t("common:status.completed") },
-                  { value: "on_hold", label: t("common:status.on_hold") },
-                  { value: "cancelled", label: t("common:status.cancelled") },
                 ]
 
                 const statusOptions =
@@ -275,9 +337,29 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
             />
           </div>
 
+          {isEdit && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="p-progress">
+                {t("projects:form.progress_percent", { defaultValue: "Tiến độ (%)" })}
+              </Label>
+              <Input
+                id="p-progress"
+                type="number"
+                inputMode="decimal"
+                {...register("progress_percent", { valueAsNumber: true })}
+              />
+              {errors.progress_percent && (
+                <p className="text-xs text-destructive">{errors.progress_percent.message}</p>
+              )}
+            </div>
+          )}
+
           <div className="col-span-2 flex flex-col gap-1.5">
             <Label htmlFor="p-desc">{t("projects:form.description")}</Label>
             <Textarea id="p-desc" rows={3} {...register("description")} />
+            {errors.description && (
+              <p className="text-xs text-destructive">{errors.description.message as string}</p>
+            )}
           </div>
         </div>
       </form>

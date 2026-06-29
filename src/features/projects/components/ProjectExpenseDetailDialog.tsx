@@ -15,15 +15,6 @@ interface ProjectExpenseDetailDialogProps {
   onReject: (id: number) => void
 }
 
-const EXPENSE_TYPE_LABELS: Record<string, string> = {
-  food: "Ăn uống",
-  transport: "Di chuyển",
-  accommodation: "Lưu trú",
-  material: "Vật tư",
-  labor: "Nhân công",
-  other: "Khác",
-}
-
 export function ProjectExpenseDetailDialog({
   open,
   onClose,
@@ -88,7 +79,11 @@ export function ProjectExpenseDetailDialog({
               <FileText className="size-4" /> {t("projects:expenses.form.type")}
             </p>
             <p className="font-medium text-foreground">
-              {EXPENSE_TYPE_LABELS[expense.expense_type] || expense.expense_type}
+              {expense.expense_type
+                ? t(`projects:expense_types.${expense.expense_type}`, {
+                    defaultValue: expense.expense_type,
+                  })
+                : "—"}
             </p>
           </div>
           <div>

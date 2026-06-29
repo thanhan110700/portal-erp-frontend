@@ -260,5 +260,21 @@
       "receipt": "Thu tiền",
       "payment": "Chi tiền"
     }
+  },
+  "file_categories": {
+    "contract": "Hợp đồng",
+    "images": "Hình ảnh",
+    "reports": "Báo cáo",
+    "certificates": "Chứng chỉ",
+    "minutes": "Biên bản",
+    "other": "Khác"
+  },
+  "expense_types": {
+    "food": "Ăn uống",
+    "transport": "Đi lại",
+    "accommodation": "Nhà nghỉ",
+    "material": "Vật tư",
+    "labor": "Nhân công",
+    "other": "Khác"
   }
 }

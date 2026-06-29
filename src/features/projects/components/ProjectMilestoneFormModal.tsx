@@ -113,13 +113,13 @@ export function ProjectMilestoneFormModal({
       }
       size="lg"
       primaryAction={{
-        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
+        label: isSubmitting ? t("common:actions.saving") : t("common:actions.save"),
         type: "submit",
         form: "project-milestone-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: t("common:action.cancel"),
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}

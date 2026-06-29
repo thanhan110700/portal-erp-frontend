@@ -10,6 +10,8 @@ import {
   Percent,
   Compass,
   ChevronDown,
+  CreditCard,
+  UserCircle,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -22,6 +24,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { CommonDialog } from "@/components/common/CommonDialog"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { PageLoader } from "@/components/common/PageLoader"
 import { useAuthStore } from "@/hooks/useAuthStore"
@@ -38,13 +43,13 @@ import { ProjectFilesTab } from "../components/ProjectFilesTab"
 import { ProjectVouchersTab } from "../components/ProjectVouchersTab"
 
 const STATUS_OPTIONS = [
-  { value: "planning", label: "Đang báo giá" },
-  { value: "quoting", label: "Báo giá" },
-  { value: "signed", label: "Đã ký" },
-  { value: "ongoing", label: "Đang làm" },
-  { value: "testing", label: "Nghiệm thu" },
-  { value: "settled", label: "Quyết toán" },
-  { value: "completed", label: "Hoàn tất" },
+  { value: "planning" },
+  { value: "quoting" },
+  { value: "signed" },
+  { value: "ongoing" },
+  { value: "testing" },
+  { value: "settled" },
+  { value: "completed" },
 ]
 
 export function ProjectDetailPage() {
@@ -69,6 +74,8 @@ export function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [statusUpdating, setStatusUpdating] = useState(false)
+  const [statusConfirm, setStatusConfirm] = useState<string | null>(null)
+  const [statusNotes, setStatusNotes] = useState("")
 
   const loadProjectData = useCallback(async () => {
     if (!projectId) return
@@ -88,11 +95,20 @@ export function ProjectDetailPage() {
     void loadProjectData()
   }, [loadProjectData])
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!project) return
+  const handleStatusChangeClick = (newStatus: string) => {
+    setStatusConfirm(newStatus)
+    setStatusNotes("")
+  }
+
+  const executeStatusChange = async () => {
+    if (!project || !statusConfirm) return
     setStatusUpdating(true)
     try {
-      const updated = await projectApi.updateStatus(project.id, newStatus)
+      const updated = await projectApi.updateStatus(
+        project.id,
+        statusConfirm,
+        statusNotes || undefined,
+      )
       setProject((prev) => (prev ? { ...prev, status: updated.status } : null))
       toast.success(t("projects:detail.status_update_success"))
       // Soft refresh other stats that might be recalculated
@@ -103,6 +119,7 @@ export function ProjectDetailPage() {
       toast.error(errMsg)
     } finally {
       setStatusUpdating(false)
+      setStatusConfirm(null)
     }
   }
 
@@ -120,6 +137,7 @@ export function ProjectDetailPage() {
   const receivedVal = Number(project.total_received || 0)
   const spentVal = Number(project.total_spent || 0)
   const profitVal = Number(project.profit || 0)
+  const remainingReceivable = Math.max(0, contractVal - receivedVal)
 
   // Profit Margin
   const profitMargin = contractVal > 0 ? (profitVal / contractVal) * 100 : 0
@@ -172,12 +190,12 @@ export function ProjectDetailPage() {
                   {STATUS_OPTIONS.map((s) => (
                     <DropdownMenuItem
                       key={s.value}
-                      onClick={() => handleStatusChange(s.value)}
+                      onClick={() => handleStatusChangeClick(s.value)}
                       className="gap-2 cursor-pointer"
                     >
                       <StatusBadge status={s.value} />
                       <span className="text-xs text-muted-foreground flex-1 text-right">
-                        {t(`common:status.${s.value}`, { defaultValue: s.label })}
+                        {t(`common:status.${s.value}`)}
                       </span>
                     </DropdownMenuItem>
                   ))}
@@ -191,7 +209,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* ── Financial Cards & Progress ─────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.contract_value_title")}</span>
@@ -245,6 +263,23 @@ export function ProjectDetailPage() {
 
         <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>
+              {t("projects:detail.remaining_receivable", { defaultValue: "Còn phải thu" })}
+            </span>
+            <CreditCard className="size-4 text-amber-500" />
+          </div>
+          <p className="text-xl font-bold font-mono text-amber-600">
+            {remainingReceivable.toLocaleString("vi-VN")}{" "}
+            <span className="text-xs">{t("projects:detail.currency_unit")}</span>
+          </p>
+          <div className="text-xs text-muted-foreground">
+            {t("projects:detail.contract")}{" "}
+            <span className="font-semibold">{project.contract?.name || "—"}</span>
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.profit_title")}</span>
             {isProfitPositive ? (
               <TrendingUp className="size-4 text-emerald-500" />
@@ -278,6 +313,15 @@ export function ProjectDetailPage() {
           </h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center">
+              <span className="text-muted-foreground flex items-center gap-1">
+                <UserCircle className="size-3.5" />{" "}
+                {t("projects:detail.creator", { defaultValue: "Người tạo" })}
+              </span>
+              <span className="font-medium text-foreground">
+                {project.creator?.full_name || "—"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t">
               <span className="text-muted-foreground">{t("projects:detail.start_date")}</span>
               <span className="font-medium text-foreground">{project.start_date || "—"}</span>
             </div>
@@ -395,6 +439,35 @@ export function ProjectDetailPage() {
           </div>
         </Tabs>
       </div>
+
+      <CommonDialog
+        open={statusConfirm !== null}
+        onClose={() => setStatusConfirm(null)}
+        title={t("projects:detail.status_update_prompt", { defaultValue: "Cập nhật trạng thái" })}
+        size="md"
+        primaryAction={{
+          label: t("common:actions.confirm"),
+          onClick: () => void executeStatusChange(),
+          loading: statusUpdating,
+        }}
+        cancelAction={{
+          label: t("common:actions.cancel"),
+          onClick: () => setStatusConfirm(null),
+          disabled: statusUpdating,
+        }}
+      >
+        <div className="space-y-3 py-4">
+          <Label>{t("projects:detail.status_notes", { defaultValue: "Ghi chú (Tùy chọn)" })}</Label>
+          <Textarea
+            value={statusNotes}
+            onChange={(e) => setStatusNotes(e.target.value)}
+            placeholder={t("projects:detail.status_notes_placeholder", {
+              defaultValue: "Nhập ghi chú khi chuyển trạng thái...",
+            })}
+            rows={3}
+          />
+        </div>
+      </CommonDialog>
     </div>
   )
 }
