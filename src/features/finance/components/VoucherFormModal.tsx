@@ -220,7 +220,9 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="v-amount">{t("finance:form.amount")}</Label>
+            <Label htmlFor="v-amount" required>
+              {t("finance:form.amount")}
+            </Label>
             <Input
               id="v-amount"
               type="number"
@@ -388,7 +390,9 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="v-desc">{t("finance:form.description")}</Label>
+          <Label htmlFor="v-desc" required>
+            {t("finance:form.description")}
+          </Label>
           <Textarea
             id="v-desc"
             rows={2}

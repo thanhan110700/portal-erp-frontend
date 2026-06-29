@@ -194,7 +194,9 @@ export function CustomerFormModal({
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-name">{t("sales:customer_form.fields.name")} *</Label>
+              <Label htmlFor="cus-name" required>
+                {t("sales:customer_form.fields.name")}
+              </Label>
               <Input
                 id="cus-name"
                 placeholder={t("sales:customer_form.fields.name_placeholder")}
@@ -207,7 +209,9 @@ export function CustomerFormModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-phone">{t("sales:customer_form.fields.phone")} *</Label>
+              <Label htmlFor="cus-phone" required>
+                {t("sales:customer_form.fields.phone")}
+              </Label>
               <Input
                 id="cus-phone"
                 placeholder={t("sales:customer_form.fields.phone_placeholder")}
@@ -275,8 +279,8 @@ export function CustomerFormModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cus-sales" className="text-sm font-medium">
-                {t("sales:customer_form.fields.sales_rep")} *
+              <Label htmlFor="cus-sales" className="text-sm font-medium" required>
+                {t("sales:customer_form.fields.sales_rep")}
               </Label>
               <SearchableSelect
                 value={salesRepValue ? salesRepValue.toString() : ""}
