@@ -16,6 +16,7 @@ import * as z from "zod"
 import { toast } from "sonner"
 
 import { CommonDialog } from "@/components/common/CommonDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Button } from "@/components/ui/button"
@@ -61,6 +62,7 @@ export function QuoteDetailDialog({
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<string | null>(null)
   const [statusNotes, setStatusNotes] = useState("")
+  const [deleteFileConfirmId, setDeleteFileConfirmId] = useState<number | null>(null)
 
   const form = useForm({
     resolver: zodResolver(
@@ -135,8 +137,7 @@ export function QuoteDetailDialog({
     }
   }
 
-  const handleDeleteFile = async (fileId: number) => {
-    if (!window.confirm(t("sales:quote.files.delete_confirm"))) return
+  const executeDeleteFile = async (fileId: number) => {
     try {
       await quoteApi.deleteFile(quoteId, fileId)
       toast.success(t("sales:quote.files.delete_success"))
@@ -144,7 +145,13 @@ export function QuoteDetailDialog({
       onRefresh()
     } catch {
       toast.error(t("sales:quote.files.delete_error"))
+    } finally {
+      setDeleteFileConfirmId(null)
     }
+  }
+
+  const handleDeleteFile = (fileId: number) => {
+    setDeleteFileConfirmId(fileId)
   }
 
   if (isLoading || !quote) {
@@ -389,6 +396,15 @@ export function QuoteDetailDialog({
           </div>
         </CommonDialog>
       )}
+
+      <ConfirmDialog
+        open={deleteFileConfirmId !== null}
+        onClose={() => setDeleteFileConfirmId(null)}
+        onConfirm={() => {
+          if (deleteFileConfirmId !== null) return executeDeleteFile(deleteFileConfirmId)
+        }}
+        title={t("sales:quote.files.delete_confirm")}
+      />
     </>
   )
 }

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FileUploadField } from "@/components/common/FileUploadField"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,7 @@ export function QuoteFilesDialog({
   const { t } = useTranslation()
   const [quote, setQuote] = useState<Quote | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const form = useForm({
     resolver: zodResolver(createFileSchema(t)),
@@ -83,8 +85,7 @@ export function QuoteFilesDialog({
     }
   }
 
-  const handleDelete = async (fileId: number) => {
-    if (!window.confirm(t("sales:quote.files.delete_confirm"))) return
+  const executeDelete = async (fileId: number) => {
     try {
       await quoteApi.deleteFile(quoteId, fileId)
       toast.success(t("sales:quote.files.delete_success"))
@@ -92,7 +93,13 @@ export function QuoteFilesDialog({
       onRefresh()
     } catch {
       toast.error(t("sales:quote.files.delete_error"))
+    } finally {
+      setDeleteConfirmId(null)
     }
+  }
+
+  const handleDelete = (fileId: number) => {
+    setDeleteConfirmId(fileId)
   }
 
   return (
@@ -172,6 +179,14 @@ export function QuoteFilesDialog({
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeDelete(deleteConfirmId)
+        }}
+        title={t("sales:quote.files.delete_confirm")}
+      />
     </CommonDialog>
   )
 }

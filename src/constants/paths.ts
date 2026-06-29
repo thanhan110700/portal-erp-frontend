@@ -25,6 +25,7 @@ export const PATHS = {
   projects: "/projects",
 
   // Finance
+  financeDashboard: "/finance/dashboard",
   financeVouchers: "/finance/vouchers",
 
   // Reports

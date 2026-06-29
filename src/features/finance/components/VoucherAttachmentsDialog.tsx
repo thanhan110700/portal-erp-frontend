@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FileUploadField } from "@/components/common/FileUploadField"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,7 @@ export function VoucherAttachmentsDialog({
   const { t } = useTranslation(["finance", "common"])
   const [voucher, setVoucher] = useState<Voucher | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const form = useForm({
     resolver: zodResolver(getFileSchema(t)),
@@ -83,8 +85,7 @@ export function VoucherAttachmentsDialog({
     }
   }
 
-  const handleDelete = async (fileId: number) => {
-    if (!window.confirm(t("finance:attachments.delete_confirm"))) return
+  const executeDelete = async (fileId: number) => {
     try {
       await voucherApi.deleteFile(voucherId, fileId)
       toast.success(t("finance:attachments.delete_success"))
@@ -92,7 +93,13 @@ export function VoucherAttachmentsDialog({
       onRefresh()
     } catch {
       toast.error(t("finance:attachments.delete_error"))
+    } finally {
+      setDeleteConfirmId(null)
     }
+  }
+
+  const handleDelete = (fileId: number) => {
+    setDeleteConfirmId(fileId)
   }
 
   return (
@@ -179,6 +186,14 @@ export function VoucherAttachmentsDialog({
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeDelete(deleteConfirmId)
+        }}
+        title={t("finance:attachments.delete_confirm")}
+      />
     </CommonDialog>
   )
 }

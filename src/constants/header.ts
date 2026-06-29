@@ -130,6 +130,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     navSection: "finance",
     items: [
       {
+        name: "Dashboard",
+        translationKey: "finance:dashboard.title",
+        href: PATHS.financeDashboard,
+        icon: LayoutDashboard,
+        requiredPermission: PermissionSlugs.ViewVouchers,
+      },
+      {
         name: "Chứng từ Thu/Chi",
         translationKey: "finance:vouchers",
         href: PATHS.financeVouchers,
