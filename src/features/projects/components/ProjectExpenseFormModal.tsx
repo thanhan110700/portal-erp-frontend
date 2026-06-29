@@ -94,7 +94,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: t("common:action.cancel"),
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}

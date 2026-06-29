@@ -9,6 +9,7 @@ export interface Project {
   customer?: { id: number; name: string } | null
   contract_id: number | null
   contract?: { id: number; name: string } | null
+  creator?: { id: number; full_name: string } | null
   start_date: string | null
   end_date: string | null
   contract_value: number | string
@@ -39,7 +40,9 @@ export interface CreateProjectPayload {
   description?: string | null
 }
 
-export type UpdateProjectPayload = Partial<CreateProjectPayload>
+export interface UpdateProjectPayload extends Partial<CreateProjectPayload> {
+  progress_percent?: number
+}
 
 // ── Project Member ─────────────────────────────────────────────────────────
 export interface ProjectMember {
@@ -107,7 +110,7 @@ export interface CreateProjectExpensePayload {
 }
 
 export interface UpdateProjectExpenseStatusPayload {
-  status: string
+  action: "approve" | "reject"
   notes?: string
 }
 
@@ -130,3 +133,19 @@ export interface ProjectFile {
     added_at?: string | null
   } | null
 }
+
+// ── Project Voucher ────────────────────────────────────────────────────────
+export interface ProjectVoucher {
+  id: number
+  project_id: number
+  voucher_code: string
+  voucher_type: "receipt" | "payment" | (string & {})
+  voucher_date: string
+  amount: number | string
+  status: string
+  description?: string | null
+  notes?: string | null
+  created_at: string
+}
+
+export type ProjectVoucherPaginatedResponse = PaginatedResponse<ProjectVoucher>

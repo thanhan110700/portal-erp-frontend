@@ -105,6 +105,19 @@ export function ProjectMembersTab({
         ),
       },
       {
+        accessorKey: "notes",
+        header: t("projects:members.columns.notes", { defaultValue: "Ghi chú" }),
+        size: 200,
+        Cell: ({ cell }) => (
+          <span
+            className="text-muted-foreground truncate max-w-[200px] block"
+            title={cell.getValue<string>() || ""}
+          >
+            {cell.getValue<string>() || "—"}
+          </span>
+        ),
+      },
+      {
         accessorKey: "labor_cost",
         header: t("projects:members.columns.labor_cost"),
         size: 200,

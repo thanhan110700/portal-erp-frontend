@@ -6,7 +6,9 @@ import { Calendar, Receipt, Info } from "lucide-react"
 import { projectApi } from "../api/projectApi"
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { TablePagination } from "@/components/common/TablePagination"
 import { useTranslation } from "react-i18next"
+import type { ProjectVoucher } from "../types/project"
 
 interface ProjectVouchersTabProps {
   projectId: number
@@ -14,25 +16,30 @@ interface ProjectVouchersTabProps {
 
 export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
   const { t } = useTranslation(["projects", "common"])
-  const [vouchers, setVouchers] = useState<any[]>([])
+  const [vouchers, setVouchers] = useState<ProjectVoucher[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalRecords, setTotalRecords] = useState(0)
+  const perPage = 10
 
   useEffect(() => {
-    projectApi
-      .listVouchers(projectId)
-      .then((data) => {
-        setVouchers(data || [])
-      })
-      .catch((err) => {
+    const loadData = async () => {
+      setIsLoading(true)
+      try {
+        const res = await projectApi.listVouchers(projectId, { page, per_page: perPage })
+        setVouchers(res.data || [])
+        setTotalRecords(res.meta?.total || 0)
+      } catch (err) {
         console.error(err)
         toast.error(t("projects:vouchers.fetch_error"))
-      })
-      .finally(() => {
+      } finally {
         setIsLoading(false)
-      })
-  }, [projectId, t])
+      }
+    }
+    void loadData()
+  }, [projectId, page, t])
 
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
+  const columns = useMemo<MRT_ColumnDef<ProjectVoucher>[]>(
     () => [
       {
         accessorKey: "voucher_code",
@@ -158,7 +165,7 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">
-          {t("projects:vouchers.title")} ({vouchers.length})
+          {t("projects:vouchers.title")} ({totalRecords})
         </h3>
         <span className="text-xs text-muted-foreground flex items-center gap-1">
           <Info className="size-3.5" /> {t("projects:vouchers.info")}
@@ -168,6 +175,15 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
       <div className="rounded-xl border bg-card overflow-hidden">
         <MantineReactTable table={table} />
       </div>
+      {totalRecords > 0 && (
+        <TablePagination
+          page={page}
+          perPage={perPage}
+          total={totalRecords}
+          totalPages={Math.ceil(totalRecords / perPage)}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   )
 }

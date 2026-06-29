@@ -53,7 +53,7 @@ export function ProjectTable({
         Cell: ({ cell }) => <span className="font-medium">{cell.getValue<string>()}</span>,
       },
       {
-        accessorKey: "customer.customer_name",
+        accessorKey: "customer.name",
         header: t("projects:columns.customer"),
         size: 150,
       },

@@ -11,6 +11,9 @@ import { projectApi } from "../api/projectApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
 import { ProjectExpenseDetailDialog } from "./ProjectExpenseDetailDialog"
 import { useTranslation } from "react-i18next"
+import { CommonDialog } from "@/components/common/CommonDialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 interface ProjectExpensesTabProps {
   projectId: number
@@ -19,15 +22,6 @@ interface ProjectExpensesTabProps {
   canCreate?: boolean
   canApprove?: boolean
   canDelete?: boolean
-}
-
-const EXPENSE_TYPE_LABELS: Record<string, string> = {
-  food: "Ăn uống",
-  transport: "Di chuyển",
-  accommodation: "Lưu trú",
-  material: "Vật tư",
-  labor: "Nhân công",
-  other: "Khác",
 }
 
 export function ProjectExpensesTab({
@@ -43,6 +37,8 @@ export function ProjectExpensesTab({
   const [detailOpen, setDetailOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<ProjectExpense | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [rejectConfirmId, setRejectConfirmId] = useState<number | null>(null)
+  const [rejectReason, setRejectReason] = useState("")
 
   const handleCreate = async (payload: any) => {
     try {
@@ -58,7 +54,7 @@ export function ProjectExpensesTab({
   const handleApprove = useCallback(
     async (expenseId: number) => {
       try {
-        await projectApi.updateExpenseStatus(projectId, expenseId, { status: "approved" })
+        await projectApi.updateExpenseStatus(projectId, expenseId, { action: "approve" })
         toast.success(t("projects:expenses.approve_success"))
         setDetailOpen(false)
         onRefresh()
@@ -69,24 +65,27 @@ export function ProjectExpensesTab({
     [projectId, onRefresh, t],
   )
 
-  const handleReject = useCallback(
-    async (expenseId: number) => {
-      const reason = window.prompt(t("projects:expenses.reject_prompt"))
-      if (reason === null) return // User cancelled prompt
-      try {
-        await projectApi.updateExpenseStatus(projectId, expenseId, {
-          status: "rejected",
-          notes: reason || undefined,
-        })
-        toast.success(t("projects:expenses.reject_success"))
-        setDetailOpen(false)
-        onRefresh()
-      } catch {
-        toast.error(t("projects:expenses.reject_error"))
-      }
-    },
-    [projectId, onRefresh, t],
-  )
+  const handleReject = useCallback((expenseId: number) => {
+    setRejectConfirmId(expenseId)
+    setRejectReason("")
+  }, [])
+
+  const executeReject = async () => {
+    if (rejectConfirmId === null) return
+    try {
+      await projectApi.updateExpenseStatus(projectId, rejectConfirmId, {
+        action: "reject",
+        notes: rejectReason || undefined,
+      })
+      toast.success(t("projects:expenses.reject_success"))
+      setDetailOpen(false)
+      onRefresh()
+    } catch {
+      toast.error(t("projects:expenses.reject_error"))
+    } finally {
+      setRejectConfirmId(null)
+    }
+  }
 
   const executeRemove = useCallback(
     async (expenseId: number) => {
@@ -113,11 +112,14 @@ export function ProjectExpensesTab({
         accessorKey: "expense_type",
         header: t("projects:expenses.columns.type"),
         size: 150,
-        Cell: ({ cell }) => (
-          <span className="font-semibold text-foreground">
-            {EXPENSE_TYPE_LABELS[cell.getValue<string>()] || cell.getValue<string>()}
-          </span>
-        ),
+        Cell: ({ cell }) => {
+          const type = cell.getValue<string>()
+          return (
+            <span className="font-semibold text-foreground">
+              {type ? t(`projects:expense_types.${type}`, { defaultValue: type }) : "—"}
+            </span>
+          )
+        },
       },
       {
         accessorKey: "expense_date",
@@ -327,6 +329,34 @@ export function ProjectExpensesTab({
         }}
         title={t("projects:expenses.delete_confirm")}
       />
+
+      <CommonDialog
+        open={rejectConfirmId !== null}
+        onClose={() => setRejectConfirmId(null)}
+        title={t("projects:expenses.reject_prompt")}
+        size="md"
+        primaryAction={{
+          label: t("projects:expenses.actions.reject"),
+          onClick: () => void executeReject(),
+          variant: "destructive",
+        }}
+        cancelAction={{
+          label: t("common:actions.cancel"),
+          onClick: () => setRejectConfirmId(null),
+        }}
+      >
+        <div className="space-y-3 py-4">
+          <Label>{t("projects:expenses.form.notes")}</Label>
+          <Textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder={t("projects:expenses.reject_reason_placeholder", {
+              defaultValue: "Nhập lý do từ chối...",
+            })}
+            rows={3}
+          />
+        </div>
+      </CommonDialog>
     </div>
   )
 }

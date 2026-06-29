@@ -260,5 +260,21 @@
       "receipt": "Receipt",
       "payment": "Payment"
     }
+  },
+  "file_categories": {
+    "contract": "Contract",
+    "images": "Images",
+    "reports": "Reports",
+    "certificates": "Certificates",
+    "minutes": "Minutes",
+    "other": "Other"
+  },
+  "expense_types": {
+    "food": "Food",
+    "transport": "Transport",
+    "accommodation": "Accommodation",
+    "material": "Material",
+    "labor": "Labor",
+    "other": "Other"
   }
 }
