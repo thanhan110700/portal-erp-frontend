@@ -4,6 +4,7 @@ import { Plus, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import type { ProjectMember } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMemberFormModal } from "./ProjectMemberFormModal"
@@ -29,6 +30,7 @@ export function ProjectMembersTab({
   const { t } = useTranslation(["projects", "common"])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   const handleAddOrUpdate = async (payload: any) => {
     try {
@@ -47,19 +49,24 @@ export function ProjectMembersTab({
     }
   }
 
-  const handleRemove = useCallback(
+  const executeRemove = useCallback(
     async (memberId: number) => {
-      if (!window.confirm(t("projects:members.delete_confirm"))) return
       try {
         await projectApi.removeMember(projectId, memberId)
         toast.success(t("projects:members.delete_success"))
         onRefresh()
       } catch {
         toast.error(t("projects:members.delete_error"))
+      } finally {
+        setDeleteConfirmId(null)
       }
     },
     [projectId, onRefresh, t],
   )
+
+  const handleRemove = useCallback((memberId: number) => {
+    setDeleteConfirmId(memberId)
+  }, [])
 
   const columns = useMemo<MRT_ColumnDef<ProjectMember>[]>(() => {
     const cols: MRT_ColumnDef<ProjectMember>[] = [
@@ -218,6 +225,15 @@ export function ProjectMembersTab({
           editData={selectedMember}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeRemove(deleteConfirmId)
+        }}
+        title={t("projects:members.delete_confirm")}
+      />
     </div>
   )
 }

@@ -9,7 +9,8 @@
     "confirm": "Xác nhận",
     "back": "Quay lại",
     "refresh": "Làm mới",
-    "saving": "Đang lưu..."
+    "saving": "Đang lưu...",
+    "view": "Xem chi tiết"
   },
   "status": {
     "status": "Trạng thái",
@@ -50,7 +51,14 @@
     "on_hold": "Tạm hoãn",
     "vip": "VIP",
     "regular": "Thông thường",
-    "new": "Mới"
+    "new": "Mới",
+    "paid": "Đã thanh toán",
+    "unpaid": "Chưa thanh toán",
+    "partial": "Thanh toán một phần",
+    "processing": "Đang xử lý",
+    "reviewing": "Đang đánh giá",
+    "overdue": "Quá hạn",
+    "won": "Thành công"
   },
   "table": {
     "all": "Tất cả",
@@ -106,6 +114,7 @@
     "sales_customer_detail": "Chi tiết khách hàng",
     "sales_quotes": "Báo giá",
     "sales_contracts": "Hợp đồng",
+    "finance_dashboard": "Dashboard Tài Chính",
     "finance_vouchers": "Chứng từ Thu/Chi",
     "reports": "Báo cáo quản trị"
   },

@@ -4,6 +4,7 @@ import { Plus, Trash2, Edit2, Paperclip, Check, X, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TablePagination } from "@/components/common/TablePagination"
 import { RowActions } from "@/components/common/RowActions"
 import { useAuthStore } from "@/hooks/useAuthStore"
@@ -17,6 +18,7 @@ import type {
 } from "../types/voucher"
 import { VoucherFormModal } from "../components/VoucherFormModal"
 import { VoucherDetailDialog } from "../components/VoucherDetailDialog"
+import { VoucherRejectDialog } from "../components/VoucherRejectDialog"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -40,6 +42,7 @@ export function VoucherListPage() {
     search: "",
     voucher_type: "",
     status: "",
+    department_id: "",
     date_from: "",
     date_to: "",
   })
@@ -47,17 +50,26 @@ export function VoucherListPage() {
   // Modals state
   const [formOpen, setFormOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [rejectOpen, setRejectOpen] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [isRejecting, setIsRejecting] = useState(false)
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null)
 
   // Options state
   const [voucherTypes, setVoucherTypes] = useState<OptionItem[]>([])
   const [voucherStatuses, setVoucherStatuses] = useState<OptionItem[]>([])
+  const [departments, setDepartments] = useState<OptionItem[]>([])
 
   useEffect(() => {
-    Promise.all([optionApi.getVoucherTypes(), optionApi.getVoucherStatuses()])
-      .then(([types, statuses]) => {
+    Promise.all([
+      optionApi.getVoucherTypes(),
+      optionApi.getVoucherStatuses(),
+      optionApi.getDepartments(),
+    ])
+      .then(([types, statuses, deps]) => {
         setVoucherTypes(types)
         setVoucherStatuses(statuses)
+        setDepartments(deps)
       })
       .catch(console.error)
   }, [])
@@ -71,6 +83,9 @@ export function VoucherListPage() {
         search: (filters.search as string) || undefined,
         voucher_type: (filters.voucher_type as string) || undefined,
         status: (filters.status as string) || undefined,
+        department_id: filters.department_id
+          ? parseInt(filters.department_id as string, 10)
+          : undefined,
         date_from: (filters.date_from as string) || undefined,
         date_to: (filters.date_to as string) || undefined,
       }
@@ -88,38 +103,54 @@ export function VoucherListPage() {
     void fetchVouchers()
   }, [fetchVouchers])
 
-  const handleCreateOrUpdate = async (payload: CreateVoucherPayload | UpdateVoucherPayload) => {
+  const handleCreateOrUpdate = async (
+    payload: CreateVoucherPayload | UpdateVoucherPayload,
+    files?: File[],
+  ) => {
     try {
+      let voucherId: number
       if (selectedVoucher) {
-        await voucherApi.update(selectedVoucher.id, payload as UpdateVoucherPayload)
+        const res = await voucherApi.update(selectedVoucher.id, payload as UpdateVoucherPayload)
+        voucherId = res.id
         toast.success(t("finance:list.update_success"))
       } else {
-        await voucherApi.create(payload as CreateVoucherPayload)
+        const res = await voucherApi.create(payload as CreateVoucherPayload)
+        voucherId = res.id
         toast.success(t("finance:list.create_success"))
       }
+
+      if (files && files.length > 0) {
+        // Upload files in parallel
+        await Promise.all(
+          files.map((file) => voucherApi.uploadFile(voucherId, file).catch(console.error)),
+        )
+      }
+
       setFormOpen(false)
       void fetchVouchers()
     } catch (err: unknown) {
       const errMsg =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        t("finance:list.update_error", { defaultValue: "Lỗi xử lý chứng từ" })
+        t("finance:list.update_error")
       toast.error(errMsg)
     }
   }
 
-  const handleDelete = useCallback(
-    async (id: number) => {
-      if (!window.confirm(t("finance:list.delete_confirm"))) return
-      try {
-        await voucherApi.delete(id)
-        toast.success(t("finance:list.delete_success"))
-        void fetchVouchers()
-      } catch {
-        toast.error(t("finance:list.delete_error"))
-      }
-    },
-    [t, fetchVouchers],
-  )
+  const executeDelete = async (id: number) => {
+    try {
+      await voucherApi.delete(id)
+      toast.success(t("finance:list.delete_success"))
+      void fetchVouchers()
+    } catch {
+      toast.error(t("finance:list.delete_error"))
+    } finally {
+      setDeleteConfirmId(null)
+    }
+  }
+
+  const handleDelete = useCallback((id: number) => {
+    setDeleteConfirmId(id)
+  }, [])
 
   const handleApprove = useCallback(
     async (id: number) => {
@@ -138,25 +169,24 @@ export function VoucherListPage() {
   )
 
   const handleReject = useCallback(
-    async (id: number) => {
-      const reason = window.prompt(t("finance:list.reject_prompt"))
-      if (reason === null) return
-      if (!reason.trim()) {
-        toast.error(t("finance:list.reject_reason_required"))
-        return
-      }
+    async (reason: string) => {
+      if (!selectedVoucher) return
+      setIsRejecting(true)
       try {
-        await voucherApi.approve(id, "reject", reason)
+        await voucherApi.approve(selectedVoucher.id, "reject", reason)
         toast.success(t("finance:list.reject_success"))
+        setRejectOpen(false)
         void fetchVouchers()
       } catch (err: unknown) {
         const errMsg =
           (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
           t("finance:list.reject_error")
         toast.error(errMsg)
+      } finally {
+        setIsRejecting(false)
       }
     },
-    [t, fetchVouchers],
+    [t, fetchVouchers, selectedVoucher],
   )
 
   const handleFilterSubmit = (newFilters: Record<string, unknown>) => {
@@ -190,6 +220,14 @@ export function VoucherListPage() {
         options: voucherStatuses.map((s) => ({ label: s.label, value: s.value.toString() })),
       },
       {
+        field: "department_id",
+        label: t("finance:list.filters.department"),
+        type: "select",
+        placeholder: t("common:filter.all"),
+        value: (filters.department_id as string) || "",
+        options: departments.map((d) => ({ label: d.label, value: d.id?.toString() || "" })),
+      },
+      {
         field: "date_from",
         label: t("finance:list.filters.date_from"),
         type: "datepicker",
@@ -202,7 +240,7 @@ export function VoucherListPage() {
         value: (filters.date_to as string) || null,
       },
     ]
-  }, [filters, t, voucherTypes, voucherStatuses])
+  }, [filters, t, voucherTypes, voucherStatuses, departments])
 
   const columns = useMemo<MRT_ColumnDef<Voucher>[]>(
     () => [
@@ -348,22 +386,25 @@ export function VoucherListPage() {
 
           if (canApprove && isPending) {
             actions.push({
-              label: t("finance:list.actions.approve", { defaultValue: "Duyệt" }),
+              label: t("finance:list.actions.approve"),
               icon: <Check className="size-4" />,
               onClick: () => void handleApprove(voucher.id),
               className: "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50",
             })
             actions.push({
-              label: t("finance:list.actions.reject", { defaultValue: "Từ chối" }),
+              label: t("finance:list.actions.reject"),
               icon: <X className="size-4" />,
-              onClick: () => void handleReject(voucher.id),
+              onClick: () => {
+                setSelectedVoucher(voucher)
+                setRejectOpen(true)
+              },
               className: "text-rose-600 hover:text-rose-700 hover:bg-rose-50",
             })
           }
 
           if (canEdit && isDraftOrPending) {
             actions.push({
-              label: t("finance:list.actions.edit", { defaultValue: "Sửa" }),
+              label: t("finance:list.actions.edit"),
               icon: <Edit2 className="size-4" />,
               onClick: () => {
                 setSelectedVoucher(voucher)
@@ -373,7 +414,7 @@ export function VoucherListPage() {
           }
           if (canDelete && isDraftOrPending) {
             actions.push({
-              label: t("finance:list.actions.delete", { defaultValue: "Xóa" }),
+              label: t("finance:list.actions.delete"),
               icon: <Trash2 className="size-4" />,
               onClick: () => void handleDelete(voucher.id),
               className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
@@ -382,7 +423,7 @@ export function VoucherListPage() {
           }
 
           actions.unshift({
-            label: t("common:action.view", { defaultValue: "Xem chi tiết" }),
+            label: t("common:actions.view"),
             icon: <Eye className="size-4" />,
             onClick: () => {
               setSelectedVoucher(voucher)
@@ -403,9 +444,7 @@ export function VoucherListPage() {
 
   const table = useMantineReactTable({
     renderEmptyRowsFallback: () => (
-      <div className="p-8 text-center text-muted-foreground">
-        {t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
-      </div>
+      <div className="p-8 text-center text-muted-foreground">{t("common:table.noData")}</div>
     ),
     columns,
     data: vouchers,
@@ -510,6 +549,22 @@ export function VoucherListPage() {
           }}
         />
       )}
+
+      <VoucherRejectDialog
+        open={rejectOpen}
+        onClose={() => setRejectOpen(false)}
+        onConfirm={(reason) => void handleReject(reason)}
+        isSubmitting={isRejecting}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId !== null) return executeDelete(deleteConfirmId)
+        }}
+        title={t("finance:list.delete_confirm")}
+      />
     </div>
   )
 }

@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { MultiSearchableSelect } from "@/components/common/MultiSearchableSelect"
+import { FileUploadInput } from "@/components/common/FileUploadField"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import type { Voucher, CreateVoucherPayload, UpdateVoucherPayload } from "../types/voucher"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
+import { Button } from "@/components/ui/button"
 
 const getVoucherSchema = (t: any) =>
   z
@@ -37,6 +39,7 @@ const getVoucherSchema = (t: any) =>
       customer_id: z.number().optional().nullable(),
       department_id: z.number().optional().nullable(),
       employee_ids: z.array(z.number()).optional(),
+      files: z.array(z.custom<File>((val) => val instanceof File)).optional(),
     })
     .refine(
       (data) => {
@@ -51,7 +54,7 @@ const getVoucherSchema = (t: any) =>
 interface VoucherFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: CreateVoucherPayload | UpdateVoucherPayload) => Promise<void>
+  onSubmit: (payload: CreateVoucherPayload | UpdateVoucherPayload, files?: File[]) => Promise<void>
   editData?: Voucher | null
 }
 
@@ -85,6 +88,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       customer_id: null,
       department_id: null,
       employee_ids: [] as number[],
+      files: [] as File[],
     },
   })
 
@@ -157,7 +161,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       } else if (data.voucher_type === "payment") {
         payload.employee_ids = []
       }
-      await onSubmit(payload)
+      await onSubmit(payload, data.files)
     } catch (error) {
       console.error(error)
       toast.error(t("finance:form.validation.save_error"))
@@ -175,13 +179,13 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       }
       size="full"
       primaryAction={{
-        label: isSubmitting ? t("common:action.saving") : t("common:action.save"),
+        label: isSubmitting ? t("common:actions.saving") : t("common:actions.save"),
         type: "submit",
         form: "voucher-form",
         disabled: isSubmitting,
       }}
       cancelAction={{
-        label: t("common:action.cancel"),
+        label: t("common:actions.cancel"),
         disabled: isSubmitting,
         onClick: onClose,
       }}
@@ -366,7 +370,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                 control={control}
                 render={({ field }) => (
                   <SearchableSelect
-                    value={field.value ? field.value.toString() : ""}
+                    value={field.value ? String(field.value) : ""}
                     onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     options={[
                       { value: "", label: t("finance:form.no_link") },
@@ -409,6 +413,56 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
           {errors.notes && (
             <p className="text-xs text-destructive">{errors.notes.message as string}</p>
           )}
+        </div>
+
+        <div className="rounded-xl border bg-muted/20 p-4 space-y-4">
+          <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
+            {t("finance:attachments.list_title")}
+          </h4>
+          <p className="text-xs text-muted-foreground mb-2">
+            {t("finance:attachments.select_hint")}
+          </p>
+          <Controller
+            name="files"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-3">
+                <FileUploadInput
+                  accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                  onChange={(file) => {
+                    if (file) {
+                      field.onChange([...(field.value || []), file])
+                    }
+                  }}
+                />
+                {field.value && field.value.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    {field.value.map((file: File, index: number) => (
+                      <div
+                        key={index}
+                        className="flex flex-row items-center justify-between p-2 border rounded-md bg-background"
+                      >
+                        <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive h-8"
+                          onClick={() => {
+                            const newFiles = [...(field.value || [])]
+                            newFiles.splice(index, 1)
+                            field.onChange(newFiles)
+                          }}
+                        >
+                          {t("common:actions.delete")}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          />
         </div>
       </form>
     </CommonDialog>
