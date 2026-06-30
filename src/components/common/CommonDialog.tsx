@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useTranslation } from "react-i18next"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -141,6 +142,7 @@ export function CommonDialog({
   footerClassName,
 }: CommonDialogProps) {
   const isMobile = useIsMobile()
+  const { t } = useTranslation(["common"])
 
   if (isMobile) {
     return (
@@ -165,13 +167,16 @@ export function CommonDialog({
 
   // Resolve action configs
   const primary = primaryAction
-    ? resolveAction(primaryAction, { label: "Confirm", variant: "default" })
+    ? resolveAction(primaryAction, {
+        label: t("common:actions.confirm", { defaultValue: "Xác nhận" }),
+        variant: "default",
+      })
     : null
 
   const cancel =
     cancelAction !== false && cancelAction !== undefined
       ? resolveAction(cancelAction === true ? true : cancelAction, {
-          label: "Cancel",
+          label: t("common:actions.cancel", { defaultValue: "Hủy" }),
           variant: "outline",
         })
       : null

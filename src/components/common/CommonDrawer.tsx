@@ -12,6 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
+import { useTranslation } from "react-i18next"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -157,14 +158,19 @@ export function CommonDrawer({
   bodyClassName,
   dismissible = true,
 }: CommonDrawerProps) {
+  const { t } = useTranslation(["common"])
+
   const primary = primaryAction
-    ? resolveAction(primaryAction, { label: "Confirm", variant: "default" })
+    ? resolveAction(primaryAction, {
+        label: t("common:actions.confirm", { defaultValue: "Xác nhận" }),
+        variant: "default",
+      })
     : null
 
   const cancel =
     cancelAction !== false && cancelAction !== undefined
       ? resolveAction(cancelAction === true ? true : cancelAction, {
-          label: "Cancel",
+          label: t("common:actions.cancel", { defaultValue: "Hủy" }),
           variant: "outline",
         })
       : null

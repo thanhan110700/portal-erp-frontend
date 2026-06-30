@@ -218,17 +218,55 @@ export function VoucherDetailDialog({
               }
             : undefined
         }
-        cancelAction={
+        extraActions={
           canApprove && isPending
-            ? {
-                label: t("finance:list.actions.reject"),
-                onClick: () => setRejectOpen(true),
-                variant: "destructive",
-              }
+            ? [
+                {
+                  label: t("finance:list.actions.reject"),
+                  onClick: () => setRejectOpen(true),
+                  variant: "destructive",
+                },
+              ]
             : undefined
         }
+        cancelAction={{
+          label: t("common:actions.cancel"),
+          onClick: onClose,
+        }}
       >
         <div className="space-y-8 pb-12">
+          {/* Actions (if owner/editor) */}
+          {canEdit && isDraftOrPending && (
+            <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-card border shadow-sm">
+              <span className="text-sm font-medium text-muted-foreground mr-auto px-1">
+                {t("finance:detail.actions_title", { defaultValue: "Thao tác chứng từ" })}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors"
+                onClick={() => {
+                  onClose()
+                  onEdit?.(voucher)
+                }}
+              >
+                <Edit2 className="size-4 mr-2" />
+                {t("finance:list.actions.edit", { defaultValue: "Chỉnh sửa chứng từ" })}
+              </Button>
+              {canDelete && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
+                  onClick={() => void handleDeleteVoucher()}
+                >
+                  <Trash2 className="size-4 mr-2" />
+                  {t("finance:list.actions.delete", { defaultValue: "Xóa chứng từ" })}
+                </Button>
+              )}
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 p-4 rounded-xl bg-muted/20 border">
             <div>
@@ -289,33 +327,6 @@ export function VoucherDetailDialog({
               </div>
             )}
           </div>
-
-          {/* Actions (if owner/editor) */}
-          {canEdit && isDraftOrPending && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="min-h-11 md:min-h-9"
-                onClick={() => {
-                  onClose()
-                  onEdit?.(voucher)
-                }}
-              >
-                <Edit2 className="size-4 mr-2" />
-                {t("finance:list.actions.edit")}
-              </Button>
-              {canDelete && (
-                <Button
-                  variant="destructive"
-                  className="min-h-11 md:min-h-9"
-                  onClick={() => void handleDeleteVoucher()}
-                >
-                  <Trash2 className="size-4 mr-2" />
-                  {t("finance:list.actions.delete")}
-                </Button>
-              )}
-            </div>
-          )}
 
           <Separator />
 

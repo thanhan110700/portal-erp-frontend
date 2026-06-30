@@ -48,15 +48,21 @@ export function ProjectExpenseDetailDialog({
             }
           : undefined
       }
-      cancelAction={
+      extraActions={
         canApprove && isPending
-          ? {
-              label: t("projects:expenses.actions.reject", { defaultValue: "Từ chối" }),
-              onClick: () => onReject(expense.id),
-              variant: "destructive",
-            }
+          ? [
+              {
+                label: t("projects:expenses.actions.reject", { defaultValue: "Từ chối" }),
+                onClick: () => onReject(expense.id),
+                variant: "destructive",
+              },
+            ]
           : undefined
       }
+      cancelAction={{
+        label: t("common:actions.cancel"),
+        onClick: onClose,
+      }}
     >
       <div className="space-y-6 pb-8">
         <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/20 border">
