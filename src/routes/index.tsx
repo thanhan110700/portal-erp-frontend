@@ -266,6 +266,15 @@ export const router = createBrowserRouter([
                     },
                     handle: { title: "common:routes.finance_vouchers" },
                   },
+                  {
+                    path: routeSegment(PATHS.financeProjectExpenses),
+                    lazy: async () => {
+                      const { ProjectExpenseReportPage } =
+                        await import("@/features/finance/pages/ProjectExpenseReportPage")
+                      return { Component: ProjectExpenseReportPage }
+                    },
+                    handle: { title: "common:routes.finance_project_expenses" },
+                  },
                 ],
               },
               // ── Reports Module ──────────────────────────────────────────

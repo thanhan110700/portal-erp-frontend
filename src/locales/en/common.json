@@ -118,6 +118,7 @@
     "sales_contracts": "Contracts",
     "finance_dashboard": "Finance Dashboard",
     "finance_vouchers": "Vouchers",
+    "finance_project_expenses": "Project Expenses",
     "reports": "Management Reports"
   },
   "roles": {

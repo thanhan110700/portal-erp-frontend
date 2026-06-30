@@ -3,14 +3,25 @@ import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "man
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Cell,
 } from "recharts"
-import { Wallet, TrendingUp, TrendingDown, Building2, AlertCircle } from "lucide-react"
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Building2,
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageLoader } from "@/components/common/PageLoader"
 import { reportApi, type IncomeExpenseRow } from "@/features/reports/api/reportApi"
@@ -29,7 +40,9 @@ export function FinanceDashboardPage() {
 
   const [incomeExpenseData, setIncomeExpenseData] = useState<IncomeExpenseRow[]>([])
   const [pendingVouchers, setPendingVouchers] = useState<Voucher[]>([])
+  const [overdueVouchers, setOverdueVouchers] = useState<Voucher[]>([])
   const [topDepartments, setTopDepartments] = useState<{ name: string; total: number }[]>([])
+  const [projectExpenses, setProjectExpenses] = useState<{ name: string; total: number }[]>([])
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -65,6 +78,29 @@ export function FinanceDashboardPage() {
           .slice(0, 5)
 
         setTopDepartments(sortedDepts)
+
+        // 4. Project expenses
+        const projTotals: Record<string, number> = {}
+        payments.forEach((p) => {
+          if (p.project) {
+            const name = p.project.name
+            projTotals[name] = (projTotals[name] || 0) + Number(p.amount)
+          }
+        })
+        const sortedProjs = Object.entries(projTotals)
+          .map(([name, total]) => ({ name, total }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 10)
+        setProjectExpenses(sortedProjs)
+
+        // 5. Overdue vouchers (pending for more than 7 days)
+        const allPending = pendingRes.data || []
+        const sevenDaysAgo = dayjs().subtract(7, "day")
+        const overdue = allPending.filter((v) => {
+          const createdDate = dayjs(v.created_at)
+          return createdDate.isBefore(sevenDaysAgo)
+        })
+        setOverdueVouchers(overdue)
       } catch {
         toast.error(t("finance:dashboard.fetch_error"))
       } finally {
@@ -298,7 +334,108 @@ export function FinanceDashboardPage() {
             <MantineReactTable table={deptTable} />
           </CardContent>
         </Card>
+
+        {/* Project Expenses Bar Chart */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BarChart3 className="size-5 text-primary" />
+              {t("finance:dashboard.project_expenses_title")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[350px]">
+            {projectExpenses.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                {t("common:table.noData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={projectExpenses}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tickFormatter={(v) => (v / 1e6).toLocaleString() + "M"}
+                    fontSize={11}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={120}
+                    fontSize={11}
+                    tick={{ fill: "currentColor" }}
+                  />
+                  <Tooltip
+                    formatter={(value) => [
+                      formatCurrency(Number(value)),
+                      t("finance:dashboard.total_expense"),
+                    ]}
+                  />
+                  <Bar dataKey="total" radius={[0, 4, 4, 0]} barSize={20}>
+                    {projectExpenses.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          [
+                            "#ef4444",
+                            "#f97316",
+                            "#f59e0b",
+                            "#eab308",
+                            "#84cc16",
+                            "#22c55e",
+                            "#14b8a6",
+                            "#06b6d4",
+                            "#3b82f6",
+                            "#6366f1",
+                          ][index % 10]
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Overdue Alerts */}
+      {overdueVouchers.length > 0 && (
+        <Card className="shadow-sm border-rose-200">
+          <CardHeader className="bg-rose-50/50 dark:bg-rose-950/20 border-b border-rose-100 dark:border-rose-900/50 pb-4">
+            <CardTitle className="text-base font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-2">
+              <AlertTriangle className="size-5" />
+              {t("finance:dashboard.overdue_alerts")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {overdueVouchers.map((v) => (
+                <div
+                  key={v.id}
+                  className="p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`${PATHS.financeVouchers}?status=pending`)}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="font-semibold text-sm">{v.voucher_code}</div>
+                    <div className="text-xs font-mono font-bold text-rose-600">
+                      {formatCurrency(v.amount)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("finance:dashboard.pending_since", {
+                      days: dayjs().diff(dayjs(v.created_at), "day"),
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

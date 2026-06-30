@@ -7,8 +7,8 @@ import {
   Paperclip,
   History as HistoryIcon,
   Download,
-  Upload,
   FileText,
+  ExternalLink,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
+import { FileUploadInput } from "@/components/common/FileUploadField"
 
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher, VoucherAuditLog } from "../types/voucher"
@@ -81,7 +82,7 @@ export function VoucherDetailDialog({
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 50 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) {
       toast.error(t("finance:attachments.validation.file_size_max"))
       e.target.value = ""
       return
@@ -320,68 +321,111 @@ export function VoucherDetailDialog({
 
           {/* Attachments Section */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Paperclip className="size-5 text-primary" />
-                <h3 className="font-semibold text-lg">{t("finance:attachments.list_title")}</h3>
-              </div>
-              {canEdit && isDraftOrPending && (
-                <div className="relative">
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                    accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-                    onChange={handleUploadDirect}
-                    disabled={isUploading}
-                    title={t("finance:attachments.select_label")}
-                  />
-                  <Button size="sm" variant="outline" className="gap-2 h-9" disabled={isUploading}>
-                    <Upload className="size-4" />
-                    {isUploading
-                      ? t("finance:attachments.uploading")
-                      : t("finance:attachments.upload_button")}
-                  </Button>
-                </div>
-              )}
+            <div className="flex items-center gap-2 mb-4">
+              <Paperclip className="size-5 text-primary" />
+              <h3 className="font-semibold text-lg">{t("finance:attachments.list_title")}</h3>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
+              {canEdit && isDraftOrPending && (
+                <FileUploadInput
+                  accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                  hint={t("finance:attachments.select_hint")}
+                  disabled={isUploading}
+                  onChange={(file) => {
+                    if (file) {
+                      void handleUploadDirect({
+                        target: { files: [file], value: "" },
+                      } as unknown as React.ChangeEvent<HTMLInputElement>)
+                    }
+                  }}
+                />
+              )}
+
               {!voucher.files || voucher.files.length === 0 ? (
                 <div className="flex items-center justify-center p-8 text-sm text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
                   {t("finance:attachments.empty")}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {voucher.files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="flex items-center justify-between p-3 rounded-xl border bg-background overflow-hidden shadow-sm"
-                    >
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <FileText className="size-4 text-primary shrink-0" />
-                        <span className="text-sm truncate font-medium text-foreground">
-                          {file.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" asChild className="size-10 md:size-8">
-                          <a href={file.url} download target="_blank" rel="noopener noreferrer">
-                            <Download className="size-4" />
-                          </a>
-                        </Button>
-                        {canEdit && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-10 md:size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => void handleDeleteFile(file.id)}
-                          >
-                            <Trash2 className="size-4" />
+                  {voucher.files.map((file) => {
+                    const ext = file.name.split(".").pop()?.toLowerCase() || ""
+                    const isImage = ["jpg", "jpeg", "png"].includes(ext)
+                    const isPdf = ext === "pdf"
+
+                    return (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 rounded-xl border bg-background overflow-hidden shadow-sm"
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          {isImage ? (
+                            <a
+                              href={file.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary/50 transition-all"
+                            >
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="size-12 object-cover"
+                                loading="lazy"
+                              />
+                            </a>
+                          ) : isPdf ? (
+                            <a
+                              href={file.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 flex items-center justify-center size-12 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-600 hover:ring-2 hover:ring-primary/50 transition-all"
+                            >
+                              <FileText className="size-6" />
+                            </a>
+                          ) : (
+                            <div className="shrink-0 flex items-center justify-center size-12 rounded-lg bg-muted">
+                              <FileText className="size-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-0.5 overflow-hidden">
+                            <span className="text-sm truncate font-medium text-foreground">
+                              {file.name}
+                            </span>
+                            {(isImage || isPdf) && (
+                              <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                              >
+                                <ExternalLink className="size-3" />
+                                {isImage
+                                  ? t("finance:attachments.click_preview")
+                                  : t("finance:attachments.open_pdf")}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" asChild className="size-10 md:size-8">
+                            <a href={file.url} download target="_blank" rel="noopener noreferrer">
+                              <Download className="size-4" />
+                            </a>
                           </Button>
-                        )}
+                          {canEdit && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-10 md:size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => void handleDeleteFile(file.id)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -393,7 +437,9 @@ export function VoucherDetailDialog({
           <div>
             <div className="flex items-center gap-2 mb-4">
               <HistoryIcon className="size-5 text-primary" />
-              <h3 className="font-semibold text-lg">{t("finance:history.title")}</h3>
+              <h3 className="font-semibold text-lg">
+                {t("finance:history.title", { code: voucher.voucher_code })}
+              </h3>
             </div>
             {history.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("finance:history.empty")}</p>
@@ -409,7 +455,7 @@ export function VoucherDetailDialog({
                     <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-4 rounded-lg border bg-card shadow-sm group-hover:border-primary/50 transition-colors">
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-semibold text-sm capitalize text-primary">
-                          {log.action}
+                          {t(`finance:history.actions.${log.action}`, { defaultValue: log.action })}
                         </div>
                         <time className="text-xs text-muted-foreground font-mono">
                           {new Date(log.created_at).toLocaleString("vi-VN")}
@@ -417,9 +463,6 @@ export function VoucherDetailDialog({
                       </div>
                       <div className="text-sm text-foreground">
                         {log.user?.full_name || "System"}
-                        {log.change_summary && (
-                          <span className="text-muted-foreground"> - {log.change_summary}</span>
-                        )}
                       </div>
                     </div>
                   </div>

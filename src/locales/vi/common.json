@@ -118,6 +118,7 @@
     "sales_contracts": "Hợp đồng",
     "finance_dashboard": "Dashboard Tài Chính",
     "finance_vouchers": "Chứng từ Thu/Chi",
+    "finance_project_expenses": "Chi phí theo Dự án",
     "reports": "Báo cáo quản trị"
   },
   "roles": {

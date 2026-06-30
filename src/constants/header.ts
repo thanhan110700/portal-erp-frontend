@@ -13,6 +13,7 @@ import {
   Receipt,
   BarChart3,
   Building2,
+  PieChart,
 } from "lucide-react"
 
 import { PermissionSlugs } from "@/constants/permissions"
@@ -141,6 +142,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         translationKey: "finance:vouchers",
         href: PATHS.financeVouchers,
         icon: Receipt,
+        requiredPermission: PermissionSlugs.ViewVouchers,
+      },
+      {
+        name: "Chi phí theo Dự án",
+        translationKey: "finance:project_expenses.nav_title",
+        href: PATHS.financeProjectExpenses,
+        icon: PieChart,
         requiredPermission: PermissionSlugs.ViewVouchers,
       },
       {

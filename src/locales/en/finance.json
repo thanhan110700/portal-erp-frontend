@@ -36,7 +36,9 @@
       "status": "Status",
       "date_from": "From Date",
       "date_to": "To Date",
-      "department": "Department"
+      "department": "Department",
+      "project": "Project",
+      "customer": "Customer"
     },
     "columns": {
       "code": "Voucher Code",
@@ -110,7 +112,16 @@
     "close": "Close",
     "user_id": "Emp ID: {{id}}",
     "opinion": "Notes:",
-    "changes_title": "Change Details:"
+    "changes_title": "Change Details:",
+    "actions": {
+      "created": "Created voucher",
+      "updated": "Updated voucher",
+      "deleted": "Deleted voucher",
+      "approved": "Approved voucher",
+      "rejected": "Rejected voucher",
+      "file_attached": "Attached file",
+      "file_detached": "Detached file"
+    }
   },
   "attachments": {
     "title": "Attachments: {{code}}",
@@ -129,8 +140,10 @@
     "empty": "No attachments yet.",
     "validation": {
       "file_required": "Please select a file",
-      "file_size_max": "File size must not exceed 50MB"
-    }
+      "file_size_max": "File size must not exceed 10MB"
+    },
+    "click_preview": "View image",
+    "open_pdf": "Open PDF"
   },
   "dashboard": {
     "title": "Finance Dashboard",
@@ -147,7 +160,10 @@
     "department": "Department",
     "total_expense": "Total Expense",
     "view_all_pending": "View All",
-    "fetch_error": "Failed to load dashboard data"
+    "fetch_error": "Failed to load dashboard data",
+    "overdue_alerts": "Overdue Vouchers",
+    "pending_since": "Pending for {{days}} days",
+    "project_expenses_title": "Expenses by Project"
   },
   "reject_dialog": {
     "title": "Reject Voucher",
@@ -161,5 +177,22 @@
     "approver": "Approver",
     "rejection_reason": "Rejection Reason",
     "fetch_error": "Failed to load voucher data"
+  },
+  "project_expenses": {
+    "title": "Project Expense Report",
+    "subtitle": "Summarize and compare expenses across projects",
+    "nav_title": "Project Expenses",
+    "chart_title": "Compare expenses across projects",
+    "table_title": "Expense Details",
+    "total_expense": "Total Expense",
+    "projects_count": "{{count}} projects with expenses",
+    "col_project": "Project",
+    "col_description": "Description",
+    "fetch_error": "Failed to load report data",
+    "filters": {
+      "project": "Project",
+      "date_from": "From Date",
+      "date_to": "To Date"
+    }
   }
 }

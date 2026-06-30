@@ -36,7 +36,9 @@
       "status": "Trạng thái",
       "date_from": "Từ ngày",
       "date_to": "Đến ngày",
-      "department": "Phòng ban"
+      "department": "Phòng ban",
+      "project": "Dự án",
+      "customer": "Khách hàng"
     },
     "columns": {
       "code": "Mã chứng từ",
@@ -110,7 +112,16 @@
     "close": "Đóng",
     "user_id": "Mã NV: {{id}}",
     "opinion": "Ý kiến:",
-    "changes_title": "Chi tiết thay đổi:"
+    "changes_title": "Chi tiết thay đổi:",
+    "actions": {
+      "created": "Tạo chứng từ",
+      "updated": "Cập nhật chứng từ",
+      "deleted": "Xóa chứng từ",
+      "approved": "Phê duyệt chứng từ",
+      "rejected": "Từ chối chứng từ",
+      "file_attached": "Thêm tài liệu đính kèm",
+      "file_detached": "Xóa tài liệu đính kèm"
+    }
   },
   "attachments": {
     "title": "Tài liệu đính kèm: {{code}}",
@@ -129,8 +140,10 @@
     "empty": "Chưa có tài liệu đính kèm nào.",
     "validation": {
       "file_required": "Vui lòng chọn tệp tin",
-      "file_size_max": "Kích thước file không được vượt quá 50MB"
-    }
+      "file_size_max": "Kích thước file không được vượt quá 10MB"
+    },
+    "click_preview": "Xem ảnh",
+    "open_pdf": "Mở PDF"
   },
   "dashboard": {
     "title": "Dashboard Tài Chính",
@@ -147,7 +160,10 @@
     "department": "Phòng ban",
     "total_expense": "Tổng chi",
     "view_all_pending": "Xem tất cả",
-    "fetch_error": "Lỗi tải dữ liệu dashboard"
+    "fetch_error": "Lỗi tải dữ liệu dashboard",
+    "overdue_alerts": "Phiếu quá hạn duyệt",
+    "pending_since": "Chờ duyệt {{days}} ngày",
+    "project_expenses_title": "Chi phí theo dự án"
   },
   "reject_dialog": {
     "title": "Từ chối phiếu",
@@ -161,5 +177,22 @@
     "approver": "Người duyệt",
     "rejection_reason": "Lý do từ chối",
     "fetch_error": "Lỗi tải dữ liệu phiếu"
+  },
+  "project_expenses": {
+    "title": "Báo cáo Chi phí theo Dự án",
+    "subtitle": "Tổng hợp và so sánh chi phí giữa các dự án",
+    "nav_title": "Chi phí theo Dự án",
+    "chart_title": "So sánh chi phí giữa các dự án",
+    "table_title": "Chi tiết khoản chi",
+    "total_expense": "Tổng chi phí",
+    "projects_count": "{{count}} dự án có chi phí",
+    "col_project": "Dự án",
+    "col_description": "Diễn giải",
+    "fetch_error": "Lỗi tải dữ liệu báo cáo",
+    "filters": {
+      "project": "Dự án",
+      "date_from": "Từ ngày",
+      "date_to": "Đến ngày"
+    }
   }
 }

@@ -42,6 +42,8 @@ export function VoucherListPage() {
     search: "",
     voucher_type: "",
     status: "",
+    project_id: "",
+    customer_id: "",
     department_id: "",
     date_from: "",
     date_to: "",
@@ -59,17 +61,23 @@ export function VoucherListPage() {
   const [voucherTypes, setVoucherTypes] = useState<OptionItem[]>([])
   const [voucherStatuses, setVoucherStatuses] = useState<OptionItem[]>([])
   const [departments, setDepartments] = useState<OptionItem[]>([])
+  const [projects, setProjects] = useState<OptionItem[]>([])
+  const [customers, setCustomers] = useState<OptionItem[]>([])
 
   useEffect(() => {
     Promise.all([
       optionApi.getVoucherTypes(),
       optionApi.getVoucherStatuses(),
       optionApi.getDepartments(),
+      optionApi.getProjects(),
+      optionApi.getCustomers(),
     ])
-      .then(([types, statuses, deps]) => {
+      .then(([types, statuses, deps, projs, custs]) => {
         setVoucherTypes(types)
         setVoucherStatuses(statuses)
         setDepartments(deps)
+        setProjects(projs)
+        setCustomers(custs)
       })
       .catch(console.error)
   }, [])
@@ -83,6 +91,8 @@ export function VoucherListPage() {
         search: (filters.search as string) || undefined,
         voucher_type: (filters.voucher_type as string) || undefined,
         status: (filters.status as string) || undefined,
+        project_id: filters.project_id ? parseInt(filters.project_id as string, 10) : undefined,
+        customer_id: filters.customer_id ? parseInt(filters.customer_id as string, 10) : undefined,
         department_id: filters.department_id
           ? parseInt(filters.department_id as string, 10)
           : undefined,
@@ -220,6 +230,28 @@ export function VoucherListPage() {
         options: voucherStatuses.map((s) => ({ label: s.label, value: s.value.toString() })),
       },
       {
+        field: "project_id",
+        label: t("finance:list.filters.project"),
+        type: "select",
+        placeholder: t("common:filter.all"),
+        value: (filters.project_id as string) || "",
+        options: projects.map((p) => ({
+          label: p.label,
+          value: p.value?.toString() || p.id?.toString() || "",
+        })),
+      },
+      {
+        field: "customer_id",
+        label: t("finance:list.filters.customer"),
+        type: "select",
+        placeholder: t("common:filter.all"),
+        value: (filters.customer_id as string) || "",
+        options: customers.map((c) => ({
+          label: c.label,
+          value: c.value?.toString() || c.id?.toString() || "",
+        })),
+      },
+      {
         field: "department_id",
         label: t("finance:list.filters.department"),
         type: "select",
@@ -240,7 +272,7 @@ export function VoucherListPage() {
         value: (filters.date_to as string) || null,
       },
     ]
-  }, [filters, t, voucherTypes, voucherStatuses, departments])
+  }, [filters, t, voucherTypes, voucherStatuses, departments, projects, customers])
 
   const columns = useMemo<MRT_ColumnDef<Voucher>[]>(
     () => [
@@ -509,6 +541,9 @@ export function VoucherListPage() {
             search: "",
             voucher_type: "",
             status: "",
+            project_id: "",
+            customer_id: "",
+            department_id: "",
             date_from: "",
             date_to: "",
           })
