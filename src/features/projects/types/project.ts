@@ -67,6 +67,8 @@ export interface CreateProjectMemberPayload {
 
 export type UpdateProjectMemberPayload = Partial<Omit<CreateProjectMemberPayload, "user_id">>
 
+export type ProjectMemberFormPayload = CreateProjectMemberPayload | UpdateProjectMemberPayload
+
 // ── Project Milestone ──────────────────────────────────────────────────────
 export interface ProjectMilestone {
   id: number

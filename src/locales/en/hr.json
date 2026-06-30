@@ -64,6 +64,7 @@
       "view_detail": "View Details",
       "assign_role": "Assign Role",
       "assign_projects": "Assign Projects",
+      "export_current": "Export current list",
       "delete": "Delete Employee"
     },
     "form": {
@@ -93,6 +94,7 @@
         "national_id_placeholder": "079201012345",
         "address": "Address",
         "address_placeholder": "123 Le Loi, D1, HCMC",
+        "is_active": "Active status",
         "password": "Initial Password",
         "password_placeholder": "Default: Password@123",
         "password_hint": "Leave blank to use default password <1>Password@123</1>"
@@ -127,6 +129,7 @@
         "director": "Approve expenses, view all reports",
         "accountant": "Create/edit vouchers, approve documents",
         "sales": "Manage customers, quotes, contracts",
+        "tech": "Manage projects, update progress",
         "technician": "Manage projects, update progress",
         "employee": "Timesheet, view personal data"
       }
@@ -186,7 +189,9 @@
         "payment_received": "Payment Received",
         "payment_outstanding": "Outstanding"
       }
-    }
+    },
+    "project_memberships_unavailable_title": "Project memberships are not available in employee detail yet",
+    "project_memberships_unavailable_description": "The backend does not currently return project memberships in the employee detail response. You can still assign projects here or review membership lists from each project detail page."
   },
   "timesheet": {
     "title": "Timesheet Management",

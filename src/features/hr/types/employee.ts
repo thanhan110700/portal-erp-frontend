@@ -11,6 +11,17 @@ export interface EmployeeManager {
   full_name: string
 }
 
+export interface EmployeeProjectAssignment {
+  id: number
+  project_id: number
+  user: EmployeeManager | null
+  role: string | null
+  start_date: string | null
+  end_date: string | null
+  labor_cost: number | string | null
+  notes: string | null
+}
+
 export interface Employee {
   id: number
   user_code: string
@@ -31,15 +42,7 @@ export interface Employee {
     id: number
     name: string
   } | null
-  projects?: {
-    project_id: number
-    name: string
-    role: string | null
-    start_date: string | null
-    end_date: string | null
-    labor_cost: number | null
-    notes: string | null
-  }[]
+  projects?: EmployeeProjectAssignment[]
 }
 
 export interface EmployeePaginationMeta {
@@ -71,7 +74,9 @@ export interface CreateEmployeePayload {
   password?: string | null
 }
 
-export type UpdateEmployeePayload = Partial<CreateEmployeePayload>
+export type UpdateEmployeePayload = Partial<CreateEmployeePayload> & {
+  is_active?: boolean
+}
 
 export interface AssignRolePayload {
   role: string

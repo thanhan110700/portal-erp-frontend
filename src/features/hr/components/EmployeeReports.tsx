@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import {
   Bar,
   BarChart,
@@ -13,7 +13,13 @@ import { MantineReactTable, useMantineReactTable } from "mantine-react-table"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { employeeReportApi } from "@/features/reports/api/reportApi"
+import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import type { MRT_ColumnDef } from "mantine-react-table"
+import {
+  employeeReportApi,
+  type EmployeeProjectProfitRow,
+  type EmployeeReceivableRow,
+} from "@/features/reports/api/reportApi"
 import { useTranslation } from "react-i18next"
 
 interface EmployeeReportsProps {
@@ -47,18 +53,25 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
   const { t } = useTranslation(["hr", "common"])
   const [incomeData, setIncomeData] = useState<any[]>([])
-  const [projectProfitData, setProjectProfitData] = useState<any[]>([])
-  const [receivablesData, setReceivablesData] = useState<any[]>([])
+  const [projectProfitData, setProjectProfitData] = useState<EmployeeProjectProfitRow[]>([])
+  const [receivablesData, setReceivablesData] = useState<EmployeeReceivableRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const [dateFrom, setDateFrom] = useState<string>("")
+  const [dateTo, setDateTo] = useState<string>("")
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
       try {
+        const params = {
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+        }
         const [inc, proj, rec] = await Promise.all([
-          employeeReportApi.getIncomeExpense(employeeId),
-          employeeReportApi.getProjectProfit(employeeId),
-          employeeReportApi.getReceivables(employeeId),
+          employeeReportApi.getIncomeExpense(employeeId, params),
+          employeeReportApi.getProjectProfit(employeeId, params),
+          employeeReportApi.getReceivables(employeeId, params),
         ])
 
         // Format for Recharts
@@ -84,84 +97,120 @@ export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
     if (employeeId) {
       fetchData()
     }
-  }, [employeeId])
+  }, [employeeId, dateFrom, dateTo, t])
 
-  const projectColumns = [
-    {
-      accessorKey: "project_code",
-      header: t("hr:employees.reports.projects.project_code"),
-      size: 100,
-    },
-    {
-      accessorKey: "project_name",
-      header: t("hr:employees.reports.projects.project_name"),
-      size: 200,
-    },
-    {
-      accessorKey: "contract_value",
-      header: t("hr:employees.reports.projects.contract_value"),
-      Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
-    },
-    {
-      accessorKey: "total_received",
-      header: t("hr:employees.reports.projects.total_received"),
-      Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
-    },
-    {
-      accessorKey: "total_spent",
-      header: t("hr:employees.reports.projects.total_spent"),
-      Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
-    },
-    {
-      accessorKey: "profit",
-      header: t("hr:employees.reports.projects.profit"),
-      Cell: ({ cell }: any) => (
-        <span
-          className={
-            Number(cell.getValue()) >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"
-          }
-        >
-          {formatCurrency(cell.getValue())}
-        </span>
-      ),
-    },
-  ]
+  const filterFields = useMemo<FilterFieldDef[]>(
+    () => [
+      {
+        field: "date_from",
+        label: t("reports:filters.dateFrom", { defaultValue: "Từ ngày" }),
+        type: "datepicker",
+        value: dateFrom || null,
+      },
+      {
+        field: "date_to",
+        label: t("reports:filters.dateTo", { defaultValue: "Đến ngày" }),
+        type: "datepicker",
+        value: dateTo || null,
+      },
+    ],
+    [dateFrom, dateTo, t],
+  )
 
-  const receivablesColumns = [
-    {
-      accessorKey: "contract_code",
-      header: t("hr:employees.reports.receivables.contract_code"),
-      size: 100,
-    },
-    {
-      accessorKey: "customer_name",
-      header: t("hr:employees.reports.receivables.customer_name"),
-      size: 180,
-    },
-    {
-      accessorKey: "contract_value",
-      header: t("hr:employees.reports.receivables.contract_value"),
-      Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
-    },
-    {
-      accessorKey: "payment_received",
-      header: t("hr:employees.reports.receivables.payment_received"),
-      Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
-    },
-    {
-      accessorKey: "payment_outstanding",
-      header: t("hr:employees.reports.receivables.payment_outstanding"),
-      Cell: ({ cell }: any) => (
-        <span
-          className={
-            Number(cell.getValue()) > 0 ? "text-orange-600 font-medium" : "text-muted-foreground"
-          }
-        >
-          {formatCurrency(cell.getValue())}
-        </span>
-      ),
-    },
-  ]
+  const handleApplyFilters = (values: Record<string, unknown>) => {
+    setDateFrom((values.date_from as string | null) ?? "")
+    setDateTo((values.date_to as string | null) ?? "")
+  }
+
+  const handleResetFilters = () => {
+    setDateFrom("")
+    setDateTo("")
+  }
+
+  const projectColumns = useMemo<MRT_ColumnDef<EmployeeProjectProfitRow>[]>(
+    () => [
+      {
+        accessorKey: "project_code",
+        header: t("hr:employees.reports.projects.project_code"),
+        size: 100,
+      },
+      {
+        accessorKey: "project_name",
+        header: t("hr:employees.reports.projects.project_name"),
+        size: 200,
+      },
+      {
+        accessorKey: "contract_value",
+        header: t("hr:employees.reports.projects.contract_value"),
+        Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
+      },
+      {
+        accessorKey: "total_received",
+        header: t("hr:employees.reports.projects.total_received"),
+        Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
+      },
+      {
+        accessorKey: "total_spent",
+        header: t("hr:employees.reports.projects.total_spent"),
+        Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
+      },
+      {
+        accessorKey: "profit",
+        header: t("hr:employees.reports.projects.profit"),
+        Cell: ({ cell }: any) => (
+          <span
+            className={
+              Number(cell.getValue()) >= 0
+                ? "text-green-600 font-medium"
+                : "text-red-600 font-medium"
+            }
+          >
+            {formatCurrency(cell.getValue())}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  )
+
+  const receivablesColumns = useMemo<MRT_ColumnDef<EmployeeReceivableRow>[]>(
+    () => [
+      {
+        accessorKey: "contract_code",
+        header: t("hr:employees.reports.receivables.contract_code"),
+        size: 100,
+      },
+      {
+        accessorKey: "customer_name",
+        header: t("hr:employees.reports.receivables.customer_name"),
+        size: 180,
+      },
+      {
+        accessorKey: "contract_value",
+        header: t("hr:employees.reports.receivables.contract_value"),
+        Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
+      },
+      {
+        accessorKey: "payment_received",
+        header: t("hr:employees.reports.receivables.payment_received"),
+        Cell: ({ cell }: any) => formatCurrency(cell.getValue()),
+      },
+      {
+        accessorKey: "payment_outstanding",
+        header: t("hr:employees.reports.receivables.payment_outstanding"),
+        Cell: ({ cell }: any) => (
+          <span
+            className={
+              Number(cell.getValue()) > 0 ? "text-orange-600 font-medium" : "text-muted-foreground"
+            }
+          >
+            {formatCurrency(cell.getValue())}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  )
 
   const projectTable = useMantineReactTable({
     renderEmptyRowsFallback: () => (
@@ -227,6 +276,15 @@ export function EmployeeReports({ employeeId }: EmployeeReportsProps) {
         <CardTitle className="text-base font-semibold">{t("hr:employees.reports.title")}</CardTitle>
       </CardHeader>
       <CardContent>
+        <FilterPanel
+          applyMode
+          fields={filterFields}
+          onApply={handleApplyFilters}
+          onReset={handleResetFilters}
+          title={t("common:actions.filter", { defaultValue: "Bộ lọc" })}
+          className="mb-4"
+        />
+
         <Tabs defaultValue="income" className="w-full">
           <TabsList className="mb-4 w-full justify-start h-auto p-1 flex overflow-x-auto [&::-webkit-scrollbar]:hidden">
             <TabsTrigger value="income" className="min-h-11 md:min-h-9 whitespace-nowrap px-4">

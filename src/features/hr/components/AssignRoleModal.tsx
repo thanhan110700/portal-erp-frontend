@@ -11,7 +11,7 @@ const ROLE_OPTIONS_KEYS = [
   { value: "director", labelKey: "common:roles.director" },
   { value: "accountant", labelKey: "common:roles.accountant" },
   { value: "sales", labelKey: "common:roles.sales" },
-  { value: "technician", labelKey: "common:roles.technician" },
+  { value: "tech", labelKey: "common:roles.tech" },
   { value: "employee", labelKey: "common:roles.employee" },
 ]
 
@@ -37,15 +37,13 @@ export function AssignRoleModal({ open, onClose, onSubmit, employee }: AssignRol
     }))
   }, [t])
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!selectedRole) return
     setIsSubmitting(true)
-    try {
-      await onSubmit(selectedRole)
+    onSubmit(selectedRole).finally(() => {
       setSelectedRole("")
-    } finally {
       setIsSubmitting(false)
-    }
+    })
   }
 
   const handleClose = () => {

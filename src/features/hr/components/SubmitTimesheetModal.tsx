@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { SubmitTimesheetPayload } from "../types/timesheet"
 import { useTranslation, Trans } from "react-i18next"
+import { toast } from "sonner"
 
 interface TimesheetFormData {
   timesheet_date: string
@@ -79,6 +80,17 @@ export function SubmitTimesheetModal({ open, onClose, onSubmit }: SubmitTimeshee
   }, [open, reset])
 
   const handleFormSubmit = async (data: TimesheetFormData) => {
+    if (data.check_in_time && data.check_out_time) {
+      if (data.check_out_time <= data.check_in_time) {
+        toast.error(
+          t("hr:timesheet.form.validation.time_invalid", {
+            defaultValue: "Giờ ra phải sau giờ vào",
+          }),
+        )
+        return
+      }
+    }
+
     const payload: SubmitTimesheetPayload = {
       timesheet_date: data.timesheet_date,
       check_in_time: toDateTimeString(data.timesheet_date, data.check_in_time),

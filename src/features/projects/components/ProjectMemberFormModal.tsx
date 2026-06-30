@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
-import type { ProjectMember } from "../types/project"
+import type { ProjectMember, ProjectMemberFormPayload } from "../types/project"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
 
@@ -59,7 +59,7 @@ const getMemberSchema = (t: any) =>
 interface ProjectMemberFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: any) => Promise<void>
+  onSubmit: (payload: ProjectMemberFormPayload) => Promise<void>
   editData?: ProjectMember | null
 }
 
@@ -117,18 +117,20 @@ export function ProjectMemberFormModal({
     }
   }, [open, editData, reset])
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: z.infer<ReturnType<typeof getMemberSchema>>) => {
     try {
-      const payload: any = {
+      const payload = {
         role: data.role || null,
         start_date: data.start_date || null,
         end_date: data.end_date || null,
         labor_cost:
-          data.labor_cost !== "" && data.labor_cost !== null ? Number(data.labor_cost) : null,
+          data.labor_cost !== undefined && data.labor_cost !== null
+            ? Number(data.labor_cost)
+            : null,
         notes: data.notes || null,
-      }
-      if (!isEditing) {
-        payload.user_id = data.user_id
+      } as ProjectMemberFormPayload
+      if (!isEditing && data.user_id) {
+        ;(payload as any).user_id = data.user_id
       }
       await onSubmit(payload)
     } catch (error) {

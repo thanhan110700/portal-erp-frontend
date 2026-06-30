@@ -9,6 +9,8 @@ import type { ProjectMember } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { ProjectMemberFormModal } from "./ProjectMemberFormModal"
 import { useTranslation } from "react-i18next"
+import { AxiosError } from "axios"
+import type { ProjectMemberFormPayload } from "../types/project"
 
 interface ProjectMembersTabProps {
   projectId: number
@@ -32,19 +34,22 @@ export function ProjectMembersTab({
   const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
-  const handleAddOrUpdate = async (payload: any) => {
+  const handleAddOrUpdate = async (payload: ProjectMemberFormPayload) => {
     try {
       if (selectedMember) {
         await projectApi.updateMember(projectId, selectedMember.id, payload)
         toast.success(t("projects:members.update_success"))
       } else {
-        await projectApi.addMember(projectId, payload)
+        await projectApi.addMember(projectId, payload as any)
         toast.success(t("projects:members.add_success"))
       }
       setModalOpen(false)
       onRefresh()
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || t("projects:members.process_error")
+    } catch (error: unknown) {
+      let errMsg = t("projects:members.process_error")
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errMsg = error.response.data.message
+      }
       toast.error(errMsg)
     }
   }

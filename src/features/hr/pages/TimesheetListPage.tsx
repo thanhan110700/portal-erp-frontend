@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from "react"
+import { AxiosError } from "axios"
 import { toast } from "sonner"
 import {
   ClipboardList,
@@ -17,11 +18,10 @@ import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPane
 import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
+import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { timesheetApi } from "../api/timesheetApi"
-import { employeeApi } from "../api/employeeApi"
 import { TimesheetTable } from "../components/TimesheetTable"
 import { SubmitTimesheetModal } from "../components/SubmitTimesheetModal"
-import type { Employee } from "../types/employee"
 import type { SubmitTimesheetPayload, Timesheet, TimesheetStatus } from "../types/timesheet"
 
 // ── Stats card ─────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ export function TimesheetListPage() {
 
   // ── Data state ──────────────────────────────────────────────────────────
   const [timesheets, setTimesheets] = useState<Timesheet[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
+  const [employees, setEmployees] = useState<OptionItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
@@ -95,10 +95,7 @@ export function TimesheetListPage() {
   // ── Fetch employees for manager filter ──────────────────────────────────
   useEffect(() => {
     if (isManager) {
-      employeeApi
-        .list({ per_page: 100 })
-        .then((res) => setEmployees(res.data))
-        .catch(console.error)
+      optionApi.getEmployees().then(setEmployees).catch(console.error)
     }
   }, [isManager])
 
@@ -135,13 +132,13 @@ export function TimesheetListPage() {
       toast.success(t("hr:timesheet.create_success"))
       setSubmitOpen(false)
       fetchTimesheets()
-    } catch (err: any) {
-      if (err.response?.status === 409) {
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 409) {
         toast.error(t("hr:timesheet.create_error"))
       } else {
         toast.error(t("common:messages.error"))
       }
-      throw err
+      throw error
     }
   }
 
@@ -188,9 +185,9 @@ export function TimesheetListPage() {
         label: "Nhân viên",
         placeholder: "Tất cả nhân viên",
         value: userFilter || "",
-        options: employees.map((e) => ({
-          label: `${e.full_name} (${e.user_code})`,
-          value: e.id.toString(),
+        options: employees.map((employee) => ({
+          label: employee.label,
+          value: String(employee.value ?? employee.id ?? ""),
         })),
       })
     }

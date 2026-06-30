@@ -64,6 +64,7 @@
       "view_detail": "Xem chi tiết",
       "assign_role": "Phân quyền",
       "assign_projects": "Phân công dự án",
+      "export_current": "Xuất danh sách hiện tại",
       "delete": "Xóa nhân viên"
     },
     "form": {
@@ -93,6 +94,7 @@
         "national_id_placeholder": "079201012345",
         "address": "Địa chỉ",
         "address_placeholder": "123 Lê Lợi, Quận 1, TP.HCM",
+        "is_active": "Trạng thái hoạt động",
         "password": "Mật khẩu ban đầu",
         "password_placeholder": "Mặc định: Password@123",
         "password_hint": "Để trống sẽ dùng mật khẩu mặc định <1>Password@123</1>"
@@ -127,6 +129,7 @@
         "director": "Duyệt chi, xem tất cả báo cáo",
         "accountant": "Tạo/sửa phiếu, duyệt chứng từ",
         "sales": "Quản lý KH, báo giá, hợp đồng",
+        "tech": "Quản lý dự án, cập nhật tiến độ",
         "technician": "Quản lý dự án, cập nhật tiến độ",
         "employee": "Chấm công, xem dữ liệu cá nhân"
       }
@@ -186,7 +189,9 @@
         "payment_received": "Đã thanh toán",
         "payment_outstanding": "Còn nợ"
       }
-    }
+    },
+    "project_memberships_unavailable_title": "Chi tiết nhân viên chưa có danh sách dự án",
+    "project_memberships_unavailable_description": "Backend hiện chưa trả về danh sách dự án trong API chi tiết nhân viên. Bạn vẫn có thể phân công dự án tại đây hoặc xem danh sách thành viên từ màn hình chi tiết dự án."
   },
   "timesheet": {
     "title": "Quản lý chấm công",

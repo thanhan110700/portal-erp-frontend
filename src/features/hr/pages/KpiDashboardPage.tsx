@@ -3,7 +3,7 @@ import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { TrendingUp, Trophy, RefreshCw, Plus } from "lucide-react"
+import { TrendingUp, Trophy, RefreshCw, Plus, AlertTriangle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import { CommonDialog } from "@/components/common/CommonDialog"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
+import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { kpiApi } from "../api/kpiApi"
 import { employeeApi } from "../api/employeeApi"
 import type { Employee } from "../types/employee"
@@ -47,6 +48,19 @@ function getKpiBadgeVariant(pct: number | null): "success" | "warning" | "destru
   if (pct >= 100) return "success"
   if (pct >= 70) return "warning"
   return "destructive"
+}
+
+function renderDelta(current: number | null, prev: number | null, isPercentage = false) {
+  if (current == null || prev == null || prev === 0) return null
+  const delta = current - prev
+  const pct = isPercentage ? delta : (delta / Math.abs(prev)) * 100
+  if (Math.abs(pct) < 0.1) return null
+  const isPositive = pct > 0
+  return (
+    <span className={`text-xs font-medium ${isPositive ? "text-success" : "text-destructive"}`}>
+      {isPositive ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+    </span>
+  )
 }
 
 // ── Top Performers Card ────────────────────────────────────────────────────
@@ -384,10 +398,13 @@ export function KpiDashboardPage() {
   const now = new Date()
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
+  const [employeeFilter, setEmployeeFilter] = useState<string>("")
 
   const [kpis, setKpis] = useState<EmployeeKpi[]>([])
+  const [prevKpis, setPrevKpis] = useState<EmployeeKpi[]>([])
   const [topPerformers, setTopPerformers] = useState<EmployeeKpi[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
+  const [employeeOptions, setEmployeeOptions] = useState<OptionItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTopLoading, setIsTopLoading] = useState(true)
   const [upsertOpen, setUpsertOpen] = useState(false)
@@ -397,14 +414,29 @@ export function KpiDashboardPage() {
   const fetchKpis = useCallback(async () => {
     setIsLoading(true)
     try {
-      const res = await kpiApi.list({ month, year, per_page: 50 })
+      const res = await kpiApi.list({
+        user_id: employeeFilter ? parseInt(employeeFilter) : undefined,
+        month,
+        year,
+        per_page: 50,
+      })
       setKpis(res.data)
+
+      const prevMonth = month === 1 ? 12 : month - 1
+      const prevYear = month === 1 ? year - 1 : year
+      const prevRes = await kpiApi.list({
+        user_id: employeeFilter ? parseInt(employeeFilter) : undefined,
+        month: prevMonth,
+        year: prevYear,
+        per_page: 50,
+      })
+      setPrevKpis(prevRes.data)
     } catch {
       toast.error(t("hr:kpi.dashboard.fetch_error"))
     } finally {
       setIsLoading(false)
     }
-  }, [month, year])
+  }, [employeeFilter, month, year, t])
 
   // Fetch top performers
   const fetchTop = useCallback(async () => {
@@ -434,6 +466,10 @@ export function KpiDashboardPage() {
     }
   }, [canEdit])
 
+  useEffect(() => {
+    optionApi.getEmployees().then(setEmployeeOptions).catch(console.error)
+  }, [])
+
   const handleUpsert = async (payload: UpsertKpiPayload) => {
     try {
       await kpiApi.upsert(payload)
@@ -448,18 +484,31 @@ export function KpiDashboardPage() {
   }
 
   const handleApplyFilters = (values: Record<string, unknown>) => {
+    setEmployeeFilter((values.user_id as string | null) ?? "")
     if (values.month) setMonth(parseInt(values.month as string))
     if (values.year) setYear(parseInt(values.year as string))
   }
 
   const handleResetFilters = () => {
     const today = new Date()
+    setEmployeeFilter("")
     setMonth(today.getMonth() + 1)
     setYear(today.getFullYear())
   }
 
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
+      {
+        field: "user_id",
+        type: "select",
+        label: t("hr:kpi.filter_employee", { defaultValue: "Nhân viên" }),
+        placeholder: t("hr:kpi.filter_employee_all", { defaultValue: "Tất cả nhân viên" }),
+        value: employeeFilter,
+        options: employeeOptions.map((employee) => ({
+          label: employee.label,
+          value: String(employee.value ?? employee.id ?? ""),
+        })),
+      },
       {
         field: "month",
         type: "select",
@@ -485,7 +534,7 @@ export function KpiDashboardPage() {
         ],
       },
     ],
-    [month, year],
+    [employeeFilter, employeeOptions, month, t, year],
   )
 
   // Aggregated stats
@@ -502,6 +551,28 @@ export function KpiDashboardPage() {
   const totalQuotes = kpis.reduce((s, k) => s + (k.quote_count ?? 0), 0)
   const totalContracts = kpis.reduce((s, k) => s + (k.contract_count ?? 0), 0)
   const conversionRate = totalQuotes > 0 ? (totalContracts / totalQuotes) * 100 : null
+
+  const prevKpisWithPct = prevKpis.map((k) => ({ ...k, kpi_percent: toNum(k.kpi_percent) }))
+  const prevAvgKpi =
+    prevKpisWithPct.length > 0 && prevKpisWithPct.some((k) => k.kpi_percent != null)
+      ? prevKpisWithPct
+          .filter((k) => k.kpi_percent != null)
+          .reduce((s, k) => s + (k.kpi_percent ?? 0), 0) /
+        prevKpisWithPct.filter((k) => k.kpi_percent != null).length
+      : null
+  const prevTotalTarget = prevKpis.reduce((s, k) => s + (toNum(k.target_revenue) ?? 0), 0)
+  const prevTotalActual = prevKpis.reduce((s, k) => s + (toNum(k.actual_revenue) ?? 0), 0)
+  const prevTotalQuotes = prevKpis.reduce((s, k) => s + (k.quote_count ?? 0), 0)
+  const prevTotalContracts = prevKpis.reduce((s, k) => s + (k.contract_count ?? 0), 0)
+  const prevConversionRate =
+    prevTotalQuotes > 0 ? (prevTotalContracts / prevTotalQuotes) * 100 : null
+
+  const notOnTrackKpis = useMemo(() => {
+    return kpis.filter((kpi) => {
+      const pct = toNum(kpi.kpi_percent)
+      return pct !== null && pct < 70
+    })
+  }, [kpis])
 
   return (
     <div className="flex flex-col gap-6">
@@ -574,16 +645,19 @@ export function KpiDashboardPage() {
                         ? "text-warning"
                         : "text-destructive"
                     : "text-muted-foreground",
+                delta: renderDelta(avgKpi, prevAvgKpi, true),
               },
               {
                 label: t("hr:kpi.dashboard.stats.target"),
                 value: formatCurrency(totalTarget),
                 color: "text-foreground",
+                delta: renderDelta(totalTarget, prevTotalTarget),
               },
               {
                 label: t("hr:kpi.dashboard.stats.actual"),
                 value: formatCurrency(totalActual),
                 color: "text-primary",
+                delta: renderDelta(totalActual, prevTotalActual),
               },
               {
                 label: t("hr:kpi.dashboard.stats.conversion_rate", {
@@ -591,6 +665,7 @@ export function KpiDashboardPage() {
                 }),
                 value: conversionRate != null ? `${conversionRate.toFixed(1)}%` : "—",
                 color: "text-purple-600 dark:text-purple-400",
+                delta: renderDelta(conversionRate, prevConversionRate, true),
               },
             ].map((stat) => (
               <div
@@ -598,15 +673,42 @@ export function KpiDashboardPage() {
                 className="rounded-xl border bg-card px-4 py-3 flex flex-col gap-0.5"
               >
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <span className={`text-xl font-bold ${stat.color}`}>{stat.value}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xl font-bold ${stat.color}`}>{stat.value}</span>
+                  {stat.delta}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Right Column: Top Performers ─────────────────────────────── */}
+        {/* ── Right Column: Top Performers & Alerts ─────────────────────── */}
         <div className="flex flex-col gap-4">
           <TopPerformersCard performers={topPerformers} isLoading={isTopLoading} t={t} />
+
+          {notOnTrackKpis.length > 0 && (
+            <div className="rounded-xl border bg-destructive/5 p-4 flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="size-4" />
+                <h3 className="font-semibold text-sm">
+                  {t("hr:kpi.dashboard.not_on_track", { defaultValue: "Cần chú ý (< 70%)" })}
+                </h3>
+              </div>
+              <div className="flex flex-col gap-2">
+                {notOnTrackKpis.slice(0, 5).map((kpi) => (
+                  <div
+                    key={kpi.id}
+                    className="flex items-center justify-between rounded-lg bg-card px-3 py-2 text-sm border shadow-sm"
+                  >
+                    <span className="font-medium truncate">{kpi.user?.full_name}</span>
+                    <span className="text-destructive font-bold">
+                      {toNum(kpi.kpi_percent)?.toFixed(0)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Pencil, Trash2, Eye } from "lucide-react"
+import { Pencil, Trash2, Eye, Shield } from "lucide-react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 import { useTranslation } from "react-i18next"
 
@@ -28,6 +28,7 @@ function RoleBadge({ role }: { role: string }) {
     director: "warning",
     accountant: "default",
     sales: "secondary",
+    tech: "secondary",
     technician: "secondary",
     employee: "outline" as "secondary",
   }
@@ -43,8 +44,10 @@ interface EmployeeTableProps {
   isLoading?: boolean
   canEdit?: boolean
   canDelete?: boolean
+  canAssignRole?: boolean
   onEdit: (employee: Employee) => void
   onDelete: (employee: Employee) => void
+  onAssignRole?: (employee: Employee) => void
 }
 
 export function EmployeeTable({
@@ -52,9 +55,11 @@ export function EmployeeTable({
   isLoading = false,
   canEdit = true,
   canDelete = false,
+  canAssignRole = false,
 
   onEdit,
   onDelete,
+  onAssignRole,
 }: EmployeeTableProps) {
   const { t } = useTranslation(["hr", "common"])
   const navigate = useNavigate()
@@ -159,6 +164,14 @@ export function EmployeeTable({
             })
           }
 
+          if (canAssignRole && onAssignRole) {
+            actions.push({
+              label: t("hr:employees.actions.assign_role", { defaultValue: "Phân quyền" }),
+              icon: <Shield className="size-3.5" />,
+              onClick: () => onAssignRole(emp),
+            })
+          }
+
           if (canDelete) {
             actions.push({
               label: t("hr:employees.actions.delete", { defaultValue: "Xóa" }),
@@ -176,7 +189,7 @@ export function EmployeeTable({
         },
       },
     ],
-    [canEdit, canDelete, onEdit, navigate, t],
+    [canAssignRole, canDelete, canEdit, navigate, onAssignRole, onEdit, t],
   )
 
   const table = useMantineReactTable({

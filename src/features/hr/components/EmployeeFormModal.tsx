@@ -4,12 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Label } from "@/components/ui/label"
 import * as z from "zod"
 import type { CreateEmployeePayload, Department, Employee } from "../types/employee"
 import { useTranslation, Trans } from "react-i18next"
 import type { TFunction } from "i18next"
+import type { OptionItem } from "@/shared/api/optionApi"
 
 const createEmployeeFormSchema = (t: TFunction) =>
   z
@@ -56,6 +58,7 @@ const createEmployeeFormSchema = (t: TFunction) =>
       manager_id: z.string().optional().nullable().or(z.literal("")),
       password: z.string().optional().nullable().or(z.literal("")),
       role: z.string().optional().nullable().or(z.literal("")),
+      is_active: z.boolean(),
     })
     .refine(
       (data) => {
@@ -89,9 +92,11 @@ type EmployeeFormData = z.infer<ReturnType<typeof createEmployeeFormSchema>>
 interface EmployeeFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: CreateEmployeePayload & { role?: string }) => Promise<void>
+  onSubmit: (
+    payload: CreateEmployeePayload & { role?: string; is_active?: boolean },
+  ) => Promise<void>
   departments: Department[]
-  employees: Employee[] // for manager select
+  managerOptions: OptionItem[]
   editData?: Employee | null
   isLoading?: boolean
 }
@@ -101,7 +106,7 @@ export function EmployeeFormModal({
   onClose,
   onSubmit,
   departments,
-  employees,
+  managerOptions,
   editData,
   isLoading = false,
 }: EmployeeFormModalProps) {
@@ -133,6 +138,7 @@ export function EmployeeFormModal({
       manager_id: "",
       password: "",
       role: "",
+      is_active: true,
     },
   })
 
@@ -157,6 +163,7 @@ export function EmployeeFormModal({
         manager_id: editData.manager?.id?.toString() ?? "",
         password: "",
         role: editData.role?.name ?? editData.roles?.[0] ?? "",
+        is_active: editData.is_active,
       })
     } else if (open && !editData) {
       reset()
@@ -185,6 +192,7 @@ export function EmployeeFormModal({
       manager_id: data.manager_id ? parseInt(data.manager_id) : null,
       password: data.password || null,
       role: data.role || undefined,
+      is_active: isEditing ? data.is_active : undefined,
     } as CreateEmployeePayload & { role?: string }
     await onSubmit(payload)
   }
@@ -194,7 +202,7 @@ export function EmployeeFormModal({
   }
 
   const handleManagerChange = (value: string) => {
-    setValue("manager_id", value)
+    setValue("manager_id", value === "none" ? "" : value)
   }
 
   const { ref: fullNameRef, ...fullNameRegister } = register("full_name")
@@ -244,7 +252,6 @@ export function EmployeeFormModal({
               {...fullNameRegister}
               ref={(e) => {
                 fullNameRef(e)
-                // @ts-ignore
                 firstInputRef.current = e
               }}
               aria-invalid={!!errors.full_name}
@@ -323,12 +330,9 @@ export function EmployeeFormModal({
               onValueChange={handleManagerChange}
               options={[
                 { label: t("hr:employees.form.fields.manager_none"), value: "none" },
-                ...employees
-                  .filter((e) => !editData || e.id !== editData.id)
-                  .map((e) => ({
-                    label: `${e.full_name} (${e.user_code})`,
-                    value: e.id.toString(),
-                  })),
+                ...managerOptions
+                  .filter((option) => String(option.value) !== String(editData?.id ?? ""))
+                  .map((o) => ({ label: o.label, value: String(o.value) })),
               ]}
               placeholder={t("hr:employees.form.fields.manager_none")}
               className="h-9"
@@ -350,7 +354,7 @@ export function EmployeeFormModal({
               { label: t("common:roles.director"), value: "director" },
               { label: t("common:roles.accountant"), value: "accountant" },
               { label: t("common:roles.sales"), value: "sales" },
-              { label: t("common:roles.technician"), value: "technician" },
+              { label: t("common:roles.tech"), value: "tech" },
               { label: t("common:roles.employee"), value: "employee" },
             ]}
             placeholder={t("hr:employees.form.fields.role_placeholder", {
@@ -437,6 +441,31 @@ export function EmployeeFormModal({
               </Trans>
             </p>
           </FormField>
+        )}
+
+        {isEditing && (
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <div className="flex flex-col gap-0.5">
+              <Label htmlFor="emp-active" className="text-sm font-medium">
+                {t("hr:employees.form.fields.is_active", { defaultValue: "Trạng thái hoạt động" })}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {watch("is_active") ? t("common:status.active") : t("common:status.inactive")}
+              </p>
+            </div>
+            <Controller
+              name="is_active"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  id="emp-active"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  size="sm"
+                />
+              )}
+            />
+          </div>
         )}
       </form>
     </CommonDialog>

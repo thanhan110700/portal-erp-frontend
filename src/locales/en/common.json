@@ -125,6 +125,7 @@
     "director": "Director",
     "accountant": "Accountant",
     "sales": "Sales",
+    "tech": "Technical",
     "technician": "Technician",
     "employee": "Employee"
   },

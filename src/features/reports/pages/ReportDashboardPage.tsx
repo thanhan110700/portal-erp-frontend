@@ -15,10 +15,11 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { BarChart3, Users, AlertCircle } from "lucide-react"
+import { BarChart3, Users, AlertCircle, Download, Printer } from "lucide-react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { PageLoader } from "@/components/common/PageLoader"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -493,7 +494,7 @@ export function ReportDashboardPage() {
             date_from: dateFrom || undefined,
             date_to: dateTo || undefined,
           })
-          setProjectProfitData(data.data || [])
+          setProjectProfitData(data.data)
         } else if (activeTab === "sales-performance") {
           const mVal = month === "all" ? undefined : parseInt(month)
           const [rev, conv] = await Promise.all([
@@ -505,6 +506,7 @@ export function ReportDashboardPage() {
             reportApi.getQuoteConversion({
               year,
               month: mVal,
+              sales_rep_id: salesRepId ? parseInt(salesRepId) : undefined,
             }),
           ])
           setSalesRevenueData(rev)
@@ -523,6 +525,58 @@ export function ReportDashboardPage() {
     void loadData()
   }, [activeTab, year, month, salesRepId, customerId, dateFrom, dateTo])
 
+  const handlePrintPdf = () => {
+    window.print()
+  }
+
+  const handleExportCsv = () => {
+    let data: any[] = []
+    let columns: any[] = []
+    if (activeTab === "income-expense") {
+      data = incomeExpenseData
+      columns = incomeExpenseColumns
+    } else if (activeTab === "receivables") {
+      data = receivablesData
+      columns = receivablesColumns
+    } else if (activeTab === "project-profit") {
+      data = projectProfitData
+      columns = projectProfitColumns
+    }
+
+    if (data.length === 0 || columns.length === 0) {
+      toast.info(
+        t("reports:export.no_data", {
+          defaultValue: "Không có dữ liệu để xuất hoặc biểu đồ không hỗ trợ xuất CSV",
+        }),
+      )
+      return
+    }
+
+    const headers = columns
+      .map((c) => (typeof c.header === "string" ? c.header : c.id || "Column"))
+      .join(",")
+    const rows = data.map((row) => {
+      return columns
+        .map((c) => {
+          const key = c.accessorKey
+          if (!key) return ""
+          let val = row[key]
+          if (typeof val === "string") val = val.replace(/"/g, '""')
+          return `"${val ?? ""}"`
+        })
+        .join(",")
+    })
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers, ...rows].join("\n")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", `report-${activeTab}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   // Custom tooltips and formatters
   const formatCurrency = (val: string | number) => {
     return Number(val).toLocaleString("vi-VN") + " ₫"
@@ -530,9 +584,21 @@ export function ReportDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("reports:title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("reports:subtitle")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t("reports:title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("reports:subtitle")}</p>
+        </div>
+        <div className="flex gap-2 print:hidden self-start sm:self-auto">
+          <Button variant="outline" size="sm" onClick={handleExportCsv} className="gap-1.5">
+            <Download className="size-3.5" />
+            {t("common:actions.export", { defaultValue: "Xuất CSV" })}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handlePrintPdf} className="gap-1.5">
+            <Printer className="size-3.5" />
+            {t("common:actions.print", { defaultValue: "In PDF" })}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

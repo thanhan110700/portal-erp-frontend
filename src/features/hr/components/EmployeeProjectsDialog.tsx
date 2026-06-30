@@ -114,7 +114,11 @@ export function EmployeeProjectsDialog({
 
   const handleFormSubmit = async (data: AssignProjectsFormValues) => {
     try {
-      await onSubmit({ projects: data.projects })
+      const mappedProjects = data.projects.map((p) => ({
+        ...p,
+        labor_cost: Number.isFinite(p.labor_cost ?? NaN) ? p.labor_cost : null,
+      }))
+      await onSubmit({ projects: mappedProjects })
       toast.success(t("hr:employees.assign_projects.update_success"))
       onClose()
     } catch (error) {

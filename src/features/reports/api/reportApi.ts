@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/shared/api/axios"
-import type { ApiResponse } from "@/shared/types"
+import type { ApiResponse, PaginatedResponse } from "@/shared/types"
 
 export interface IncomeExpenseRow {
   year: number
@@ -32,6 +32,8 @@ export interface ProjectProfitRow {
   start_date: string | null
   end_date: string | null
 }
+
+export type ProjectProfitPaginatedResponse = PaginatedResponse<ProjectProfitRow>
 
 export interface SalesRevenueRow {
   sales_rep: { id: number; full_name: string }
@@ -96,10 +98,13 @@ export const reportApi = {
       per_page?: number
       page?: number
     } = {},
-  ): Promise<any> {
-    const response = await axiosInstance.get<ApiResponse<any>>("/v1/reports/project-profit", {
-      params,
-    })
+  ): Promise<ProjectProfitPaginatedResponse> {
+    const response = await axiosInstance.get<ApiResponse<ProjectProfitPaginatedResponse>>(
+      "/v1/reports/project-profit",
+      {
+        params,
+      },
+    )
     return response.data.data
   },
 
@@ -144,23 +149,52 @@ export interface EmployeeReportParams {
   date_to?: string
 }
 
+export interface EmployeeIncomeExpenseRow {
+  year: number
+  month: number
+  income: string | number
+  expense: string | number
+  net: string | number
+}
+
+export type EmployeeReceivableRow = ReceivableRow
+export type EmployeeProjectProfitRow = ProjectProfitRow
+
 export const employeeReportApi = {
-  async getIncomeExpense(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
-    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/income-expense`, {
-      params,
-    })
+  async getIncomeExpense(
+    employeeId: number,
+    params?: EmployeeReportParams,
+  ): Promise<EmployeeIncomeExpenseRow[]> {
+    const response = await axiosInstance.get<ApiResponse<{ rows: EmployeeIncomeExpenseRow[] }>>(
+      `/v1/employees/${employeeId}/reports/income-expense`,
+      {
+        params,
+      },
+    )
     return response.data.data.rows
   },
-  async getReceivables(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
-    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/receivables`, {
-      params,
-    })
+  async getReceivables(
+    employeeId: number,
+    params?: EmployeeReportParams,
+  ): Promise<EmployeeReceivableRow[]> {
+    const response = await axiosInstance.get<ApiResponse<{ rows: EmployeeReceivableRow[] }>>(
+      `/v1/employees/${employeeId}/reports/receivables`,
+      {
+        params,
+      },
+    )
     return response.data.data.rows
   },
-  async getProjectProfit(employeeId: number, params?: EmployeeReportParams): Promise<any[]> {
-    const response = await axiosInstance.get(`/v1/employees/${employeeId}/reports/project-profit`, {
-      params,
-    })
+  async getProjectProfit(
+    employeeId: number,
+    params?: EmployeeReportParams,
+  ): Promise<EmployeeProjectProfitRow[]> {
+    const response = await axiosInstance.get<ApiResponse<{ rows: EmployeeProjectProfitRow[] }>>(
+      `/v1/employees/${employeeId}/reports/project-profit`,
+      {
+        params,
+      },
+    )
     return response.data.data.rows
   },
 }

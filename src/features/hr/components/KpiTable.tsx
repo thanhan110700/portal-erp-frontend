@@ -116,7 +116,7 @@ export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: K
         },
       },
       {
-        accessorKey: "quotes_count",
+        accessorKey: "quote_count",
         header: t("hr:kpi.columns.quotes"),
         size: 90,
         Cell: ({ cell }) => (
@@ -126,7 +126,7 @@ export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: K
         ),
       },
       {
-        accessorKey: "contracts_count",
+        accessorKey: "contract_count",
         header: t("hr:kpi.columns.contracts"),
         size: 90,
         Cell: ({ cell }) => (

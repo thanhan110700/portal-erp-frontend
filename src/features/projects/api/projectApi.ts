@@ -55,7 +55,7 @@ export const projectApi = {
   },
 
   async updateStatus(id: number, status: string, notes?: string): Promise<Project> {
-    const payload: any = { status }
+    const payload: { status: string; notes?: string } = { status }
     if (notes !== undefined) {
       payload.notes = notes
     }

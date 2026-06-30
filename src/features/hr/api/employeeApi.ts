@@ -4,6 +4,7 @@ import type {
   AssignRolePayload,
   CreateEmployeePayload,
   Employee,
+  EmployeeProjectAssignment,
   EmployeePaginatedResponse,
   UpdateEmployeePayload,
 } from "../types/employee"
@@ -87,8 +88,11 @@ export const employeeApi = {
   /**
    * POST /v1/employees/:id/projects — assign projects to employee
    */
-  async assignProjects(id: number, payload: AssignEmployeeProjectsPayload): Promise<any> {
-    const response = await axiosInstance.post<ApiResponse<any>>(
+  async assignProjects(
+    id: number,
+    payload: AssignEmployeeProjectsPayload,
+  ): Promise<EmployeeProjectAssignment[]> {
+    const response = await axiosInstance.post<ApiResponse<EmployeeProjectAssignment[]>>(
       `/v1/employees/${id}/projects`,
       payload,
     )
