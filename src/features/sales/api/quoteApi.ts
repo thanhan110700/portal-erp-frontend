@@ -5,6 +5,9 @@ import type {
   QuotePaginatedResponse,
   CreateQuotePayload,
   UpdateQuotePayload,
+  ConvertQuoteToContractPayload,
+  SendQuoteEmailPayload,
+  Contract,
 } from "../types/sales"
 
 export interface ListQuotesParams {
@@ -61,5 +64,28 @@ export const quoteApi = {
 
   async deleteFile(id: number, fileId: number): Promise<void> {
     await axiosInstance.delete(`/v1/quotes/${id}/files/${fileId}`)
+  },
+
+  async generatePdf(id: number): Promise<Blob> {
+    const response = await axiosInstance.post<Blob>(`/v1/quotes/${id}/generate-pdf`, undefined, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async sendEmail(id: number, payload: SendQuoteEmailPayload = {}): Promise<string> {
+    const response = await axiosInstance.post<ApiResponse<{ sent_to: string }>>(
+      `/v1/quotes/${id}/send-email`,
+      payload,
+    )
+    return response.data.data.sent_to
+  },
+
+  async convertToContract(id: number, payload: ConvertQuoteToContractPayload): Promise<Contract> {
+    const response = await axiosInstance.post<ApiResponse<Contract>>(
+      `/v1/quotes/${id}/convert-to-contract`,
+      payload,
+    )
+    return response.data.data
   },
 }

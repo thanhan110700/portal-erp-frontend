@@ -5,6 +5,7 @@ import {
   Download,
   Trash2,
   Upload,
+  Mail,
   Calendar,
   DollarSign,
   User,
@@ -46,6 +47,16 @@ const QUOTE_STATUS_OPTIONS = [
   { value: "cancelled", label: "Đã hủy" },
 ]
 
+const ALLOWED_QUOTE_TRANSITIONS: Record<string, string[]> = {
+  draft: ["sent", "cancelled"],
+  sent: ["waiting", "accepted", "rejected", "cancelled"],
+  waiting: ["accepted", "rejected", "cancelled"],
+}
+
+type QuoteFileFormValues = {
+  file: File | null
+}
+
 export function QuoteDetailDialog({
   open,
   onClose,
@@ -64,7 +75,7 @@ export function QuoteDetailDialog({
   const [statusNotes, setStatusNotes] = useState("")
   const [deleteFileConfirmId, setDeleteFileConfirmId] = useState<number | null>(null)
 
-  const form = useForm({
+  const form = useForm<QuoteFileFormValues>({
     resolver: zodResolver(
       z.object({
         file: z
@@ -101,6 +112,7 @@ export function QuoteDetailDialog({
   }, [open, quoteId])
 
   const handleStatusChange = (newStatus: string) => {
+    if (newStatus === quote?.status) return
     if (newStatus === "rejected") {
       setPendingStatus(newStatus)
       setStatusNotes("")
@@ -125,7 +137,38 @@ export function QuoteDetailDialog({
     }
   }
 
-  const handleUpload = async (data: any) => {
+  const handleGeneratePdf = async () => {
+    try {
+      const blob = await quoteApi.generatePdf(quoteId)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `${quote?.quote_code || "quote"}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error(t("sales:quote.pdf_error", { defaultValue: "Không thể tải PDF báo giá" }))
+    }
+  }
+
+  const handleSendEmail = async () => {
+    try {
+      const sentTo = await quoteApi.sendEmail(quoteId)
+      toast.success(
+        t("sales:quote.email_success", {
+          email: sentTo,
+          defaultValue: "Đã gửi email báo giá",
+        }),
+      )
+    } catch {
+      toast.error(t("sales:quote.email_error", { defaultValue: "Gửi email báo giá thất bại" }))
+    }
+  }
+
+  const handleUpload = async (data: QuoteFileFormValues) => {
+    if (!data.file) return
     try {
       await quoteApi.uploadFile(quoteId, data.file)
       toast.success(t("sales:quote.files.upload_success"))
@@ -195,6 +238,19 @@ export function QuoteDetailDialog({
         }
       >
         <div className="space-y-8 pb-12">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => void handleGeneratePdf()}>
+              <Download className="mr-2 size-4" />
+              {t("sales:quote.actions.download_pdf")}
+            </Button>
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={() => void handleSendEmail()}>
+                <Mail className="mr-2 size-4" />
+                {t("sales:quote.actions.send_email", { defaultValue: "Gửi email" })}
+              </Button>
+            )}
+          </div>
+
           {/* Status Change Bar */}
           {canEdit && (
             <div className="flex items-center gap-4 p-4 rounded-xl border bg-card shadow-sm">
@@ -206,7 +262,11 @@ export function QuoteDetailDialog({
                 <SearchableSelect
                   value={quote.status}
                   onValueChange={handleStatusChange}
-                  options={QUOTE_STATUS_OPTIONS.map((s) => ({
+                  options={QUOTE_STATUS_OPTIONS.filter(
+                    (status) =>
+                      status.value === quote.status ||
+                      (ALLOWED_QUOTE_TRANSITIONS[quote.status] ?? []).includes(status.value),
+                  ).map((s) => ({
                     ...s,
                     label: t(`common:status.${s.value}`, { defaultValue: s.label }),
                   }))}

@@ -109,11 +109,11 @@ export function CustomerFormModal({
         .get(editData.id)
         .then((detail) => {
           reset({
-            customer_name: detail.customer_name ?? detail.name ?? "",
+            customer_name: detail.customer_name ?? "",
             phone: detail.phone || "",
             email: detail.email || "",
             address: detail.address || "",
-            tax_number: detail.tax_number ?? detail.tax_code ?? "",
+            tax_number: detail.tax_number ?? "",
             classification: detail.classification || "",
             sales_rep_id: detail.sales_rep?.id ?? detail.sales_rep_id ?? 0,
             notes: detail.notes || "",
@@ -166,7 +166,7 @@ export function CustomerFormModal({
       onClose={onClose}
       title={
         isEditing
-          ? t("sales:customer_form.edit_title", { name: editData.customer_name ?? editData.name })
+          ? t("sales:customer_form.edit_title", { name: editData.customer_name })
           : t("sales:customer_form.add_title")
       }
       size="full"

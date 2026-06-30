@@ -4,14 +4,13 @@ import type { PaginatedResponse } from "@/shared/types"
 export interface Customer {
   id: number
   customer_code: string
-  name?: string
   customer_name?: string
-  tax_code?: string | null
   tax_number?: string | null
   address: string | null
   phone: string
   email: string | null
   classification: "vip" | "regular" | "new" | "inactive" | (string & {}) | null
+  classification_label?: string | null
   sales_rep_id: number
   sales_rep?: { id: number; full_name: string }
   notes: string | null
@@ -59,21 +58,19 @@ export type UpdateContactPayload = Partial<CreateContactPayload>
 export interface Interaction {
   id: number
   customer_id: number
-  type: string // Call, Email, Meeting, Other
+  interaction_type: "call" | "email" | "meeting" | "other" | (string & {})
+  interaction_type_label: string | null
   interaction_date: string
   content: string | null
-  user_id: number
   user?: { id: number; full_name: string }
-  next_followup_date: string | null
-  created_at: string
+  next_follow_up: string | null
 }
 
 export interface CreateInteractionPayload {
-  type: string
+  interaction_type: string
   interaction_date: string
-  content?: string
-  user_id: number
-  next_followup_date?: string
+  content?: string | null
+  next_follow_up?: string | null
 }
 
 // ── Quote ──────────────────────────────────────────────────────────────────
@@ -112,18 +109,20 @@ export type UpdateQuotePayload = Partial<CreateQuotePayload>
 export interface Contract {
   id: number
   contract_code: string
-  customer_id: number
-  customer?: Customer
-  quote_id: number | null
-  quote?: Quote
+  customer?: { id: number; customer_name: string; customer_code: string } | null
+  quote?: { id: number; quote_code: string } | null
   contract_date: string
-  contract_value: number
+  contract_value: string | number
   signed_date: string | null
-  status: "Draft" | "Signed" | "Ongoing" | "Completed" | (string & {})
-  sales_rep_id: number
-  sales_rep?: { id: number; full_name: string }
+  status: "draft" | "signed" | "ongoing" | "completed" | (string & {})
+  status_label: string | null
+  sales_rep?: { id: number; full_name: string } | null
+  revenue: string | number
+  payment_received: string | number
+  payment_outstanding: string | number
   content: string | null
   terms: string | null
+  projects?: { id: number; name: string }[]
   files?: { id: number; name: string; url: string }[]
   created_at: string
   updated_at: string
@@ -144,3 +143,28 @@ export interface CreateContractPayload {
 }
 
 export type UpdateContractPayload = Partial<CreateContractPayload>
+
+export interface ConvertQuoteToContractPayload {
+  sales_rep_id: number
+  contract_date?: string | null
+  signed_date?: string | null
+  content?: string | null
+  terms?: string | null
+}
+
+export interface SendQuoteEmailPayload {
+  to?: string | null
+  cc?: string[]
+  message?: string | null
+}
+
+export interface ContractFinancials {
+  contract_id: number
+  contract_code: string
+  revenue: number
+  payment_received: number
+  payment_outstanding: number
+  total_project_expenses: number
+  profit: number
+  projects_count: number
+}

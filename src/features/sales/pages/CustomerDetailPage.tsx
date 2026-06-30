@@ -45,6 +45,12 @@ export function CustomerDetailPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [interactionModalOpen, setInteractionModalOpen] = useState(false)
 
+  const lastInteraction = interactions[0] ?? null
+  const today = new Date().toISOString().split("T")[0]
+  const dueFollowUps = interactions.filter(
+    (interaction) => interaction.next_follow_up && interaction.next_follow_up <= today,
+  )
+
   const loadCustomerData = useCallback(async () => {
     if (!customerId) return
     setIsLoading(true)
@@ -151,10 +157,9 @@ export function CustomerDetailPage() {
               <Building2 className="size-6" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold">{customer.customer_name ?? customer.name}</h1>
+              <h1 className="text-xl font-semibold">{customer.customer_name}</h1>
               <p className="text-sm text-muted-foreground">
-                {t("sales:customer_detail.tax_number")}:{" "}
-                {customer.tax_number ?? customer.tax_code ?? "—"}
+                {t("sales:customer_detail.tax_number")}: {customer.tax_number ?? "—"}
               </p>
             </div>
           </div>
@@ -206,6 +211,40 @@ export function CustomerDetailPage() {
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
           </div>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground">
+            {t("sales:interaction.last_interaction", { defaultValue: "Lần tương tác gần nhất" })}
+          </p>
+          <p className="mt-1 text-sm font-medium">
+            {lastInteraction
+              ? `${lastInteraction.interaction_type_label || lastInteraction.interaction_type} • ${lastInteraction.interaction_date}`
+              : t("sales:interaction.empty_state.title")}
+          </p>
+        </div>
+        <div
+          className={`rounded-xl border p-4 ${
+            dueFollowUps.length > 0
+              ? "border-amber-200 bg-amber-50/70 dark:bg-amber-950/20"
+              : "bg-card"
+          }`}
+        >
+          <p className="text-xs font-semibold text-muted-foreground">
+            {t("sales:interaction.due_follow_up", { defaultValue: "Follow-up đến hạn" })}
+          </p>
+          <p className="mt-1 text-sm font-medium">
+            {dueFollowUps.length > 0
+              ? t("sales:interaction.due_count", {
+                  count: dueFollowUps.length,
+                  defaultValue: "{{count}} lịch hẹn cần xử lý",
+                })
+              : t("sales:interaction.no_due_follow_up", {
+                  defaultValue: "Không có lịch hẹn quá hạn",
+                })}
+          </p>
+        </div>
       </div>
 
       {/* ── Main Content Tabs ───────────────────────────────────────────── */}

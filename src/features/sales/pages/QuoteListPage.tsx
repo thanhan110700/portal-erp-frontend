@@ -6,13 +6,17 @@ import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
+import { CommonDialog } from "@/components/common/CommonDialog"
+import { CommonDatePicker } from "@/components/common/CommonDatePicker"
+import { SearchableSelect } from "@/components/common/SearchableSelect"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 import { quoteApi, type ListQuotesParams } from "../api/quoteApi"
 import type { Quote, CreateQuotePayload, UpdateQuotePayload } from "../types/sales"
 import { QuoteTable } from "../components/QuoteTable"
 import { QuoteFormModal } from "../components/QuoteFormModal"
 import { QuoteDetailDialog } from "../components/QuoteDetailDialog"
-import { ContractFormModal } from "../components/ContractFormModal"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -24,6 +28,7 @@ export function QuoteListPage() {
   const canCreate = hasPermission(user?.permissions, PermissionSlugs.CreateQuotes)
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditQuotes)
   const canDelete = hasPermission(user?.permissions, PermissionSlugs.DeleteQuotes)
+  const canCreateContract = hasPermission(user?.permissions, PermissionSlugs.CreateContracts)
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -50,10 +55,17 @@ export function QuoteListPage() {
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
 
   // Contract convert state
-  const [contractModalOpen, setContractModalOpen] = useState(false)
-  const [contractInitialData, setContractInitialData] = useState<Record<string, unknown> | null>(
-    null,
+  const [convertTarget, setConvertTarget] = useState<Quote | null>(null)
+  const [convertSalesRepId, setConvertSalesRepId] = useState<string>(
+    user?.id ? String(user.id) : "",
   )
+  const [convertContractDate, setConvertContractDate] = useState(
+    new Date().toISOString().split("T")[0],
+  )
+  const [convertSignedDate, setConvertSignedDate] = useState<string | null>(null)
+  const [convertContent, setConvertContent] = useState("")
+  const [convertTerms, setConvertTerms] = useState("")
+  const [isConverting, setIsConverting] = useState(false)
 
   useEffect(() => {
     Promise.all([optionApi.getQuoteStatuses(), optionApi.getCustomers(), optionApi.getEmployees()])
@@ -217,6 +229,44 @@ export function QuoteListPage() {
     }
   }
 
+  const openConvertDialog = (quote: Quote) => {
+    setConvertTarget(quote)
+    setConvertSalesRepId(user?.id ? String(user.id) : "")
+    setConvertContractDate(new Date().toISOString().split("T")[0])
+    setConvertSignedDate(null)
+    setConvertContent(quote.description || "")
+    setConvertTerms("")
+  }
+
+  const handleConvertToContract = async () => {
+    if (!convertTarget || !convertSalesRepId) {
+      toast.error(t("sales:contract.form.validation.sales_required"))
+      return
+    }
+
+    setIsConverting(true)
+    try {
+      await quoteApi.convertToContract(convertTarget.id, {
+        sales_rep_id: Number(convertSalesRepId),
+        contract_date: convertContractDate,
+        signed_date: convertSignedDate,
+        content: convertContent || null,
+        terms: convertTerms || null,
+      })
+      toast.success(
+        t("sales:quote.convert_success", { defaultValue: "Đã tạo hợp đồng từ báo giá" }),
+      )
+      setConvertTarget(null)
+      void loadData()
+    } catch {
+      toast.error(
+        t("sales:quote.convert_error", { defaultValue: "Tạo hợp đồng từ báo giá thất bại" }),
+      )
+    } finally {
+      setIsConverting(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
@@ -299,36 +349,84 @@ export function QuoteListPage() {
           onClose={() => setDetailOpen(false)}
           quoteId={selectedQuote.id}
           onRefresh={() => void loadData()}
-          onConvertToContract={(quote) => {
-            setContractInitialData({
-              customer: quote.customer,
-              quote: { id: quote.id },
-              contract_value: quote.quote_value,
-              sales_rep: { id: user?.id },
-              contract_date: new Date().toISOString().split("T")[0],
-              status: "Draft",
-            })
-            setContractModalOpen(true)
-          }}
+          onConvertToContract={canCreateContract ? openConvertDialog : undefined}
         />
       )}
 
       {/* ── Convert to Contract Modal ────────────────────────────────────── */}
-      {contractModalOpen && (
-        <ContractFormModal
-          open={contractModalOpen}
-          onClose={() => setContractModalOpen(false)}
-          onSubmit={async () => {
-            // Import contractApi dynamically or use a generic fetch if needed
-            // Actually, we should just let the ContractListPage handle this, or we can use axiosInstance directly
-            // For now, let's just close and tell user to use Contract Page, or I can import contractApi.
-            toast.info("Chức năng tạo hợp đồng đang được xử lý qua trang Hợp đồng.")
-            setContractModalOpen(false)
+      {convertTarget && (
+        <CommonDialog
+          open={!!convertTarget}
+          onClose={() => setConvertTarget(null)}
+          title={t("sales:quote.convert_title", {
+            code: convertTarget.quote_code,
+            defaultValue: "Tạo hợp đồng từ báo giá",
+          })}
+          size="lg"
+          primaryAction={{
+            label: isConverting
+              ? t("sales:quote.converting", { defaultValue: "Đang tạo..." })
+              : t("sales:quote.actions.convert"),
+            onClick: () => void handleConvertToContract(),
+            disabled: isConverting,
           }}
-          editData={contractInitialData as any}
-          customers={customers}
-          statuses={[]}
-        />
+          cancelAction={{
+            label: t("common:actions.cancel"),
+            onClick: () => setConvertTarget(null),
+            disabled: isConverting,
+          }}
+        >
+          <div className="grid gap-4 py-2">
+            <div className="rounded-lg border bg-muted/20 p-3 text-sm">
+              <div className="font-medium">{convertTarget.customer?.customer_name || "—"}</div>
+              <div className="text-muted-foreground">
+                {convertTarget.quote_code} •{" "}
+                {Number(convertTarget.quote_value).toLocaleString("vi-VN")} VNĐ
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label required>{t("sales:contract.form.fields.sales_rep")}</Label>
+                <SearchableSelect
+                  value={convertSalesRepId}
+                  onValueChange={setConvertSalesRepId}
+                  options={employees.map((employee) => ({
+                    label: employee.label,
+                    value: employee.value?.toString() || employee.id?.toString() || "",
+                  }))}
+                  placeholder={t("sales:contract.form.fields.sales_placeholder")}
+                />
+              </div>
+              <CommonDatePicker
+                label={t("sales:contract.form.fields.contract_date")}
+                value={convertContractDate}
+                onChange={(value) => setConvertContractDate(value || "")}
+                required
+              />
+              <CommonDatePicker
+                label={t("sales:contract.form.fields.signed_date")}
+                value={convertSignedDate}
+                onChange={setConvertSignedDate}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("sales:contract.form.fields.content")}</Label>
+              <Textarea
+                rows={3}
+                value={convertContent}
+                onChange={(event) => setConvertContent(event.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("sales:contract.form.fields.terms")}</Label>
+              <Textarea
+                rows={3}
+                value={convertTerms}
+                onChange={(event) => setConvertTerms(event.target.value)}
+              />
+            </div>
+          </div>
+        </CommonDialog>
       )}
     </div>
   )

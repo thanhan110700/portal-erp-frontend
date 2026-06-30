@@ -81,7 +81,7 @@ export function ContractFormModal({
       contract_date: new Date().toISOString().split("T")[0],
       signed_date: "",
       contract_value: 0,
-      status: "Draft",
+      status: "draft",
       content: "",
       terms: "",
     },
@@ -102,7 +102,7 @@ export function ContractFormModal({
             typeof editData.contract_value === "string"
               ? parseFloat(editData.contract_value)
               : editData.contract_value || 0,
-          status: editData.status || "Draft",
+          status: editData.status || "draft",
           content: editData.content || "",
           terms: editData.terms || "",
         })
@@ -114,7 +114,7 @@ export function ContractFormModal({
           contract_date: new Date().toISOString().split("T")[0],
           signed_date: "",
           contract_value: 0,
-          status: "Draft",
+          status: "draft",
           content: "",
           terms: "",
         })
@@ -144,7 +144,7 @@ export function ContractFormModal({
 
   // Filter quotes by selected customer
   const filteredQuotes = customerIdValue
-    ? quotes.filter((q) => parseInt(q.customer_id as string) === customerIdValue)
+    ? quotes.filter((q) => Number(q.customer_id) === customerIdValue)
     : quotes
 
   return (
@@ -267,10 +267,10 @@ export function ContractFormModal({
                           value: item.value.toString(),
                         }))
                       : [
-                          { label: "Draft", value: "Draft" },
-                          { label: "Signed", value: "Signed" },
-                          { label: "Ongoing", value: "Ongoing" },
-                          { label: "Completed", value: "Completed" },
+                          { label: "Draft", value: "draft" },
+                          { label: "Signed", value: "signed" },
+                          { label: "Ongoing", value: "ongoing" },
+                          { label: "Completed", value: "completed" },
                         ]
                   }
                   placeholder={t("sales:contract.form.fields.status_placeholder")}

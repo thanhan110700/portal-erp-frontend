@@ -55,16 +55,16 @@ export function ContractTable({
         ),
       },
       {
-        accessorKey: "customer.name",
+        accessorKey: "customer.customer_name",
         header: t("sales:contract.columns.customer"),
         size: 200,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
             <span className="font-semibold text-sm">
-              {row.original.customer?.customer_name ?? row.original.customer?.name ?? "—"}
+              {row.original.customer?.customer_name ?? "—"}
             </span>
             <span className="text-xs text-muted-foreground">
-              {row.original.customer?.phone || ""}
+              {row.original.customer?.customer_code || ""}
             </span>
           </div>
         ),

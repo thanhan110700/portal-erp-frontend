@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { FileSignature, Plus, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
+import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
@@ -40,6 +41,7 @@ export function ContractListPage() {
     search: "",
     status: "",
   })
+  const [dateRange, setDateRange] = useState<DateRangeValue | null>(null)
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
@@ -96,32 +98,82 @@ export function ContractListPage() {
         field: "status",
         type: "select",
         label: t("common:status.status"),
-        placeholder: t("common:filters.all"),
+        placeholder: t("common:filter.all"),
         value: params.status || "",
         options: statuses.map((c) => ({
           label: c.label,
           value: c.value?.toString(),
         })),
       },
+      {
+        field: "customer_id",
+        type: "select",
+        label: t("sales:contract.columns.customer"),
+        placeholder: t("sales:quote.filters.all_customers"),
+        value: params.customer_id?.toString() || "",
+        options: customers.map((customer) => ({
+          label: customer.label,
+          value: customer.value?.toString() || customer.id?.toString() || "",
+        })),
+      },
+      {
+        field: "sales_rep_id",
+        type: "select",
+        label: t("sales:contract.columns.sales_rep"),
+        placeholder: t("common:filter.all"),
+        value: params.sales_rep_id?.toString() || "",
+        options: salesReps.map((employee) => ({
+          label: employee.label,
+          value: employee.value?.toString() || employee.id?.toString() || "",
+        })),
+      },
+      {
+        field: "dateRange",
+        type: "daterange",
+        label: t("sales:contract.filters.contract_date", { defaultValue: "Ngày hợp đồng" }),
+        placeholder: t("sales:quote.filters.time_range"),
+        value: dateRange,
+      },
     ],
-    [params.search, params.status, statuses, t],
+    [
+      params.search,
+      params.status,
+      params.customer_id,
+      params.sales_rep_id,
+      statuses,
+      customers,
+      salesReps,
+      dateRange,
+      t,
+    ],
   )
 
   const handleApplyFilters = (values: Record<string, unknown>) => {
+    const range = values.dateRange as DateRangeValue | null
+    setDateRange(range)
     setParams((prev) => ({
       ...prev,
       page: 1,
       search: (values.search as string) || undefined,
       status: (values.status as string) || undefined,
+      customer_id: values.customer_id ? Number(values.customer_id) : undefined,
+      sales_rep_id: values.sales_rep_id ? Number(values.sales_rep_id) : undefined,
+      date_from: range?.from || undefined,
+      date_to: range?.to || undefined,
     }))
   }
 
   const handleResetFilters = () => {
+    setDateRange(null)
     setParams((prev) => ({
       ...prev,
       page: 1,
       search: undefined,
       status: undefined,
+      customer_id: undefined,
+      sales_rep_id: undefined,
+      date_from: undefined,
+      date_to: undefined,
     }))
   }
 

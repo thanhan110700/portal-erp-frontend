@@ -5,13 +5,17 @@ import type {
   ContractPaginatedResponse,
   CreateContractPayload,
   UpdateContractPayload,
+  ContractFinancials,
 } from "../types/sales"
 
 export interface ListContractsParams {
-  search?: string
-  customer_id?: number | string
-  status?: string
-  per_page?: number
+  search?: string | null
+  customer_id?: number | string | null
+  sales_rep_id?: number | string | null
+  status?: string | null
+  date_from?: string | null
+  date_to?: string | null
+  per_page?: number | null
   page?: number
 }
 
@@ -50,5 +54,22 @@ export const contractApi = {
 
   async deleteFile(id: number, fileId: number): Promise<void> {
     await axiosInstance.delete(`/v1/contracts/${id}/files/${fileId}`)
+  },
+
+  async recordPayment(id: number, amount: number): Promise<Contract> {
+    const response = await axiosInstance.post<ApiResponse<Contract>>(
+      `/v1/contracts/${id}/payments`,
+      {
+        amount,
+      },
+    )
+    return response.data.data
+  },
+
+  async getFinancials(id: number): Promise<ContractFinancials> {
+    const response = await axiosInstance.get<ApiResponse<ContractFinancials>>(
+      `/v1/contracts/${id}/financials`,
+    )
+    return response.data.data
   },
 }

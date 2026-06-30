@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import type { CreateInteractionPayload } from "../types/sales"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
-import { useAuthStore } from "@/hooks/useAuthStore"
 import { useTranslation } from "react-i18next"
 
 interface InteractionFormModalProps {
@@ -19,7 +18,6 @@ interface InteractionFormModalProps {
 export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFormModalProps) {
   const { t } = useTranslation()
   const [types, setTypes] = useState<OptionItem[]>([])
-  const user = useAuthStore((s) => s.user)
 
   const {
     register,
@@ -28,10 +26,10 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
     formState: { errors, isSubmitting },
   } = useForm<CreateInteractionPayload>({
     defaultValues: {
-      type: "Call",
+      interaction_type: "call",
       interaction_date: new Date().toISOString().split("T")[0],
       content: "",
-      user_id: user?.id || 0,
+      next_follow_up: null,
     },
   })
 
@@ -66,7 +64,7 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
               {t("sales:interaction.fields.type")}
             </Label>
             <Controller
-              name="type"
+              name="interaction_type"
               control={control}
               rules={{ required: t("sales:interaction.validation.type_required") }}
               render={({ field }) => (
@@ -80,10 +78,10 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
                           value: item.value.toString(),
                         }))
                       : [
-                          { label: t("sales:interaction.default_types.call"), value: "Call" },
-                          { label: t("sales:interaction.default_types.email"), value: "Email" },
-                          { label: t("sales:interaction.default_types.meeting"), value: "Meeting" },
-                          { label: t("sales:interaction.default_types.zalo"), value: "Zalo" },
+                          { label: t("sales:interaction.default_types.call"), value: "call" },
+                          { label: t("sales:interaction.default_types.email"), value: "email" },
+                          { label: t("sales:interaction.default_types.meeting"), value: "meeting" },
+                          { label: t("sales:interaction.default_types.other"), value: "other" },
                         ]
                   }
                   placeholder={t("sales:interaction.fields.type_placeholder")}
@@ -109,6 +107,21 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
             />
           </div>
         </div>
+
+        <Controller
+          name="next_follow_up"
+          control={control}
+          render={({ field, fieldState }) => (
+            <CommonDatePicker
+              label={t("sales:interaction.fields.next_follow_up", {
+                defaultValue: "Ngày hẹn tiếp theo",
+              })}
+              value={field.value || null}
+              onChange={field.onChange}
+              error={fieldState.error?.message}
+            />
+          )}
+        />
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="i-content" required>

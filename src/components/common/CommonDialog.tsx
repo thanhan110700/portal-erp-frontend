@@ -97,7 +97,7 @@ const sizeClass: Record<DialogSize, string> = {
   lg: "sm:max-w-lg",
   xl: "sm:max-w-xl",
   "2xl": "sm:max-w-2xl",
-  full: "sm:max-w-[calc(100vw-2rem)] sm:max-h-[calc(100vh-2rem)]",
+  full: "sm:max-w-[calc(100vw-2rem)]",
 }
 
 function resolveAction(action: DialogAction | true, defaults: Partial<DialogAction>): DialogAction {
@@ -182,22 +182,26 @@ export function CommonDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent
         showCloseButton={showCloseButton}
-        className={cn(sizeClass[size], contentClassName)}
+        className={cn(
+          "flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden",
+          sizeClass[size],
+          contentClassName,
+        )}
       >
         {/* Header */}
         {(title || description) && (
-          <DialogHeader className={headerClassName}>
+          <DialogHeader className={cn("shrink-0 pr-10", headerClassName)}>
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
         )}
 
         {/* Body */}
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">{children}</div>
 
         {/* Footer */}
         {hasFooter && (
-          <DialogFooter className={footerClassName}>
+          <DialogFooter className={cn("shrink-0", footerClassName)}>
             {/* Extra actions (leftmost) */}
             {extraActions?.map((action, idx) => (
               <ActionButton key={idx} action={action} onClose={onClose} />

@@ -505,7 +505,6 @@ export function ReportDashboardPage() {
             reportApi.getQuoteConversion({
               year,
               month: mVal,
-              sales_rep_id: salesRepId ? parseInt(salesRepId) : undefined,
             }),
           ])
           setSalesRevenueData(rev)
@@ -783,6 +782,34 @@ export function ReportDashboardPage() {
               value="sales-performance"
               className="m-0 focus-visible:outline-none space-y-6"
             >
+              {salesRevenueData.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[...salesRevenueData]
+                    .sort((a, b) => Number(b.total_contract_value) - Number(a.total_contract_value))
+                    .slice(0, 3)
+                    .map((row, index) => (
+                      <div key={row.sales_rep.id} className="rounded-xl border bg-card p-5">
+                        <p className="text-xs font-semibold text-muted-foreground">
+                          {t("reports:salesPerformance.top_performer", {
+                            rank: index + 1,
+                            defaultValue: "Top performer #{{rank}}",
+                          })}
+                        </p>
+                        <p className="mt-1 font-semibold">{row.sales_rep.full_name}</p>
+                        <p className="mt-2 font-mono text-lg font-bold text-primary">
+                          {Number(row.total_contract_value).toLocaleString("vi-VN")} ₫
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("reports:salesPerformance.contract_count", {
+                            count: row.contract_count,
+                            defaultValue: "{{count}} hợp đồng",
+                          })}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-6 md:gap-6">
                 {/* Rep Revenue Chart */}
                 <Card className="col-span-2 shadow-sm">

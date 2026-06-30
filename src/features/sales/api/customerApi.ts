@@ -46,6 +46,22 @@ export const customerApi = {
     await axiosInstance.delete(`/v1/customers/${id}`)
   },
 
+  async export(params: ListCustomersParams = {}): Promise<Blob> {
+    const response = await axiosInstance.get<Blob>("/v1/customers/export", {
+      params,
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async bulkDelete(ids: number[]): Promise<number> {
+    const response = await axiosInstance.post<ApiResponse<{ deleted: number }>>(
+      "/v1/customers/bulk-delete",
+      { ids },
+    )
+    return response.data.data.deleted
+  },
+
   // ── Contacts ─────────────────────────────────────────────────────────────
   async getContacts(customerId: number): Promise<Contact[]> {
     const response = await axiosInstance.get<ApiResponse<Contact[]>>(

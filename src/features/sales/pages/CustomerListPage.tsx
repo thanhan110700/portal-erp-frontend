@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
-import { Users, Plus, RefreshCw } from "lucide-react"
+import { Users, Plus, RefreshCw, Download, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 
 import { customerApi, type ListCustomersParams } from "../api/customerApi"
 import type { Customer, CreateCustomerPayload, UpdateCustomerPayload } from "../types/sales"
@@ -26,6 +27,8 @@ export function CustomerListPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   // Options
   const [classifications, setClassifications] = useState<OptionItem[]>([])
@@ -57,6 +60,9 @@ export function CustomerListPage() {
       const res = await customerApi.list(params)
       setCustomers(res.data)
       setTotalCount(res.meta.total)
+      setSelectedIds((current) =>
+        current.filter((id) => res.data.some((customer) => customer.id === id)),
+      )
     } catch {
       toast.error(t("sales:customer_list.fetch_error"))
     } finally {
@@ -148,6 +154,48 @@ export function CustomerListPage() {
     }
   }
 
+  const handleExport = async () => {
+    try {
+      const blob = await customerApi.export({
+        search: params.search,
+        classification: params.classification,
+        sales_rep_id: params.sales_rep_id,
+      })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = "customers.xlsx"
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      toast.success(
+        t("sales:customer_list.export_success", { defaultValue: "Đã xuất file khách hàng" }),
+      )
+    } catch {
+      toast.error(t("sales:customer_list.export_error", { defaultValue: "Xuất file thất bại" }))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    try {
+      await customerApi.bulkDelete(selectedIds)
+      toast.success(
+        t("sales:customer_list.bulk_delete_success", {
+          count: selectedIds.length,
+          defaultValue: "Đã xóa khách hàng đã chọn",
+        }),
+      )
+      setSelectedIds([])
+      setBulkDeleteOpen(false)
+      void loadData()
+    } catch {
+      toast.error(
+        t("sales:customer_list.bulk_delete_error", { defaultValue: "Xóa hàng loạt thất bại" }),
+      )
+    }
+  }
+
   const handleSubmitForm = async (payload: CreateCustomerPayload | UpdateCustomerPayload) => {
     try {
       if (editTarget) {
@@ -178,6 +226,29 @@ export function CustomerListPage() {
           </div>
         </div>
         <div className="flex gap-2 self-start sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+            className="gap-1.5"
+          >
+            <Download className="size-3.5" />
+            {t("sales:customer_list.export", { defaultValue: "Xuất Excel" })}
+          </Button>
+          {canDelete && selectedIds.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setBulkDeleteOpen(true)}
+              className="gap-1.5"
+            >
+              <Trash2 className="size-3.5" />
+              {t("sales:customer_list.bulk_delete", {
+                count: selectedIds.length,
+                defaultValue: "Xóa đã chọn",
+              })}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -214,6 +285,8 @@ export function CustomerListPage() {
           canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={setSelectedIds}
         />
 
         <TablePagination
@@ -236,6 +309,19 @@ export function CustomerListPage() {
           salesReps={salesReps}
         />
       )}
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={t("sales:customer_list.bulk_delete_title", {
+          defaultValue: "Xóa khách hàng đã chọn?",
+        })}
+        description={t("sales:customer_list.bulk_delete_confirm", {
+          count: selectedIds.length,
+          defaultValue: "Hành động này sẽ xóa các khách hàng đã chọn và không thể hoàn tác.",
+        })}
+      />
     </div>
   )
 }
