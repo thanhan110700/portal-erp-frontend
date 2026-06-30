@@ -182,7 +182,6 @@ export function EmployeeDetailPage() {
           {canAssignProjects && (
             <Button
               id="btn-assign-projects"
-              variant="outline"
               size="sm"
               onClick={() => setProjectDrawerOpen(true)}
               className="gap-2 min-h-11 md:min-h-9"
@@ -338,7 +337,7 @@ export function EmployeeDetailPage() {
               {t("hr:employees.projects_title", { defaultValue: "Dự án tham gia" })}
             </CardTitle>
             {canAssignProjects && (
-              <Button variant="ghost" size="sm" onClick={() => setProjectDrawerOpen(true)}>
+              <Button size="sm" onClick={() => setProjectDrawerOpen(true)}>
                 {t("hr:employees.actions.assign_projects")}
               </Button>
             )}

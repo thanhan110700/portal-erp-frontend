@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { CommonDialog } from "@/components/common/CommonDialog"
 import { CommonDatePicker } from "@/components/common/CommonDatePicker"
+import { FileUploadField } from "@/components/common/FileUploadField"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,6 +24,7 @@ const getExpenseSchema = (t: any) =>
       .string()
       .min(1, t("projects:expenses.form.validation.description_required"))
       .max(1000, t("projects:expenses.form.validation.description_max")),
+    file: z.any().optional(),
   })
 
 interface ProjectExpenseFormModalProps {
@@ -48,6 +50,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
       amount: 0,
       expense_date: "",
       description: "",
+      file: null,
     },
   })
 
@@ -60,6 +63,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         amount: 0,
         expense_date: new Date().toISOString().split("T")[0],
         description: "",
+        file: null,
       })
     }
   }, [open, reset])
@@ -71,6 +75,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         amount: data.amount,
         expense_date: data.expense_date,
         description: data.description,
+        files: data.file ? [data.file] : [],
       }
       await onSubmit(payload)
     } catch (error) {
@@ -114,9 +119,11 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
                 <SearchableSelect
                   value={field.value}
                   onValueChange={field.onChange}
-                  options={expenseTypes.map((t) => ({
-                    label: t.label,
-                    value: t.value?.toString() || t.id?.toString() || "",
+                  options={expenseTypes.map((tItem) => ({
+                    label: t(`projects:expense_types.${tItem.value}`, {
+                      defaultValue: tItem.label,
+                    }),
+                    value: tItem.value?.toString() || tItem.id?.toString() || "",
                   }))}
                   placeholder={t("projects:expenses.form.type_placeholder")}
                 />
@@ -177,6 +184,15 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
           {errors.description && (
             <p className="text-xs text-destructive">{errors.description.message as string}</p>
           )}
+        </div>
+
+        <div className="space-y-1.5">
+          <FileUploadField
+            control={control}
+            name="file"
+            label={t("projects:expenses.form.files_label", { defaultValue: "Hóa đơn / Chứng từ" })}
+            accept=".pdf,image/*,.doc,.docx,.xls,.xlsx"
+          />
         </div>
       </form>
     </CommonDialog>

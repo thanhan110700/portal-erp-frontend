@@ -263,14 +263,26 @@ export function ContractFormModal({
                   options={
                     statuses.length > 0
                       ? statuses.map((item) => ({
-                          label: item.label,
+                          label: t(`common:status.${item.value}`, { defaultValue: item.label }),
                           value: item.value.toString(),
                         }))
                       : [
-                          { label: "Draft", value: "draft" },
-                          { label: "Signed", value: "signed" },
-                          { label: "Ongoing", value: "ongoing" },
-                          { label: "Completed", value: "completed" },
+                          {
+                            label: t("common:status.draft", { defaultValue: "Draft" }),
+                            value: "draft",
+                          },
+                          {
+                            label: t("common:status.signed", { defaultValue: "Signed" }),
+                            value: "signed",
+                          },
+                          {
+                            label: t("common:status.ongoing", { defaultValue: "Ongoing" }),
+                            value: "ongoing",
+                          },
+                          {
+                            label: t("common:status.completed", { defaultValue: "Completed" }),
+                            value: "completed",
+                          },
                         ]
                   }
                   placeholder={t("sales:contract.form.fields.status_placeholder")}

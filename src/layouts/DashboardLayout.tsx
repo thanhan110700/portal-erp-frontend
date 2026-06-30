@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/common/ThemeToggle"
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher"
 import { MobileBottomNav } from "@/components/common/MobileBottomNav"
 import { MobileSubNav } from "@/components/common/MobileSubNav"
 import { useIsMobile } from "@/hooks/useMobile"
@@ -44,6 +45,7 @@ function DashboardLayoutInner() {
               <Separator orientation="vertical" className="mr-1 h-4" />
             </div>
             <div className="flex items-center gap-1">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
           </header>

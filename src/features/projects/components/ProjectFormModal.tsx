@@ -33,6 +33,9 @@ const getProjectSchema = (t: any) =>
         }),
       }),
       contract_id: z.number().optional().nullable().or(z.literal(0)),
+      quote_id: z.number().optional().nullable().or(z.literal(0)),
+      site: z.string().optional().nullable(),
+      items: z.string().optional().nullable(),
       start_date: z
         .string()
         .min(
@@ -90,6 +93,7 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
 
   const [customers, setCustomers] = useState<OptionItem[]>([])
   const [contracts, setContracts] = useState<OptionItem[]>([])
+  const [quotes, setQuotes] = useState<OptionItem[]>([])
   const [statuses, setStatuses] = useState<OptionItem[]>([])
 
   const {
@@ -112,11 +116,13 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
         optionApi.getCustomers(),
         optionApi.getContracts(),
         optionApi.getProjectStatuses(),
+        optionApi.getQuotes(),
       ])
-        .then(([cus, ctr, stat]) => {
+        .then(([cus, ctr, stat, quo]) => {
           setCustomers(cus)
           setContracts(ctr)
           setStatuses(stat)
+          setQuotes(quo || [])
         })
         .catch(console.error)
     }
@@ -133,6 +139,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
             contract_id: data.contract_id || data.contract?.id || undefined,
             start_date: data.start_date || "",
             end_date: data.end_date || "",
+            quote_id: data.quote_id || undefined,
+            site: data.site || "",
+            items: data.items ? data.items.join(", ") : "",
             contract_value:
               typeof data.contract_value === "string"
                 ? parseFloat(data.contract_value)
@@ -148,6 +157,9 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
         project_name: "",
         customer_id: undefined,
         contract_id: undefined,
+        quote_id: undefined,
+        site: "",
+        items: "",
         contract_value: 0,
         start_date: new Date().toISOString().split("T")[0],
         end_date: "",
@@ -161,10 +173,24 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
   const onSubmit = async (data: ProjectFormValues) => {
     try {
       if (isEdit && editingId) {
-        await projectApi.update(editingId, data as UpdateProjectPayload)
+        const payload: any = { ...data }
+        if (typeof payload.items === "string") {
+          payload.items = payload.items
+            .split(",")
+            .map((i: string) => i.trim())
+            .filter(Boolean)
+        }
+        await projectApi.update(editingId, payload as UpdateProjectPayload)
         toast.success(t("projects:form.update_success"))
       } else {
-        await projectApi.create(data as CreateProjectPayload)
+        const payload: any = { ...data }
+        if (typeof payload.items === "string") {
+          payload.items = payload.items
+            .split(",")
+            .map((i: string) => i.trim())
+            .filter(Boolean)
+        }
+        await projectApi.create(payload as CreateProjectPayload)
         toast.success(t("projects:form.create_success"))
       }
       onSuccess()
@@ -207,7 +233,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               <p className="text-xs text-destructive">{errors.project_name.message}</p>
             )}
           </div>
-
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="p-customer" required>
               {t("projects:form.customer")}
@@ -231,7 +256,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               <p className="text-xs text-destructive">{errors.customer_id.message as string}</p>
             )}
           </div>
-
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="p-contract">{t("projects:form.contract")}</Label>
             <Controller
@@ -253,7 +277,43 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               )}
             />
           </div>
-
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="p-quote">{t("projects:form.quote")}</Label>
+            <Controller
+              name="quote_id"
+              control={control}
+              render={({ field }) => (
+                <SearchableSelect
+                  value={field.value != null ? field.value.toString() : ""}
+                  onValueChange={(val) => field.onChange(parseInt(val))}
+                  options={[
+                    { label: t("projects:form.contract_none"), value: "0" },
+                    ...quotes.map((q) => ({
+                      label: q.label,
+                      value: (q.value ?? q.id)?.toString() || "",
+                    })),
+                  ]}
+                  placeholder={t("projects:form.quote_placeholder")}
+                />
+              )}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="p-site">{t("projects:form.site")}</Label>
+            <Input
+              id="p-site"
+              placeholder={t("projects:form.site_placeholder")}
+              {...register("site")}
+            />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <Label htmlFor="p-items">{t("projects:form.items")}</Label>
+            <Input
+              id="p-items"
+              placeholder={t("projects:form.items_placeholder")}
+              {...register("items")}
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <Controller
               name="start_date"
@@ -269,7 +329,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               )}
             />
           </div>
-
           <div className="flex flex-col gap-1.5">
             <Controller
               name="end_date"
@@ -284,7 +343,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               )}
             />
           </div>
-
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="p-value" required>
               {t("projects:form.value")}
@@ -299,7 +357,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               <p className="text-xs text-destructive">{errors.contract_value.message}</p>
             )}
           </div>
-
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="p-status">{t("projects:form.status")}</Label>
             <Controller
@@ -342,7 +399,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               }}
             />
           </div>
-
           {isEdit && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="p-progress">
@@ -359,7 +415,6 @@ export function ProjectFormModal({ open, onClose, onSuccess, editingId }: Projec
               )}
             </div>
           )}
-
           <div className="col-span-2 flex flex-col gap-1.5">
             <Label htmlFor="p-desc">{t("projects:form.description")}</Label>
             <Textarea id="p-desc" rows={3} {...register("description")} />

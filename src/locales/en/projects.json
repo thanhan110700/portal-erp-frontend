@@ -41,6 +41,12 @@
     "contract": "Contract (Optional)",
     "contract_none": "--- No Link ---",
     "contract_placeholder": "Select contract",
+    "quote": "Linked Quote",
+    "quote_placeholder": "Select quote...",
+    "site": "Site / Location",
+    "site_placeholder": "Enter site location...",
+    "items": "Related Items",
+    "items_placeholder": "Enter items...",
     "start_date": "Start Date",
     "end_date": "End Date (Expected)",
     "value": "Contract Value (VND)",
@@ -230,7 +236,8 @@
         "description_max": "Description maximum 1000 characters",
         "save_error": "Error submitting expense request"
       },
-      "notes": "Notes (Optional)"
+      "notes": "Notes (Optional)",
+      "files_label": "Invoices / Attached Documents"
     }
   },
   "files": {

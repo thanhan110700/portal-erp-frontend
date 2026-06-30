@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import type { ProjectExpense } from "../types/project"
 import { projectApi } from "../api/projectApi"
+import { voucherApi } from "@/features/finance/api/voucherApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
 import { ProjectExpenseDetailDialog } from "./ProjectExpenseDetailDialog"
 import { useTranslation } from "react-i18next"
@@ -39,6 +40,8 @@ export function ProjectExpensesTab({
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
   const [rejectConfirmId, setRejectConfirmId] = useState<number | null>(null)
   const [rejectReason, setRejectReason] = useState("")
+  const [voucherConfirmExpense, setVoucherConfirmExpense] = useState<ProjectExpense | null>(null)
+  const [isCreatingVoucher, setIsCreatingVoucher] = useState(false)
 
   const handleCreate = async (payload: any) => {
     try {
@@ -58,11 +61,16 @@ export function ProjectExpensesTab({
         toast.success(t("projects:expenses.approve_success"))
         setDetailOpen(false)
         onRefresh()
+
+        const expense = expenses.find((e) => e.id === expenseId)
+        if (expense) {
+          setVoucherConfirmExpense(expense)
+        }
       } catch {
         toast.error(t("projects:expenses.approve_error"))
       }
     },
-    [projectId, onRefresh, t],
+    [projectId, expenses, onRefresh, t],
   )
 
   const handleReject = useCallback((expenseId: number) => {
@@ -105,6 +113,26 @@ export function ProjectExpensesTab({
   const handleRemove = useCallback((expenseId: number) => {
     setDeleteConfirmId(expenseId)
   }, [])
+
+  const executeCreateVoucher = async () => {
+    if (!voucherConfirmExpense) return
+    setIsCreatingVoucher(true)
+    try {
+      await voucherApi.create({
+        voucher_type: "payment",
+        amount: Number(voucherConfirmExpense.amount),
+        voucher_date: new Date().toISOString().split("T")[0],
+        description: `Thanh toán chi phí dự án: ${voucherConfirmExpense.description || ""}`,
+        project_id: projectId,
+      })
+      toast.success(t("common:messages.success", { defaultValue: "Tạo phiếu chi thành công" }))
+    } catch {
+      toast.error(t("common:messages.error", { defaultValue: "Lỗi tạo phiếu chi" }))
+    } finally {
+      setIsCreatingVoucher(false)
+      setVoucherConfirmExpense(null)
+    }
+  }
 
   const columns = useMemo<MRT_ColumnDef<ProjectExpense>[]>(
     () => [
@@ -357,6 +385,18 @@ export function ProjectExpensesTab({
           />
         </div>
       </CommonDialog>
+
+      <ConfirmDialog
+        open={voucherConfirmExpense !== null}
+        onClose={() => setVoucherConfirmExpense(null)}
+        onConfirm={executeCreateVoucher}
+        title={t("projects:expenses.create_voucher_confirm", {
+          defaultValue: "Bạn có muốn tự động tạo phiếu chi cho khoản này không?",
+        })}
+        confirmText={t("common:actions.confirm", { defaultValue: "Đồng ý" })}
+        isDangerous={false}
+        loading={isCreatingVoucher}
+      />
     </div>
   )
 }

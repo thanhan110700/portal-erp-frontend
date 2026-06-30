@@ -74,7 +74,9 @@ export function InteractionFormModal({ open, onClose, onSubmit }: InteractionFor
                   options={
                     types.length > 0
                       ? types.map((item) => ({
-                          label: item.label,
+                          label: t(`sales:interaction.default_types.${item.value}`, {
+                            defaultValue: item.label,
+                          }),
                           value: item.value.toString(),
                         }))
                       : [

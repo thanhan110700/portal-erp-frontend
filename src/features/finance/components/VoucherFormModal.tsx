@@ -207,7 +207,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
                   onValueChange={field.onChange}
                   options={voucherTypes.map((v) => ({
                     value: v.value.toString(),
-                    label: v.label,
+                    label: t(`finance:list.types.${v.value}`, { defaultValue: v.label }),
                   }))}
                   placeholder={t("finance:form.type_placeholder")}
                   disabled={isEditing}

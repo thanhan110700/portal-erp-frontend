@@ -268,7 +268,7 @@ export function CustomerFormModal({
                 value={classificationValue || ""}
                 onValueChange={(val) => setValue("classification", val || null)}
                 options={classifications.map((item) => ({
-                  label: item.label,
+                  label: t(`common:status.${item.value}`, { defaultValue: item.label }),
                   value: item.value?.toString() || item.id?.toString() || "",
                 }))}
                 placeholder={t("sales:customer_form.fields.classification_placeholder")}

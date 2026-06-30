@@ -9,6 +9,9 @@ export interface Project {
   customer?: { id: number; name: string } | null
   contract_id: number | null
   contract?: { id: number; name: string } | null
+  quote_id?: number | null
+  site?: string | null
+  items?: string[] | null
   creator?: { id: number; full_name: string } | null
   start_date: string | null
   end_date: string | null
@@ -33,6 +36,9 @@ export interface CreateProjectPayload {
   project_name: string
   customer_id: number
   contract_id?: number | null
+  quote_id?: number | null
+  site?: string | null
+  items?: string[] | null
   start_date: string
   end_date?: string | null
   contract_value: number
@@ -109,6 +115,7 @@ export interface CreateProjectExpensePayload {
   amount: number
   expense_date: string
   description: string
+  files?: File[]
 }
 
 export interface UpdateProjectExpenseStatusPayload {

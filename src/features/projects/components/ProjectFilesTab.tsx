@@ -340,7 +340,9 @@ export function ProjectFilesTab({
                           value={field.value}
                           onValueChange={field.onChange}
                           options={categories.map((c) => ({
-                            label: c.label,
+                            label: t(`projects:file_categories.${c.value}`, {
+                              defaultValue: c.label,
+                            }),
                             value: c.value?.toString() || c.id?.toString() || "",
                           }))}
                           placeholder={t("projects:files.category_placeholder")}

@@ -41,6 +41,12 @@
     "contract": "Hợp đồng (Tùy chọn)",
     "contract_none": "--- Không liên kết ---",
     "contract_placeholder": "Chọn hợp đồng",
+    "quote": "Báo giá liên kết",
+    "quote_placeholder": "Chọn báo giá...",
+    "site": "Công trình / Địa điểm thi công",
+    "site_placeholder": "Nhập địa điểm thi công...",
+    "items": "Hạng mục liên quan",
+    "items_placeholder": "Nhập hạng mục...",
     "start_date": "Ngày bắt đầu",
     "end_date": "Ngày kết thúc (dự kiến)",
     "value": "Giá trị hợp đồng (VNĐ)",
@@ -230,7 +236,8 @@
         "description_max": "Mô tả tối đa 1000 ký tự",
         "save_error": "Lỗi khi gửi yêu cầu chi phí"
       },
-      "notes": "Ghi chú (Tùy chọn)"
+      "notes": "Ghi chú (Tùy chọn)",
+      "files_label": "Hóa đơn / Chứng từ đính kèm"
     }
   },
   "files": {
