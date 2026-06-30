@@ -39,6 +39,22 @@ const createAssignProjectsSchema = (t: TFunction) =>
               .min(0, t("hr:employees.assign_projects.validation.labor_cost_min"))
               .nullable()
               .optional(),
+            allocation_percent: z
+              .number()
+              .min(
+                0,
+                t("hr:employees.assign_projects.validation.allocation_percent_min", {
+                  defaultValue: "Tối thiểu 0",
+                }),
+              )
+              .max(
+                100,
+                t("hr:employees.assign_projects.validation.allocation_percent_max", {
+                  defaultValue: "Tối đa 100",
+                }),
+              )
+              .nullable()
+              .optional(),
             notes: z
               .string()
               .max(1000, t("hr:employees.assign_projects.validation.notes_max"))
@@ -90,7 +106,15 @@ export function EmployeeProjectsDialog({
     resolver: zodResolver(createAssignProjectsSchema(t)),
     defaultValues: {
       projects: [
-        { project_id: 0, role: "", start_date: "", end_date: "", labor_cost: 0, notes: "" },
+        {
+          project_id: 0,
+          role: "",
+          start_date: "",
+          end_date: "",
+          labor_cost: 0,
+          allocation_percent: 0,
+          notes: "",
+        },
       ],
     },
   })
@@ -106,7 +130,15 @@ export function EmployeeProjectsDialog({
 
       reset({
         projects: [
-          { project_id: 0, role: "", start_date: "", end_date: "", labor_cost: 0, notes: "" },
+          {
+            project_id: 0,
+            role: "",
+            start_date: "",
+            end_date: "",
+            labor_cost: 0,
+            allocation_percent: 0,
+            notes: "",
+          },
         ],
       })
     }
@@ -117,6 +149,9 @@ export function EmployeeProjectsDialog({
       const mappedProjects = data.projects.map((p) => ({
         ...p,
         labor_cost: Number.isFinite(p.labor_cost ?? NaN) ? p.labor_cost : null,
+        allocation_percent: Number.isFinite(p.allocation_percent ?? NaN)
+          ? p.allocation_percent
+          : null,
       }))
       await onSubmit({ projects: mappedProjects })
       toast.success(t("hr:employees.assign_projects.update_success"))
@@ -190,14 +225,15 @@ export function EmployeeProjectsDialog({
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>{t("hr:employees.assign_projects.fields.role")}</Label>
-                <Input
-                  placeholder={t("hr:employees.assign_projects.fields.role_placeholder")}
-                  {...register(`projects.${index}.role`)}
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label>{t("hr:employees.assign_projects.fields.role")}</Label>
+              <Input
+                placeholder={t("hr:employees.assign_projects.fields.role_placeholder")}
+                {...register(`projects.${index}.role`)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>{t("hr:employees.assign_projects.fields.labor_cost")}</Label>
                 <Input
@@ -206,6 +242,21 @@ export function EmployeeProjectsDialog({
                   min="0"
                   placeholder="0"
                   {...register(`projects.${index}.labor_cost`, { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>
+                  {t("hr:employees.assign_projects.fields.allocation_percent", {
+                    defaultValue: "Tỷ lệ tham gia (%)",
+                  })}
+                </Label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  placeholder="0-100"
+                  {...register(`projects.${index}.allocation_percent`, { valueAsNumber: true })}
                 />
               </div>
             </div>
@@ -262,6 +313,7 @@ export function EmployeeProjectsDialog({
               start_date: "",
               end_date: "",
               labor_cost: 0,
+              allocation_percent: 0,
               notes: "",
             })
           }

@@ -36,6 +36,28 @@ const getMemberSchema = (t: any) =>
           .nullable()
           .optional(),
       ),
+      allocation_percent: z.preprocess(
+        (val) =>
+          val === "" || val === null || val === undefined || Number.isNaN(Number(val))
+            ? null
+            : Number(val),
+        z
+          .number()
+          .min(
+            0,
+            t("projects:members.form.validation.allocation_percent_min", {
+              defaultValue: "Tối thiểu 0",
+            }),
+          )
+          .max(
+            100,
+            t("projects:members.form.validation.allocation_percent_max", {
+              defaultValue: "Tối đa 100",
+            }),
+          )
+          .nullable()
+          .optional(),
+      ),
       notes: z
         .string()
         .max(1000, t("projects:members.form.validation.notes_max"))
@@ -87,6 +109,7 @@ export function ProjectMemberFormModal({
       start_date: "",
       end_date: "",
       labor_cost: "" as any,
+      allocation_percent: "" as any,
       notes: "",
     },
   })
@@ -101,7 +124,14 @@ export function ProjectMemberFormModal({
           role: editData.role || "",
           start_date: editData.start_date || "",
           end_date: editData.end_date || "",
-          labor_cost: editData.labor_cost ? Number(editData.labor_cost) : ("" as any),
+          labor_cost:
+            editData.labor_cost !== null && editData.labor_cost !== undefined
+              ? Number(editData.labor_cost)
+              : ("" as any),
+          allocation_percent:
+            editData.allocation_percent !== null && editData.allocation_percent !== undefined
+              ? Number(editData.allocation_percent)
+              : ("" as any),
           notes: editData.notes || "",
         })
       } else {
@@ -111,6 +141,7 @@ export function ProjectMemberFormModal({
           start_date: new Date().toISOString().split("T")[0],
           end_date: "",
           labor_cost: "" as any,
+          allocation_percent: "" as any,
           notes: "",
         })
       }
@@ -126,6 +157,10 @@ export function ProjectMemberFormModal({
         labor_cost:
           data.labor_cost !== undefined && data.labor_cost !== null
             ? Number(data.labor_cost)
+            : null,
+        allocation_percent:
+          data.allocation_percent !== undefined && data.allocation_percent !== null
+            ? Number(data.allocation_percent)
             : null,
         notes: data.notes || null,
       } as ProjectMemberFormPayload
@@ -146,7 +181,7 @@ export function ProjectMemberFormModal({
       title={
         isEditing ? t("projects:members.form.title_edit") : t("projects:members.form.title_add")
       }
-      size="lg"
+      size="2xl"
       primaryAction={{
         label: isSubmitting ? t("common:actions.saving") : t("common:actions.save"),
         type: "submit",
@@ -186,19 +221,19 @@ export function ProjectMemberFormModal({
           {errors.user_id && <p className="text-xs text-destructive">{errors.user_id.message}</p>}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="m-role">{t("projects:members.form.role")}</Label>
-            <Input
-              id="m-role"
-              placeholder={t("projects:members.form.role_placeholder")}
-              {...register("role")}
-            />
-            {errors.role && (
-              <p className="text-xs text-destructive">{errors.role.message as string}</p>
-            )}
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="m-role">{t("projects:members.form.role")}</Label>
+          <Input
+            id="m-role"
+            placeholder={t("projects:members.form.role_placeholder")}
+            {...register("role")}
+          />
+          {errors.role && (
+            <p className="text-xs text-destructive">{errors.role.message as string}</p>
+          )}
+        </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="m-labor-cost">{t("projects:members.form.labor_cost")}</Label>
             <Input
@@ -210,6 +245,26 @@ export function ProjectMemberFormModal({
             />
             {errors.labor_cost && (
               <p className="text-xs text-destructive">{errors.labor_cost.message as string}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="m-allocation-percent">
+              {t("projects:members.form.allocation_percent", { defaultValue: "Tỷ lệ (%)" })}
+            </Label>
+            <Input
+              id="m-allocation-percent"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              placeholder="0-100"
+              {...register("allocation_percent", { valueAsNumber: true })}
+            />
+            {errors.allocation_percent && (
+              <p className="text-xs text-destructive">
+                {errors.allocation_percent.message as string}
+              </p>
             )}
           </div>
         </div>

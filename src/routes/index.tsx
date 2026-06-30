@@ -141,24 +141,24 @@ export const router = createBrowserRouter([
                   },
                 ],
               },
-              {
-                element: (
-                  <RequirePermission permission={PermissionSlugs.ViewTimesheets}>
-                    <Outlet />
-                  </RequirePermission>
-                ),
-                children: [
-                  {
-                    path: routeSegment(PATHS.hrTimesheets),
-                    lazy: async () => {
-                      const { TimesheetListPage } =
-                        await import("@/features/hr/pages/TimesheetListPage")
-                      return { Component: TimesheetListPage }
-                    },
-                    handle: { title: "common:routes.hr_timesheets" },
-                  },
-                ],
-              },
+              // {
+              //   element: (
+              //     <RequirePermission permission={PermissionSlugs.ViewTimesheets}>
+              //       <Outlet />
+              //     </RequirePermission>
+              //   ),
+              //   children: [
+              //     {
+              //       path: routeSegment(PATHS.hrTimesheets),
+              //       lazy: async () => {
+              //         const { TimesheetListPage } =
+              //           await import("@/features/hr/pages/TimesheetListPage")
+              //         return { Component: TimesheetListPage }
+              //       },
+              //       handle: { title: "common:routes.hr_timesheets" },
+              //     },
+              //   ],
+              // },
               {
                 element: (
                   <RequirePermission permission={PermissionSlugs.ViewKpis}>

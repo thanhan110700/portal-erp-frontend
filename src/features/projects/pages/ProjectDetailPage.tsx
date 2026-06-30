@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useSearchParams } from "react-router-dom"
 import {
   ArrowLeft,
   Briefcase,
@@ -56,7 +56,9 @@ export function ProjectDetailPage() {
   const { t } = useTranslation(["projects", "common"])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const projectId = parseInt(id || "0")
+  const currentTab = searchParams.get("tab") || "members"
 
   const user = useAuthStore((s) => s.user)
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditProjects)
@@ -357,7 +359,11 @@ export function ProjectDetailPage() {
 
       {/* ── Main Area: Tabs for Members, Milestones, Expenses, Files, Vouchers ── */}
       <div className="w-full">
-        <Tabs defaultValue="members" className="w-full">
+        <Tabs
+          value={currentTab}
+          onValueChange={(val) => setSearchParams({ tab: val })}
+          className="w-full"
+        >
           <TabsList className="w-full flex justify-start md:grid md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto min-h-[48px] overflow-x-auto scrollbar-none whitespace-nowrap">
             <TabsTrigger
               value="members"

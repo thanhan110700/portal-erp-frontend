@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import type { ProjectExpense } from "../types/project"
+import type { ProjectExpense, CreateProjectExpensePayload } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { voucherApi } from "@/features/finance/api/voucherApi"
 import { ProjectExpenseFormModal } from "./ProjectExpenseFormModal"
@@ -43,7 +43,7 @@ export function ProjectExpensesTab({
   const [voucherConfirmExpense, setVoucherConfirmExpense] = useState<ProjectExpense | null>(null)
   const [isCreatingVoucher, setIsCreatingVoucher] = useState(false)
 
-  const handleCreate = async (payload: any) => {
+  const handleCreate = async (payload: CreateProjectExpensePayload) => {
     try {
       await projectApi.addExpense(projectId, payload)
       toast.success(t("projects:expenses.submit_success"))
@@ -213,6 +213,23 @@ export function ProjectExpensesTab({
                   <span className="font-medium text-foreground">{expense.approver.full_name}</span>
                 </div>
               )}
+            </div>
+          )
+        },
+      },
+      {
+        id: "voucher",
+        header: t("projects:expenses.columns.voucher", { defaultValue: "Phiếu chi" }),
+        size: 150,
+        Cell: ({ row }) => {
+          const voucher = row.original.voucher
+          if (!voucher) return <span className="text-muted-foreground">—</span>
+          return (
+            <div className="flex flex-col gap-1">
+              <span className="font-mono text-xs">{voucher.voucher_code}</span>
+              <div>
+                <StatusBadge status={voucher.status} />
+              </div>
             </div>
           )
         },

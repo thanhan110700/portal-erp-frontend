@@ -8,12 +8,15 @@ import { FileUploadField } from "@/components/common/FileUploadField"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Form } from "@/components/ui/form"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
+import type { CreateProjectExpensePayload } from "../types/project"
 
-const getExpenseSchema = (t: any) =>
+const getExpenseSchema = (t: TFunction) =>
   z.object({
     expense_type: z.string().min(1, t("projects:expenses.form.validation.type_required")),
     amount: z
@@ -24,18 +27,29 @@ const getExpenseSchema = (t: any) =>
       .string()
       .min(1, t("projects:expenses.form.validation.description_required"))
       .max(1000, t("projects:expenses.form.validation.description_max")),
-    file: z.any().optional(),
+    file: z.instanceof(File).optional(),
   })
 
 interface ProjectExpenseFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (payload: any) => Promise<void>
+  onSubmit: (payload: CreateProjectExpensePayload) => Promise<void>
 }
 
 export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpenseFormModalProps) {
   const { t } = useTranslation(["projects", "common"])
   const [expenseTypes, setExpenseTypes] = useState<OptionItem[]>([])
+
+  const form = useForm({
+    resolver: zodResolver(getExpenseSchema(t)),
+    defaultValues: {
+      expense_type: "",
+      amount: 0,
+      expense_date: "",
+      description: "",
+      file: undefined,
+    },
+  })
 
   const {
     register,
@@ -43,16 +57,7 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
     reset,
     control,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(getExpenseSchema(t)),
-    defaultValues: {
-      expense_type: "",
-      amount: 0,
-      expense_date: "",
-      description: "",
-      file: null,
-    },
-  })
+  } = form
 
   useEffect(() => {
     if (open) {
@@ -63,12 +68,12 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         amount: 0,
         expense_date: new Date().toISOString().split("T")[0],
         description: "",
-        file: null,
+        file: undefined,
       })
     }
   }, [open, reset])
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: z.infer<ReturnType<typeof getExpenseSchema>>) => {
     try {
       const payload = {
         expense_type: data.expense_type,
@@ -104,97 +109,101 @@ export function ProjectExpenseFormModal({ open, onClose, onSubmit }: ProjectExpe
         onClick: onClose,
       }}
     >
-      <form
-        id="project-expense-form"
-        onSubmit={handleSubmit(handleFormSubmit)}
-        className="grid gap-4 py-2"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label required>{t("projects:expenses.form.type")}</Label>
-            <Controller
-              name="expense_type"
-              control={control}
-              render={({ field }) => (
-                <SearchableSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={expenseTypes.map((tItem) => ({
-                    label: t(`projects:expense_types.${tItem.value}`, {
-                      defaultValue: tItem.label,
-                    }),
-                    value: tItem.value?.toString() || tItem.id?.toString() || "",
-                  }))}
-                  placeholder={t("projects:expenses.form.type_placeholder")}
-                />
+      <Form {...form}>
+        <form
+          id="project-expense-form"
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="grid gap-4 py-2"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label required>{t("projects:expenses.form.type")}</Label>
+              <Controller
+                name="expense_type"
+                control={control}
+                render={({ field }) => (
+                  <SearchableSelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={expenseTypes.map((tItem) => ({
+                      label: t(`projects:expense_types.${tItem.value}`, {
+                        defaultValue: tItem.label,
+                      }),
+                      value: tItem.value?.toString() || tItem.id?.toString() || "",
+                    }))}
+                    placeholder={t("projects:expenses.form.type_placeholder")}
+                  />
+                )}
+              />
+              {errors.expense_type && (
+                <p className="text-xs text-destructive">{errors.expense_type.message as string}</p>
               )}
-            />
-            {errors.expense_type && (
-              <p className="text-xs text-destructive">{errors.expense_type.message as string}</p>
-            )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="ex-amount" required>
+                {t("projects:expenses.form.amount")}
+              </Label>
+              <Input
+                id="ex-amount"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                placeholder={t("projects:expenses.form.amount_placeholder")}
+                {...register("amount", { valueAsNumber: true })}
+              />
+              {errors.amount && (
+                <p className="text-xs text-destructive">{errors.amount.message as string}</p>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ex-amount" required>
-              {t("projects:expenses.form.amount")}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Controller
+                name="expense_date"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <CommonDatePicker
+                    label={t("projects:expenses.form.date")}
+                    value={field.value || null}
+                    onChange={field.onChange}
+                    error={fieldState.error?.message}
+                    required
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ex-desc" required>
+              {t("projects:expenses.form.description")}
             </Label>
-            <Input
-              id="ex-amount"
-              type="number"
-              inputMode="decimal"
-              min="0"
-              placeholder={t("projects:expenses.form.amount_placeholder")}
-              {...register("amount", { valueAsNumber: true })}
+            <Textarea
+              id="ex-desc"
+              rows={3}
+              placeholder={t("projects:expenses.form.description_placeholder")}
+              {...register("description")}
+              className="resize-none"
             />
-            {errors.amount && (
-              <p className="text-xs text-destructive">{errors.amount.message as string}</p>
+            {errors.description && (
+              <p className="text-xs text-destructive">{errors.description.message as string}</p>
             )}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Controller
-              name="expense_date"
+          <div className="space-y-1.5">
+            <FileUploadField
               control={control}
-              render={({ field, fieldState }) => (
-                <CommonDatePicker
-                  label={t("projects:expenses.form.date")}
-                  value={field.value || null}
-                  onChange={field.onChange}
-                  error={fieldState.error?.message}
-                  required
-                />
-              )}
+              name="file"
+              label={t("projects:expenses.form.files_label", {
+                defaultValue: "Hóa đơn / Chứng từ",
+              })}
+              accept=".pdf,image/*,.doc,.docx,.xls,.xlsx"
             />
           </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="ex-desc" required>
-            {t("projects:expenses.form.description")}
-          </Label>
-          <Textarea
-            id="ex-desc"
-            rows={3}
-            placeholder={t("projects:expenses.form.description_placeholder")}
-            {...register("description")}
-            className="resize-none"
-          />
-          {errors.description && (
-            <p className="text-xs text-destructive">{errors.description.message as string}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5">
-          <FileUploadField
-            control={control}
-            name="file"
-            label={t("projects:expenses.form.files_label", { defaultValue: "Hóa đơn / Chứng từ" })}
-            accept=".pdf,image/*,.doc,.docx,.xls,.xlsx"
-          />
-        </div>
-      </form>
+        </form>
+      </Form>
     </CommonDialog>
   )
 }

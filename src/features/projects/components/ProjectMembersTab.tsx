@@ -123,6 +123,19 @@ export function ProjectMembersTab({
         ),
       },
       {
+        accessorKey: "allocation_percent",
+        header: t("projects:members.columns.allocation_percent", { defaultValue: "Tỷ lệ (%)" }),
+        size: 120,
+        Cell: ({ cell }) => {
+          const val = cell.getValue<number | null>()
+          return (
+            <div className="text-center font-medium">
+              {val !== null && val !== undefined ? `${val}%` : "—"}
+            </div>
+          )
+        },
+      },
+      {
         accessorKey: "labor_cost",
         header: t("projects:members.columns.labor_cost"),
         size: 200,

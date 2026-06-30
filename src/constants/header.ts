@@ -4,7 +4,6 @@ import { PATHS } from "@/constants/paths"
 import {
   LayoutDashboard,
   Users,
-  Clock,
   TrendingUp,
   Briefcase,
   FileText,
@@ -64,13 +63,13 @@ export const NAVIGATION_ITEMS: NavItem[] = [
         icon: Users,
         requiredPermission: PermissionSlugs.ViewEmployees,
       },
-      {
-        name: "Chấm công",
-        translationKey: "hr:timesheet.title",
-        href: PATHS.hrTimesheets,
-        icon: Clock,
-        requiredPermission: PermissionSlugs.ViewTimesheets,
-      },
+      // {
+      //   name: "Chấm công",
+      //   translationKey: "hr:timesheet.title",
+      //   href: PATHS.hrTimesheets,
+      //   icon: Clock,
+      //   requiredPermission: PermissionSlugs.ViewTimesheets,
+      // },
       {
         name: "KPI",
         translationKey: "hr:kpi.title",

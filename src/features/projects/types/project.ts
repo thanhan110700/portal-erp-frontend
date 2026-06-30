@@ -59,6 +59,7 @@ export interface ProjectMember {
   start_date: string | null
   end_date: string | null
   labor_cost: number | string | null
+  allocation_percent: number | string | null
   notes: string | null
 }
 
@@ -68,6 +69,7 @@ export interface CreateProjectMemberPayload {
   start_date?: string | null
   end_date?: string | null
   labor_cost?: number | null
+  allocation_percent?: number | null
   notes?: string | null
 }
 
@@ -106,6 +108,8 @@ export interface ProjectExpense {
   description: string | null
   user?: { id: number; full_name: string } | null
   approver?: { id: number; full_name: string } | null
+  voucher_id?: number | null
+  voucher?: { id: number; voucher_code: string; status: string } | null
   created_at: string
   updated_at: string
 }

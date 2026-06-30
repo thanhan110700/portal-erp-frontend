@@ -128,8 +128,8 @@
     },
     "no_role": "Chưa phân vai trò",
     "form": {
-      "title_add": "Thêm Thành viên vào dự án",
-      "title_edit": "Cập nhật Thành viên dự án",
+      "title_add": "Thêm thành viên vào dự án",
+      "title_edit": "Cập nhật thành viên dự án",
       "employee": "Nhân viên",
       "employee_placeholder": "Chọn nhân viên...",
       "role": "Vai trò / Nhiệm vụ",

@@ -98,6 +98,21 @@ export function ProjectExpenseDetailDialog({
             </p>
             <p className="font-medium text-foreground">{expense.user?.full_name || "—"}</p>
           </div>
+          {expense.voucher && (
+            <div className="col-span-2">
+              <Separator className="my-2" />
+              <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1.5">
+                <FileText className="size-4" />{" "}
+                {t("projects:expenses.fields.voucher", { defaultValue: "Phiếu chi liên kết" })}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-mono text-sm font-medium">
+                  {expense.voucher.voucher_code}
+                </span>
+                <StatusBadge status={expense.voucher.status} />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

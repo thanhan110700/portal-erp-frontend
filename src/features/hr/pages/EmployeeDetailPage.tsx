@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
@@ -19,6 +19,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
+import { StatusBadge } from "@/components/common/StatusBadge"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { PATHS } from "@/constants/paths"
@@ -34,6 +36,7 @@ import type {
   Department,
   Employee,
   UpdateEmployeePayload,
+  EmployeeProject,
 } from "../types/employee"
 import type { AssignEmployeeProjectsPayload } from "../api/employeeApi"
 
@@ -88,6 +91,85 @@ export function EmployeeDetailPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [projectDrawerOpen, setProjectDrawerOpen] = useState(false)
   const [roleOpen, setRoleOpen] = useState(false)
+
+  const projectColumns = useMemo<MRT_ColumnDef<EmployeeProject>[]>(
+    () => [
+      {
+        accessorKey: "project_code",
+        header: t("projects:fields.project_code", { defaultValue: "Mã DA" }),
+        size: 120,
+        Cell: ({ cell }) => <span className="font-mono text-xs">{cell.getValue<string>()}</span>,
+      },
+      {
+        accessorKey: "project_name",
+        header: t("projects:fields.project_name", { defaultValue: "Tên dự án" }),
+        Cell: ({ cell }) => <span className="font-medium">{cell.getValue<string>()}</span>,
+      },
+      {
+        accessorKey: "role",
+        header: t("projects:members.fields.role", { defaultValue: "Vai trò" }),
+        size: 130,
+        Cell: ({ cell }) => cell.getValue<string>() || "—",
+      },
+      {
+        accessorKey: "allocation_percent",
+        header: t("projects:members.fields.allocation_percent", { defaultValue: "% Tham gia" }),
+        size: 120,
+        mantineTableHeadCellProps: { align: "right" },
+        mantineTableBodyCellProps: { align: "right" },
+        Cell: ({ cell }) => {
+          const val = cell.getValue<number | string | null>()
+          return val ? `${val}%` : "—"
+        },
+      },
+      {
+        accessorKey: "start_date",
+        header: t("projects:fields.start_date", { defaultValue: "Ngày bắt đầu" }),
+        size: 130,
+        Cell: ({ cell }) => cell.getValue<string>() || "—",
+      },
+      {
+        accessorKey: "end_date",
+        header: t("projects:fields.end_date", { defaultValue: "Ngày kết thúc" }),
+        size: 130,
+        Cell: ({ cell }) => cell.getValue<string>() || "—",
+      },
+      {
+        accessorKey: "status",
+        header: t("projects:fields.status", { defaultValue: "Trạng thái" }),
+        size: 130,
+        mantineTableHeadCellProps: { align: "center" },
+        mantineTableBodyCellProps: { align: "center" },
+        Cell: ({ cell }) => (
+          <div className="flex justify-center">
+            <StatusBadge status={cell.getValue<string>()} />
+          </div>
+        ),
+      },
+    ],
+    [t],
+  )
+
+  const projectTable = useMantineReactTable({
+    columns: projectColumns,
+    data: employee?.projects || [],
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enablePagination: false,
+    enableSorting: false,
+    enableBottomToolbar: false,
+    enableTopToolbar: false,
+    enableFullScreenToggle: false,
+    mantineTableProps: {
+      striped: true,
+      highlightOnHover: true,
+      withBorder: false,
+      withColumnBorders: false,
+    },
+    mantineTableContainerProps: {
+      sx: { overflowX: "auto", WebkitOverflowScrolling: "touch" },
+    },
+  })
 
   const fetchEmployee = useCallback(async () => {
     if (!id) return
@@ -343,20 +425,26 @@ export function EmployeeDetailPage() {
             )}
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 rounded-lg border border-dashed">
-              <Briefcase className="size-8 text-muted-foreground/50 mb-3" />
-              <h3 className="text-sm font-medium">
-                {t("hr:employees.project_memberships_unavailable_title", {
-                  defaultValue: "Chưa có danh sách dự án theo nhân sự",
-                })}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-                {t("hr:employees.project_memberships_unavailable_description", {
-                  defaultValue:
-                    "Backend hiện chưa trả về danh sách dự án trong chi tiết nhân viên. Bạn vẫn có thể phân công dự án tại đây hoặc xem danh sách thành viên từ màn hình chi tiết dự án.",
-                })}
-              </p>
-            </div>
+            {!employee.projects || employee.projects.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 rounded-lg border border-dashed">
+                <Briefcase className="size-8 text-muted-foreground/50 mb-3" />
+                <h3 className="text-sm font-medium">
+                  {t("hr:employees.no_projects_title", {
+                    defaultValue: "Nhân viên chưa tham gia dự án nào",
+                  })}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+                  {t("hr:employees.no_projects_description", {
+                    defaultValue:
+                      "Sử dụng nút 'Phân công dự án' để gắn nhân viên này vào các dự án hiện có.",
+                  })}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border overflow-hidden">
+                <MantineReactTable table={projectTable} />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

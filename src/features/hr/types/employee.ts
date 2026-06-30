@@ -16,10 +16,22 @@ export interface EmployeeProjectAssignment {
   project_id: number
   user: EmployeeManager | null
   role: string | null
+  allocation_percent: number | string | null
   start_date: string | null
   end_date: string | null
   labor_cost: number | string | null
   notes: string | null
+}
+
+export interface EmployeeProject {
+  id: number
+  project_code: string
+  project_name: string
+  status: string
+  role: string | null
+  allocation_percent: number | string | null
+  start_date: string | null
+  end_date: string | null
 }
 
 export interface Employee {
@@ -42,7 +54,7 @@ export interface Employee {
     id: number
     name: string
   } | null
-  projects?: EmployeeProjectAssignment[]
+  projects?: EmployeeProject[]
 }
 
 export interface EmployeePaginationMeta {
