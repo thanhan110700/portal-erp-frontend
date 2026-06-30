@@ -227,7 +227,10 @@ export function CommonDialog({
 // Internal ActionButton
 // ---------------------------------------------------------------------------
 
-function ActionButton({ action, onClose }: { action: DialogAction; onClose: () => void }) {
+const ActionButton = React.forwardRef<
+  HTMLButtonElement,
+  { action: DialogAction; onClose: () => void } & React.ComponentPropsWithoutRef<typeof Button>
+>(({ action, onClose, ...props }, ref) => {
   const {
     label,
     icon,
@@ -241,27 +244,33 @@ function ActionButton({ action, onClose }: { action: DialogAction; onClose: () =
     form,
   } = action
 
-  async function handleClick() {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    await onClick?.()
+  async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    props.onClick?.(e)
+    if (onClick) {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await onClick()
+    }
     if (closeOnClick) onClose()
   }
 
   return (
     <Button
+      ref={ref}
       type={type}
       form={form}
       variant={variant}
       disabled={disabled || loading}
       className={cn("min-w-[80px]", className)}
-      onClick={onClick ? handleClick : undefined}
+      {...props}
+      onClick={handleClick}
     >
       {loading ? <LoadingSpinner /> : null}
       {icon ? <span className="mr-1.5">{icon}</span> : null}
       {label}
     </Button>
   )
-}
+})
+ActionButton.displayName = "ActionButton"
 
 function LoadingSpinner() {
   return (

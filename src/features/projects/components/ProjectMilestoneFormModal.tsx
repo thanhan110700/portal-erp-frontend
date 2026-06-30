@@ -161,7 +161,7 @@ export function ProjectMilestoneFormModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>{t("projects:milestones.form.status")}</Label>
+            <Label required>{t("projects:milestones.form.status")}</Label>
             <Controller
               name="status"
               control={control}

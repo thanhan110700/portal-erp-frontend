@@ -13,6 +13,14 @@
     "title": "Khách Hàng",
     "subtitle": "Quản lý hồ sơ khách hàng & đối tác",
     "add_new": "Thêm khách hàng",
+    "export": "Xuất Excel",
+    "export_success": "Đã xuất file khách hàng",
+    "export_error": "Xuất file thất bại",
+    "bulk_delete": "Xóa đã chọn",
+    "bulk_delete_title": "Xóa khách hàng đã chọn?",
+    "bulk_delete_confirm": "Hành động này sẽ xóa các khách hàng đã chọn và không thể hoàn tác.",
+    "bulk_delete_success": "Đã xóa khách hàng đã chọn",
+    "bulk_delete_error": "Xóa hàng loạt thất bại",
     "search": "Tìm kiếm",
     "search_placeholder": "Tên, SĐT, Email...",
     "classification": "Phân loại",
@@ -123,12 +131,18 @@
     },
     "default_type": "Tương tác",
     "recorded_by": "Ghi nhận bởi",
+    "last_interaction": "Lần tương tác gần nhất",
+    "due_follow_up": "Follow-up đến hạn",
+    "due_count": "{{count}} lịch hẹn cần xử lý",
+    "no_due_follow_up": "Không có lịch hẹn quá hạn",
+    "next_follow_up": "Hẹn tiếp theo",
     "add_title": "Thêm Lịch sử Tương tác",
     "save": "Lưu tương tác",
     "fields": {
       "type": "Hình thức",
       "type_placeholder": "Chọn...",
       "date": "Ngày thực hiện",
+      "next_follow_up": "Ngày hẹn tiếp theo",
       "content": "Nội dung trao đổi",
       "content_placeholder": "Ghi chú chi tiết nội dung đã trao đổi với khách hàng..."
     },
@@ -141,7 +155,8 @@
       "call": "Gọi điện",
       "email": "Email",
       "meeting": "Gặp mặt",
-      "zalo": "Zalo/Chat"
+      "zalo": "Zalo/Chat",
+      "other": "Khác"
     }
   },
   "quote": {
@@ -163,6 +178,13 @@
     },
     "detail_description": "Chi tiết Báo giá",
     "change_status": "Chuyển trạng thái",
+    "convert_title": "Tạo hợp đồng từ báo giá",
+    "converting": "Đang tạo...",
+    "convert_success": "Đã tạo hợp đồng từ báo giá",
+    "convert_error": "Tạo hợp đồng từ báo giá thất bại",
+    "email_success": "Đã gửi email báo giá tới {{email}}",
+    "email_error": "Gửi email báo giá thất bại",
+    "pdf_error": "Không thể tải PDF báo giá",
     "no_description": "Không có mô tả",
     "no_notes": "Không có ghi chú",
     "upload_label": "Chọn file đính kèm",
@@ -184,6 +206,7 @@
     "actions": {
       "attachments": "Đính kèm",
       "download_pdf": "Tải PDF",
+      "send_email": "Gửi email",
       "delete_title": "Xóa báo giá?",
       "delete_confirm": "Bạn có chắc chắn muốn xóa báo giá",
       "delete_warning": "không? Hành động này không thể hoàn tác.",
@@ -244,8 +267,24 @@
     "delete_error": "Xóa thất bại",
     "update_success": "Đã cập nhật hợp đồng",
     "create_success": "Đã tạo hợp đồng mới",
+    "detail_description": "Chi tiết Hợp đồng",
+    "change_status": "Chuyển trạng thái",
+    "status_update_success": "Đã cập nhật trạng thái hợp đồng",
+    "status_update_error": "Cập nhật trạng thái hợp đồng thất bại",
+    "upload_success": "Tải đính kèm thành công",
+    "upload_error": "Tải đính kèm thất bại",
+    "upload_label": "Chọn hợp đồng đã ký",
+    "upload_hint": "PDF, Word, Images",
+    "delete_file_confirm": "Bạn có chắc chắn muốn xóa tài liệu đính kèm này?",
+    "delete_file_success": "Đã xóa tài liệu đính kèm",
+    "delete_file_error": "Xóa tài liệu thất bại",
+    "linked_quote": "Báo giá liên kết",
+    "linked_projects": "Dự án liên kết",
+    "no_content": "Không có nội dung",
+    "no_terms": "Không có điều khoản",
     "filters": {
-      "search_placeholder": "Mã HĐ, Khách hàng..."
+      "search_placeholder": "Mã HĐ, Khách hàng...",
+      "contract_date": "Ngày hợp đồng"
     },
     "columns": {
       "contract_code": "Mã Hợp đồng",
@@ -256,6 +295,7 @@
     },
     "actions": {
       "attachments": "Đính kèm",
+      "upload": "Tải lên",
       "download_file": "Tải File",
       "delete_title": "Xóa hợp đồng?",
       "delete_confirm": "Bạn có chắc chắn muốn xóa hợp đồng",
@@ -296,6 +336,31 @@
         "content_max": "Nội dung hợp đồng không được quá 10000 ký tự",
         "terms_max": "Điều khoản không được quá 5000 ký tự"
       }
+    },
+    "validation": {
+      "file_required": "Vui lòng chọn tệp tin"
+    },
+    "financials": {
+      "revenue": "Doanh thu",
+      "received": "Đã thu",
+      "outstanding": "Còn phải thu",
+      "profit": "Lợi nhuận"
+    },
+    "payment": {
+      "title": "Ghi nhận thanh toán",
+      "record": "Ghi nhận thanh toán",
+      "save": "Ghi nhận",
+      "amount": "Số tiền thanh toán",
+      "amount_required": "Vui lòng nhập số tiền hợp lệ",
+      "amount_invalid_range": "Số tiền phải lớn hơn 0 và không vượt quá phần còn phải thu.",
+      "helper": "Nhập số tiền khách hàng vừa thanh toán cho hợp đồng này.",
+      "preview_title": "Tóm tắt sau khi ghi nhận",
+      "received_after": "Đã thu sau ghi nhận",
+      "outstanding_after": "Còn phải thu sau ghi nhận",
+      "use_half_remaining": "Điền 50% còn lại",
+      "use_remaining": "Điền toàn bộ còn lại",
+      "success": "Đã ghi nhận thanh toán",
+      "error": "Ghi nhận thanh toán thất bại"
     },
     "files": {
       "fetch_error": "Không thể tải tài liệu chứng từ",

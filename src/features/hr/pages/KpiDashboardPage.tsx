@@ -285,7 +285,7 @@ function UpsertKpiModal({
         {/* Month + Year */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="kpi-month" className="text-sm font-medium">
+            <Label htmlFor="kpi-month" required className="text-sm font-medium">
               {t("hr:kpi.form.month")}
             </Label>
             <Input
@@ -301,7 +301,7 @@ function UpsertKpiModal({
             {errors.month && <p className="text-xs text-destructive">{errors.month.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="kpi-year" className="text-sm font-medium">
+            <Label htmlFor="kpi-year" required className="text-sm font-medium">
               {t("hr:kpi.form.year")}
             </Label>
             <Input
@@ -320,7 +320,7 @@ function UpsertKpiModal({
 
         {/* Target */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="kpi-target" className="text-sm font-medium">
+          <Label htmlFor="kpi-target" required className="text-sm font-medium">
             {t("hr:kpi.form.target")}
           </Label>
           <Input

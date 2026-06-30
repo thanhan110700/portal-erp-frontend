@@ -163,7 +163,7 @@ export function EmployeeProjectsDialog({
             </Button>
 
             <div className="space-y-1.5 pr-8">
-              <Label>{t("hr:employees.assign_projects.fields.project")} *</Label>
+              <Label required>{t("hr:employees.assign_projects.fields.project")}</Label>
               <Controller
                 name={`projects.${index}.project_id`}
                 control={control}

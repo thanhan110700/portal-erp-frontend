@@ -56,7 +56,7 @@ export function VoucherRejectDialog({
     >
       <div className="space-y-4 py-2">
         <div className="space-y-2">
-          <Label htmlFor="reject_reason" className="text-destructive font-semibold">
+          <Label htmlFor="reject_reason" required className="text-destructive font-semibold">
             {t("finance:reject_dialog.reason_label")}
           </Label>
           <Textarea

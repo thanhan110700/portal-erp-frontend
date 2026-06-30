@@ -50,6 +50,10 @@ type ContractFileFormValues = {
   file: File | null
 }
 
+function formatCurrency(value: number) {
+  return `${value.toLocaleString("vi-VN")} VNĐ`
+}
+
 export function ContractDetailDialog({
   open,
   onClose,
@@ -127,12 +131,18 @@ export function ContractDetailDialog({
 
   const handleRecordPayment = async () => {
     const amount = Number(paymentAmount)
+
     if (!Number.isFinite(amount) || amount <= 0) {
       toast.error(
         t("sales:contract.payment.amount_required", {
           defaultValue: "Vui lòng nhập số tiền hợp lệ",
         }),
       )
+      return
+    }
+
+    if (amount > outstanding) {
+      toast.error(t("sales:contract.payment.amount_invalid_range"))
       return
     }
 
@@ -198,10 +208,24 @@ export function ContractDetailDialog({
   const outstanding =
     Number(contract.payment_outstanding || 0) ||
     Math.max(Number(contract.contract_value || 0) - paymentReceived, 0)
+  const paymentAmountValue = Number(paymentAmount || 0)
+  const isPaymentAmountValid =
+    Number.isFinite(paymentAmountValue) &&
+    paymentAmountValue > 0 &&
+    paymentAmountValue <= outstanding
+  const nextReceivedPreview = paymentReceived + (isPaymentAmountValid ? paymentAmountValue : 0)
+  const nextOutstandingPreview = Math.max(
+    outstanding - (isPaymentAmountValid ? paymentAmountValue : 0),
+    0,
+  )
   const profit =
     financials?.profit ??
     Number(contract.revenue || contract.contract_value || 0) -
       (financials?.total_project_expenses ?? 0)
+  const paymentQuickActions = [
+    { key: "half", amount: outstanding / 2 },
+    { key: "full", amount: outstanding },
+  ].filter((item) => item.amount > 0)
 
   return (
     <>
@@ -480,11 +504,11 @@ export function ContractDetailDialog({
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         title={t("sales:contract.payment.title", { defaultValue: "Ghi nhận thanh toán" })}
-        size="sm"
+        size="xl"
         primaryAction={{
           label: t("sales:contract.payment.save", { defaultValue: "Ghi nhận" }),
           onClick: () => void handleRecordPayment(),
-          disabled: paymentSubmitting,
+          disabled: paymentSubmitting || !isPaymentAmountValid,
         }}
         cancelAction={{
           label: t("common:actions.cancel"),
@@ -492,18 +516,94 @@ export function ContractDetailDialog({
           disabled: paymentSubmitting,
         }}
       >
-        <div className="space-y-2 py-2">
-          <Label htmlFor="contract-payment" required>
-            {t("sales:contract.payment.amount", { defaultValue: "Số tiền thanh toán" })}
-          </Label>
-          <Input
-            id="contract-payment"
-            type="number"
-            min="0"
-            inputMode="decimal"
-            value={paymentAmount}
-            onChange={(event) => setPaymentAmount(event.target.value)}
-          />
+        <div className="space-y-4 py-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-lg border bg-muted/20 p-3">
+              <p className="text-xs text-muted-foreground">
+                {t("sales:contract.financials.revenue")}
+              </p>
+              <p className="mt-1 font-mono font-semibold">
+                {formatCurrency(Number(contract.contract_value || 0))}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/20 p-3">
+              <p className="text-xs text-muted-foreground">
+                {t("sales:contract.financials.received")}
+              </p>
+              <p className="mt-1 font-mono font-semibold text-emerald-600">
+                {formatCurrency(paymentReceived)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/20 p-3">
+              <p className="text-xs text-muted-foreground">
+                {t("sales:contract.financials.outstanding")}
+              </p>
+              <p className="mt-1 font-mono font-semibold text-amber-600">
+                {formatCurrency(outstanding)}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="contract-payment" required>
+              {t("sales:contract.payment.amount")}
+            </Label>
+            <Input
+              id="contract-payment"
+              type="number"
+              min="0"
+              max={outstanding}
+              inputMode="decimal"
+              value={paymentAmount}
+              onChange={(event) => setPaymentAmount(event.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t("sales:contract.payment.helper")}</p>
+          </div>
+
+          {paymentQuickActions.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {paymentQuickActions.map((action) => (
+                <Button
+                  key={action.key}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPaymentAmount(String(Math.round(action.amount)))}
+                >
+                  {action.key === "full"
+                    ? t("sales:contract.payment.use_remaining")
+                    : t("sales:contract.payment.use_half_remaining")}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+            <p className="text-sm font-medium">{t("sales:contract.payment.preview_title")}</p>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  {t("sales:contract.payment.received_after")}
+                </p>
+                <p className="mt-1 font-mono font-semibold text-emerald-600">
+                  {formatCurrency(nextReceivedPreview)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  {t("sales:contract.payment.outstanding_after")}
+                </p>
+                <p className="mt-1 font-mono font-semibold text-amber-600">
+                  {formatCurrency(nextOutstandingPreview)}
+                </p>
+              </div>
+            </div>
+            {paymentAmount && !isPaymentAmountValid && (
+              <p className="mt-3 text-xs text-destructive">
+                {t("sales:contract.payment.amount_invalid_range")}
+              </p>
+            )}
+          </div>
         </div>
       </CommonDialog>
     </>

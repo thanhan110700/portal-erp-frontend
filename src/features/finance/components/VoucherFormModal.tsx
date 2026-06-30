@@ -197,7 +197,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>{t("finance:form.type")}</Label>
+            <Label required>{t("finance:form.type")}</Label>
             <Controller
               name="voucher_type"
               control={control}
@@ -288,6 +288,7 @@ export function VoucherFormModal({ open, onClose, onSubmit, editData }: VoucherF
         <div className="rounded-xl border bg-muted/20 p-4 space-y-4">
           <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
             {t("finance:form.linked_title")}
+            <span className="text-destructive ml-0.5 font-semibold">*</span>
           </h4>
 
           {errors.project_id && (
