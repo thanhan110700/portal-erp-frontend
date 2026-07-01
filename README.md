@@ -51,7 +51,7 @@ Tạo file `.env.local` tại thư mục `fe/`:
 VITE_API_URL=
 
 # Tiêu đề app hiển thị trên tab trình duyệt
-VITE_APP_TITLE=big-ticollab
+VITE_APP_TITLE=Portal ERP
 
 # Bật React StrictMode (mặc định: false)
 VITE_STRICT_MODE=false

@@ -13,14 +13,6 @@ import "./index.css"
 import "./i18n"
 import { strictMode } from "./config"
 
-import faviconTicollab from "@/assets/logo-red.png"
-
-const faviconLink = document.createElement("link")
-faviconLink.rel = "icon"
-faviconLink.type = "image/png"
-faviconLink.href = faviconTicollab
-document.head.appendChild(faviconLink)
-
 const app = (
   <ThemeProvider>
     <AuthProvider>
