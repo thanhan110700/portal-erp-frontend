@@ -11,6 +11,8 @@ import { CommonDatePicker } from "@/components/common/CommonDatePicker"
 import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Fab } from "@/components/common/Fab"
 
 import { quoteApi, type ListQuotesParams } from "../api/quoteApi"
 import type { Quote, CreateQuotePayload, UpdateQuotePayload } from "../types/sales"
@@ -34,27 +36,22 @@ export function QuoteListPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Options
   const [statuses, setStatuses] = useState<OptionItem[]>([])
   const [customers, setCustomers] = useState<OptionItem[]>([])
   const [employees, setEmployees] = useState<OptionItem[]>([])
 
-  // Filters state
   const [params, setParams] = useState<ListQuotesParams>({
     page: 1,
     per_page: 20,
   })
   const [dateRange, setDateRange] = useState<DateRangeValue | null>(null)
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Quote | null>(null)
 
-  // Drawer state
   const [detailOpen, setDetailOpen] = useState(false)
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
 
-  // Contract convert state
   const [convertTarget, setConvertTarget] = useState<Quote | null>(null)
   const [convertSalesRepId, setConvertSalesRepId] = useState<string>(
     user?.id ? String(user.id) : "",
@@ -66,6 +63,18 @@ export function QuoteListPage() {
   const [convertContent, setConvertContent] = useState("")
   const [convertTerms, setConvertTerms] = useState("")
   const [isConverting, setIsConverting] = useState(false)
+
+  const getOptionValue = (option: OptionItem) => {
+    if (typeof option.value === "string" || typeof option.value === "number") {
+      return String(option.value)
+    }
+
+    if (typeof option.id === "string" || typeof option.id === "number") {
+      return String(option.id)
+    }
+
+    return ""
+  }
 
   useEffect(() => {
     Promise.all([optionApi.getQuoteStatuses(), optionApi.getCustomers(), optionApi.getEmployees()])
@@ -94,7 +103,6 @@ export function QuoteListPage() {
     void loadData()
   }, [loadData])
 
-  // Filters definition
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
@@ -146,14 +154,14 @@ export function QuoteListPage() {
       },
     ],
     [
+      customers,
+      dateRange,
+      employees,
+      params.created_by,
+      params.customer_id,
       params.search,
       params.status,
-      params.customer_id,
-      params.created_by,
-      dateRange,
       statuses,
-      customers,
-      employees,
       t,
     ],
   )
@@ -192,7 +200,6 @@ export function QuoteListPage() {
     setParams((prev) => ({ ...prev, page }))
   }
 
-  // Actions
   const handleOpenCreate = () => {
     setEditTarget(null)
     setModalOpen(true)
@@ -268,39 +275,39 @@ export function QuoteListPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <FileText className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">{t("sales:quote.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("sales:quote.description")}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void loadData()}
-            disabled={isLoading}
-            className="gap-1.5"
-          >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            {t("common:actions.refresh")}
-          </Button>
-          {canCreate && (
-            <Button size="sm" onClick={handleOpenCreate} className="gap-2">
-              <Plus className="size-4" />
-              {t("sales:quote.create")}
+    <div className="flex flex-col gap-6 pb-20 md:pb-0">
+      <MobileActionHeader
+        icon={FileText}
+        title={t("sales:quote.title")}
+        subtitle={t("sales:quote.description")}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadData()}
+              disabled={isLoading}
+              className="gap-1.5 min-h-11 md:min-h-9"
+            >
+              <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              {t("common:actions.refresh")}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button
+                size="sm"
+                onClick={handleOpenCreate}
+                className="hidden gap-2 min-h-11 md:flex md:min-h-9"
+              >
+                <Plus className="size-4" />
+                {t("sales:quote.create")}
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      {/* ── Filters ─────────────────────────────────────────────────────── */}
+      {canCreate && <Fab onClick={handleOpenCreate} label={t("sales:quote.create")} />}
+
       <FilterPanel
         applyMode
         fields={filterFields}
@@ -308,31 +315,29 @@ export function QuoteListPage() {
         onReset={handleResetFilters}
       />
 
-      {/* ── Table ───────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3">
         <QuoteTable
           quotes={quotes}
           isLoading={isLoading}
-          canEdit={canEdit}
-          canDelete={canDelete}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
           onViewDetail={(quote) => {
             setSelectedQuote(quote)
             setDetailOpen(true)
           }}
+          canEdit={canEdit}
+          canDelete={canDelete}
         />
 
         <TablePagination
           total={totalCount}
-          page={params.page!}
-          perPage={params.per_page!}
+          page={params.page ?? 1}
+          perPage={params.per_page ?? 20}
           totalPages={Math.ceil(totalCount / (params.per_page || 20))}
           onPageChange={handlePageChange}
         />
       </div>
 
-      {/* ── Modal ───────────────────────────────────────────────────────── */}
       {modalOpen && (
         <QuoteFormModal
           open={modalOpen}
@@ -342,7 +347,6 @@ export function QuoteListPage() {
         />
       )}
 
-      {/* ── Detail Dialog ───────────────────────────────────────────────── */}
       {detailOpen && selectedQuote && (
         <QuoteDetailDialog
           open={detailOpen}
@@ -353,81 +357,84 @@ export function QuoteListPage() {
         />
       )}
 
-      {/* ── Convert to Contract Modal ────────────────────────────────────── */}
-      {convertTarget && (
-        <CommonDialog
-          open={!!convertTarget}
-          onClose={() => setConvertTarget(null)}
-          title={t("sales:quote.convert_title", {
-            code: convertTarget.quote_code,
-            defaultValue: "Tạo hợp đồng từ báo giá",
-          })}
-          size="lg"
-          primaryAction={{
-            label: isConverting
-              ? t("sales:quote.converting", { defaultValue: "Đang tạo..." })
-              : t("sales:quote.actions.convert"),
-            onClick: () => void handleConvertToContract(),
-            disabled: isConverting,
-          }}
-          cancelAction={{
-            label: t("common:actions.cancel"),
-            onClick: () => setConvertTarget(null),
-            disabled: isConverting,
-          }}
-        >
-          <div className="grid gap-4 py-2">
-            <div className="rounded-lg border bg-muted/20 p-3 text-sm">
-              <div className="font-medium">{convertTarget.customer?.customer_name || "—"}</div>
-              <div className="text-muted-foreground">
-                {convertTarget.quote_code} •{" "}
-                {Number(convertTarget.quote_value).toLocaleString("vi-VN")} VNĐ
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <Label required>{t("sales:contract.form.fields.sales_rep")}</Label>
-                <SearchableSelect
-                  value={convertSalesRepId}
-                  onValueChange={setConvertSalesRepId}
-                  options={employees.map((employee) => ({
-                    label: employee.label,
-                    value: employee.value?.toString() || employee.id?.toString() || "",
-                  }))}
-                  placeholder={t("sales:contract.form.fields.sales_placeholder")}
-                />
-              </div>
-              <CommonDatePicker
-                label={t("sales:contract.form.fields.contract_date")}
-                value={convertContractDate}
-                onChange={(value) => setConvertContractDate(value || "")}
-                required
-              />
-              <CommonDatePicker
-                label={t("sales:contract.form.fields.signed_date")}
-                value={convertSignedDate}
-                onChange={setConvertSignedDate}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t("sales:contract.form.fields.content")}</Label>
-              <Textarea
-                rows={3}
-                value={convertContent}
-                onChange={(event) => setConvertContent(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t("sales:contract.form.fields.terms")}</Label>
-              <Textarea
-                rows={3}
-                value={convertTerms}
-                onChange={(event) => setConvertTerms(event.target.value)}
-              />
-            </div>
+      <CommonDialog
+        open={!!convertTarget}
+        onClose={() => {
+          if (isConverting) return
+          setConvertTarget(null)
+        }}
+        title={t("sales:quote.convert_dialog_title", {
+          defaultValue: "Tạo hợp đồng từ báo giá",
+        })}
+        size="lg"
+        primaryAction={{
+          label: t("sales:quote.convert_action", { defaultValue: "Tạo hợp đồng" }),
+          onClick: () => void handleConvertToContract(),
+          loading: isConverting,
+        }}
+        cancelAction={{
+          label: t("common:actions.cancel"),
+          onClick: () => setConvertTarget(null),
+          disabled: isConverting,
+        }}
+      >
+        <div className="grid grid-cols-1 gap-4 py-2 md:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label required>{t("sales:contract.columns.sales_rep")}</Label>
+            <SearchableSelect
+              value={convertSalesRepId}
+              onValueChange={setConvertSalesRepId}
+              options={employees.map((employee) => ({
+                label: employee.label,
+                value: getOptionValue(employee),
+              }))}
+              placeholder={t("sales:contract.form.sales_rep_placeholder")}
+              className="h-10"
+              disabled={isConverting}
+            />
           </div>
-        </CommonDialog>
-      )}
+
+          <div className="flex flex-col gap-1.5">
+            <Label required>{t("sales:contract.columns.contract_date")}</Label>
+            <CommonDatePicker
+              value={convertContractDate}
+              onChange={(date) => setConvertContractDate(date || "")}
+              disabled={isConverting}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>{t("sales:contract.columns.signed_date")}</Label>
+            <CommonDatePicker
+              value={convertSignedDate}
+              onChange={(date) => setConvertSignedDate(date)}
+              disabled={isConverting}
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1.5">
+            <Label>{t("sales:contract.columns.content")}</Label>
+            <Textarea
+              value={convertContent}
+              onChange={(e) => setConvertContent(e.target.value)}
+              rows={4}
+              placeholder={t("sales:contract.form.content_placeholder")}
+              disabled={isConverting}
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1.5">
+            <Label>{t("sales:contract.columns.terms")}</Label>
+            <Textarea
+              value={convertTerms}
+              onChange={(e) => setConvertTerms(e.target.value)}
+              rows={4}
+              placeholder={t("sales:contract.form.terms_placeholder")}
+              disabled={isConverting}
+            />
+          </div>
+        </div>
+      </CommonDialog>
     </div>
   )
 }

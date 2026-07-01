@@ -176,7 +176,7 @@ export function CommonDialog({
   const cancel =
     cancelAction !== false && cancelAction !== undefined
       ? resolveAction(cancelAction === true ? true : cancelAction, {
-          label: t("common:actions.cancel", { defaultValue: "Hủy" }),
+          label: t("common:actions.cancel", { defaultValue: "Thoát" }),
           variant: "outline",
         })
       : null

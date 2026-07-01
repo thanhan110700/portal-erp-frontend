@@ -1,8 +1,9 @@
 import { useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Edit3 } from "lucide-react"
+import { Edit3, Target, TrendingUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { RowActions } from "@/components/common/RowActions"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import type { EmployeeKpi } from "../types/kpi"
 import { useTranslation } from "react-i18next"
 
@@ -46,6 +47,7 @@ interface KpiTableProps {
 
 export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: KpiTableProps) {
   const { t } = useTranslation(["hr", "common"])
+
   const columns = useMemo<MRT_ColumnDef<EmployeeKpi>[]>(
     () => [
       {
@@ -153,17 +155,14 @@ export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: K
               size: 80,
               Cell: ({ row }: { row: { original: EmployeeKpi } }) => (
                 <div onClick={(e) => e.stopPropagation()}>
-                  <RowActions
-                    actions={
-                      [
-                        {
-                          label: t("common:actions.edit", { defaultValue: "Sửa" }),
-                          icon: <Edit3 className="size-4" />,
-                          onClick: () => onEdit(row.original),
-                          className: "text-primary hover:text-primary hover:bg-primary/10",
-                        },
-                      ] as import("@/components/common/RowActions").RowAction[]
-                    }
+                  <MobileRowActions
+                    actions={[
+                      {
+                        label: t("common:actions.edit", { defaultValue: "Sửa" }),
+                        icon: <Edit3 className="size-4" />,
+                        onClick: () => onEdit(row.original),
+                      },
+                    ]}
                   />
                 </div>
               ),
@@ -207,8 +206,101 @@ export function KpiTable({ kpis, isLoading = false, isAdmin = false, onEdit }: K
   })
 
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
-      <MantineReactTable table={table} />
-    </div>
+    <MobileCardList
+      data={kpis}
+      isLoading={isLoading}
+      keyExtractor={(kpi) => kpi.id}
+      renderCard={(kpi) => {
+        const pct = toNum(kpi.kpi_percent)
+        const barWidth = pct != null ? Math.min(pct, 100) : 0
+        const actions: RowAction[] = isAdmin
+          ? [
+              {
+                label: t("common:actions.edit", { defaultValue: "Sửa" }),
+                icon: <Edit3 className="size-4" />,
+                onClick: () => onEdit(kpi),
+              },
+            ]
+          : []
+
+        return (
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-sm font-semibold">
+                    {kpi.user?.full_name ?? `NV #${kpi.user_id}`}
+                  </h3>
+                  <Badge variant={getKpiBadgeVariant(pct)} className="text-[10px]">
+                    {pct != null ? `${pct.toFixed(1)}%` : "—"}
+                  </Badge>
+                </div>
+                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                  {kpi.user?.user_code ?? "—"}
+                </p>
+              </div>
+
+              {actions.length > 0 && (
+                <div className="-mr-2 -mt-1">
+                  <MobileRowActions actions={actions} />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-lg bg-muted/40 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Target className="size-3.5" />
+                    {t("hr:kpi.columns.target")}
+                  </div>
+                  <p className="mt-1 font-semibold">{formatCurrency(kpi.target_revenue)}</p>
+                </div>
+                <div className="rounded-lg bg-primary/5 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <TrendingUp className="size-3.5" />
+                    {t("hr:kpi.columns.actual")}
+                  </div>
+                  <p className="mt-1 font-semibold text-primary">
+                    {formatCurrency(kpi.actual_revenue)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground">{t("hr:kpi.columns.progress")}</span>
+                  <span className="font-semibold">{pct != null ? `${pct.toFixed(1)}%` : "—"}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${getKpiColor(pct)}`}
+                    style={{ width: `${barWidth}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                <div>
+                  <span className="text-xs">{t("hr:kpi.columns.quotes")}</span>
+                  <p className="mt-1 font-semibold text-foreground">{kpi.quote_count ?? 0}</p>
+                </div>
+                <div>
+                  <span className="text-xs">{t("hr:kpi.columns.contracts")}</span>
+                  <p className="mt-1 font-semibold text-foreground">{kpi.contract_count ?? 0}</p>
+                </div>
+              </div>
+
+              {kpi.notes && <p className="text-sm text-muted-foreground">{kpi.notes}</p>}
+            </div>
+          </div>
+        )
+      }}
+      desktopTable={
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <MantineReactTable table={table} />
+        </div>
+      }
+    />
   )
 }

@@ -8,5 +8,18 @@
   "overview": "Cái nhìn tổng quan",
   "live": "Bảng điều khiển trực tiếp",
   "welcome": "Xin chào, {{name}}!",
-  "description": "Chào mừng bạn đến với bảng điều khiển chính. Bạn có thể xem các thông tin tổng quan tại đây."
+  "description": "Chào mừng bạn đến với bảng điều khiển chính. Bạn có thể xem các thông tin tổng quan tại đây.",
+  "quickActions": {
+    "title": "Thao tác nhanh",
+    "createVoucher": "Tạo phiếu thu/chi",
+    "viewKpi": "Xem KPI",
+    "newQuote": "Báo giá mới",
+    "createProject": "Dự án mới"
+  },
+  "summaryCards": {
+    "totalIncome": "Tổng thu tháng này",
+    "totalExpense": "Tổng chi tháng này",
+    "balance": "Số dư hiện tại",
+    "pendingTasks": "Công việc tồn đọng"
+  }
 }

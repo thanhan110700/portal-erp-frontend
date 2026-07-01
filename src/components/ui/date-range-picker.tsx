@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import dayjs from "@/lib/dayjs"
 import { CalendarIcon, X } from "lucide-react"
 import type { DateRange } from "react-day-picker"
@@ -30,12 +31,14 @@ export function DateRangePicker({
   from,
   to,
   onChange,
-  placeholder = "Chọn khoảng ngày",
+  placeholder,
   className,
 }: DateRangePickerProps) {
+  const { t } = useTranslation(["common"])
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<DateRange>({ from: undefined, to: undefined })
+  const finalPlaceholder = placeholder ?? t("common:filter.select_date_range")
 
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
@@ -71,7 +74,7 @@ export function DateRangePicker({
       )}
     >
       <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-      <span className="flex-1 text-left truncate">{label() ?? placeholder}</span>
+      <span className="flex-1 text-left truncate">{label() ?? finalPlaceholder}</span>
       {hasValue ? (
         <span
           role="button"
@@ -111,7 +114,9 @@ export function DateRangePicker({
         <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
         <DrawerContent className="p-0 flex flex-col max-h-[85dvh] overflow-hidden">
           <DrawerHeader className="border-b border-border pb-3 shrink-0">
-            <DrawerTitle className="text-center text-sm font-medium">Chọn khoảng ngày</DrawerTitle>
+            <DrawerTitle className="text-center text-sm font-medium">
+              {t("common:filter.select_date_range")}
+            </DrawerTitle>
           </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 min-h-0">
@@ -128,16 +133,16 @@ export function DateRangePicker({
 
           <div className="border-t border-border p-4 flex items-center justify-between gap-3 shrink-0">
             <span className="font-mono text-sm text-muted-foreground truncate">
-              {draftLabel || "Chọn ngày"}
+              {draftLabel || t("common:datePicker.selectDate")}
             </span>
             <div className="flex gap-2 shrink-0">
               <DrawerClose asChild>
                 <Button type="button" variant="outline" size="sm" className="h-9 px-4 text-sm">
-                  Hủy
+                  {t("common:actions.cancel")}
                 </Button>
               </DrawerClose>
               <Button type="button" size="sm" className="h-9 px-4 text-sm" onClick={handleApply}>
-                Áp dụng
+                {t("common:datePicker.apply")}
               </Button>
             </div>
           </div>

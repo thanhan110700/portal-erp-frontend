@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageLoader } from "@/components/common/PageLoader"
+import { MobileCardList } from "@/components/common/MobileCardList"
 import { reportApi, type IncomeExpenseRow } from "@/features/reports/api/reportApi"
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher } from "../types/voucher"
@@ -236,7 +237,7 @@ export function FinanceDashboardPage() {
               {t("finance:dashboard.chart_title")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[250px] md:h-[350px]">
             {incomeExpenseData.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {t("common:table.noData")}
@@ -330,8 +331,31 @@ export function FinanceDashboardPage() {
               {t("finance:dashboard.top_departments")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <MantineReactTable table={deptTable} />
+          <CardContent className="p-0 sm:p-6 sm:pt-0">
+            <MobileCardList
+              data={topDepartments}
+              isLoading={loading}
+              keyExtractor={(item) => item.name}
+              className="p-4 sm:p-0"
+              renderCard={(dept, idx) => (
+                <div className="flex items-center justify-between py-2 border-b last:border-0 sm:hidden">
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      {idx + 1}
+                    </span>
+                    <span className="font-medium text-sm">{dept.name}</span>
+                  </div>
+                  <span className="font-mono font-semibold text-rose-600 text-sm">
+                    {formatCurrency(dept.total)}
+                  </span>
+                </div>
+              )}
+              desktopTable={
+                <div className="hidden sm:block">
+                  <MantineReactTable table={deptTable} />
+                </div>
+              }
+            />
           </CardContent>
         </Card>
 
@@ -343,7 +367,7 @@ export function FinanceDashboardPage() {
               {t("finance:dashboard.project_expenses_title")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[250px] md:h-[350px]">
             {projectExpenses.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {t("common:table.noData")}

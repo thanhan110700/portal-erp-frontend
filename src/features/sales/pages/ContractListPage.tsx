@@ -6,6 +6,8 @@ import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Fab } from "@/components/common/Fab"
 
 import { contractApi, type ListContractsParams } from "../api/contractApi"
 import type { Contract, CreateContractPayload, UpdateContractPayload } from "../types/sales"
@@ -28,13 +30,11 @@ export function ContractListPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Options
   const [statuses, setStatuses] = useState<OptionItem[]>([])
   const [customers, setCustomers] = useState<OptionItem[]>([])
   const [salesReps, setSalesReps] = useState<OptionItem[]>([])
   const [quotes, setQuotes] = useState<OptionItem[]>([])
 
-  // Filters state
   const [params, setParams] = useState<ListContractsParams>({
     page: 1,
     per_page: 20,
@@ -43,11 +43,9 @@ export function ContractListPage() {
   })
   const [dateRange, setDateRange] = useState<DateRangeValue | null>(null)
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Contract | null>(null)
 
-  // Drawer state
   const [detailOpen, setDetailOpen] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
 
@@ -84,7 +82,6 @@ export function ContractListPage() {
     void loadData()
   }, [loadData])
 
-  // Filters definition
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
@@ -136,14 +133,14 @@ export function ContractListPage() {
       },
     ],
     [
-      params.search,
-      params.status,
+      customers,
+      dateRange,
       params.customer_id,
       params.sales_rep_id,
-      statuses,
-      customers,
+      params.search,
+      params.status,
       salesReps,
-      dateRange,
+      statuses,
       t,
     ],
   )
@@ -181,7 +178,6 @@ export function ContractListPage() {
     setParams((prev) => ({ ...prev, page }))
   }
 
-  // Actions
   const handleOpenCreate = () => {
     setEditTarget(null)
     setModalOpen(true)
@@ -225,39 +221,39 @@ export function ContractListPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <FileSignature className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">{t("sales:contract.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("sales:contract.description")}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void loadData()}
-            disabled={isLoading}
-            className="gap-1.5"
-          >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            {t("common:actions.refresh")}
-          </Button>
-          {canCreate && (
-            <Button size="sm" onClick={handleOpenCreate} className="gap-2">
-              <Plus className="size-4" />
-              {t("sales:contract.create")}
+    <div className="flex flex-col gap-6 pb-20 md:pb-0">
+      <MobileActionHeader
+        icon={FileSignature}
+        title={t("sales:contract.title")}
+        subtitle={t("sales:contract.description")}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadData()}
+              disabled={isLoading}
+              className="gap-1.5 min-h-11 md:min-h-9"
+            >
+              <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              {t("common:actions.refresh")}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button
+                size="sm"
+                onClick={handleOpenCreate}
+                className="hidden gap-2 min-h-11 md:flex md:min-h-9"
+              >
+                <Plus className="size-4" />
+                {t("sales:contract.create")}
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      {/* ── Filters ─────────────────────────────────────────────────────── */}
+      {canCreate && <Fab onClick={handleOpenCreate} label={t("sales:contract.create")} />}
+
       <FilterPanel
         applyMode
         fields={filterFields}
@@ -265,14 +261,15 @@ export function ContractListPage() {
         onReset={handleResetFilters}
       />
 
-      {/* ── Table ───────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3">
         <ContractTable
           contracts={contracts}
           isLoading={isLoading}
           canEdit={canEdit}
           canDelete={canDelete}
-          onEdit={handleOpenEdit}
+          onEdit={(contract) => {
+            void handleOpenEdit(contract)
+          }}
           onDelete={handleDelete}
           onViewDetail={(contract) => {
             setSelectedContract(contract)
@@ -282,14 +279,13 @@ export function ContractListPage() {
 
         <TablePagination
           total={totalCount}
-          page={params.page!}
-          perPage={params.per_page!}
+          page={params.page ?? 1}
+          perPage={params.per_page ?? 20}
           totalPages={Math.ceil(totalCount / (params.per_page || 20))}
           onPageChange={handlePageChange}
         />
       </div>
 
-      {/* ── Modal ───────────────────────────────────────────────────────── */}
       {modalOpen && (
         <ContractFormModal
           open={modalOpen}
@@ -303,7 +299,6 @@ export function ContractListPage() {
         />
       )}
 
-      {/* ── Detail Drawer ───────────────────────────────────────────────── */}
       {detailOpen && selectedContract && (
         <ContractDetailDialog
           open={detailOpen}

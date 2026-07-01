@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useState, useEffect } from "react"
 import { Outlet, useNavigation } from "react-router-dom"
 
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -10,6 +10,7 @@ import { LanguageSwitcher } from "@/components/common/LanguageSwitcher"
 import { MobileBottomNav } from "@/components/common/MobileBottomNav"
 import { MobileSubNav } from "@/components/common/MobileSubNav"
 import { useIsMobile } from "@/hooks/useMobile"
+import { cn } from "@/lib/utils"
 
 function NavigationProgress() {
   const { state } = useNavigation()
@@ -26,6 +27,26 @@ function NavigationProgress() {
 
 function DashboardLayoutInner() {
   const isMobile = useIsMobile()
+  const [showHeader, setShowHeader] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  useEffect(() => {
+    if (!isMobile) return
+
+    const controlHeader = () => {
+      if (typeof window !== "undefined") {
+        if (window.scrollY > lastScrollY && window.scrollY > 60) {
+          setShowHeader(false)
+        } else {
+          setShowHeader(true)
+        }
+        setLastScrollY(window.scrollY)
+      }
+    }
+
+    window.addEventListener("scroll", controlHeader)
+    return () => window.removeEventListener("scroll", controlHeader)
+  }, [lastScrollY, isMobile])
 
   return (
     <TooltipProvider>
@@ -38,7 +59,12 @@ function DashboardLayoutInner() {
 
         <SidebarInset>
           {/* Sticky header */}
-          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur px-3 md:px-4 supports-[backdrop-filter]:bg-background/60">
+          <header
+            className={cn(
+              "sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur px-3 md:px-4 supports-[backdrop-filter]:bg-background/60 transition-transform duration-300",
+              !showHeader && "-translate-y-full",
+            )}
+          >
             <div className="flex items-center gap-2">
               {/* On mobile: hamburger opens full sidebar Sheet */}
               <SidebarTrigger className="-ml-1" />

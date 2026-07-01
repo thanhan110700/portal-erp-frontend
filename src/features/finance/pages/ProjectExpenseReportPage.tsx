@@ -15,6 +15,9 @@ import { PageLoader } from "@/components/common/PageLoader"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { TablePagination } from "@/components/common/TablePagination"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Receipt } from "lucide-react"
 import { voucherApi } from "../api/voucherApi"
 import type { Voucher, ListVouchersParams } from "../types/voucher"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -268,11 +271,11 @@ export function ProjectExpenseReportPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("finance:project_expenses.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("finance:project_expenses.subtitle")}</p>
-      </div>
+    <div className="space-y-6 pb-20 md:pb-0 animate-in fade-in duration-500">
+      <MobileActionHeader
+        title={t("finance:project_expenses.title")}
+        subtitle={t("finance:project_expenses.subtitle")}
+      />
 
       <FilterPanel
         applyMode
@@ -316,7 +319,7 @@ export function ProjectExpenseReportPage() {
               {t("finance:project_expenses.chart_title")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[250px] md:h-[350px]">
             {chartData.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {t("common:table.noData")}
@@ -362,17 +365,50 @@ export function ProjectExpenseReportPage() {
         </Card>
       </div>
 
-      {/* Detail Table */}
       <Card className="shadow-sm">
-        <CardHeader>
+        <CardHeader className="hidden sm:block">
           <CardTitle className="text-base font-semibold">
             {t("finance:project_expenses.table_title")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="rounded-xl overflow-hidden">
-            <MantineReactTable table={table} />
-          </div>
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
+          <MobileCardList
+            data={vouchers}
+            isLoading={loading}
+            keyExtractor={(item) => item.id.toString()}
+            className="p-4 sm:p-0"
+            renderCard={(voucher) => (
+              <div className="bg-card rounded-xl border p-4 shadow-sm flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-semibold text-foreground flex items-center gap-2">
+                    <span className="truncate max-w-[200px]">{voucher.project?.name || "—"}</span>
+                    <StatusBadge status={voucher.status} />
+                  </div>
+                  <div className="font-mono text-sm text-muted-foreground">
+                    {voucher.voucher_code}
+                  </div>
+                </div>
+
+                <div className="text-sm text-muted-foreground line-clamp-2">
+                  {voucher.description || "—"}
+                </div>
+
+                <div className="flex items-end justify-between mt-2 pt-2 border-t">
+                  <div className="text-xs text-muted-foreground">{voucher.voucher_date}</div>
+                  <div className="font-mono font-bold text-rose-600">
+                    -{Number(voucher.amount).toLocaleString("vi-VN")} ₫
+                  </div>
+                </div>
+              </div>
+            )}
+            desktopTable={
+              <div className="rounded-xl overflow-hidden hidden sm:block border">
+                <MantineReactTable table={table} />
+              </div>
+            }
+            emptyIcon={Receipt}
+            emptyTitle={t("common:table.noData")}
+          />
         </CardContent>
       </Card>
 

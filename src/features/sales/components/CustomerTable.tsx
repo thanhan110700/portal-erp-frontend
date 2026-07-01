@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Trash2, Edit, Eye } from "lucide-react"
+import { Trash2, Edit, Eye, Users, Phone, Mail, Briefcase } from "lucide-react"
 
-import { RowActions } from "@/components/common/RowActions"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -44,6 +45,41 @@ export function CustomerTable({
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null)
+
+  const buildActions = useCallback(
+    (customer: Customer): RowAction[] => {
+      const actions: RowAction[] = [
+        {
+          label: t("common:actions.view_detail", { defaultValue: "Chi tiết" }),
+          icon: <Eye className="size-4" />,
+          onClick: () => {
+            void navigate(`/sales/customers/${customer.id}`)
+          },
+        },
+      ]
+
+      if (canEdit) {
+        actions.push({
+          label: t("common:actions.edit", { defaultValue: "Sửa" }),
+          icon: <Edit className="size-4" />,
+          onClick: () => onEdit(customer),
+        })
+      }
+
+      if (canDelete) {
+        actions.push({
+          label: t("common:actions.delete", { defaultValue: "Xóa" }),
+          icon: <Trash2 className="size-4" />,
+          onClick: () => setDeleteTarget(customer),
+          variant: "destructive",
+          separator: true,
+        })
+      }
+
+      return actions
+    },
+    [canDelete, canEdit, navigate, onEdit, t],
+  )
 
   const columns = useMemo<MRT_ColumnDef<Customer>[]>(
     () => [
@@ -101,7 +137,7 @@ export function CustomerTable({
         size: 200,
         Cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-sm">{row.original.customer_name}</span>
+            <span className="text-sm font-semibold">{row.original.customer_name}</span>
             <span className="font-mono text-xs text-muted-foreground">
               {row.original.customer_code}
             </span>
@@ -140,41 +176,14 @@ export function CustomerTable({
         id: "actions",
         header: "",
         size: 100,
-        Cell: ({ row }) => {
-          const actions: import("@/components/common/RowActions").RowAction[] = [
-            {
-              label: t("common:actions.view_detail", { defaultValue: "Chi tiết" }),
-              icon: <Eye className="size-4" />,
-              onClick: () => navigate(`/sales/customers/${row.original.id}`),
-              className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
-            },
-          ]
-          if (canEdit) {
-            actions.push({
-              label: t("common:actions.edit", { defaultValue: "Sửa" }),
-              icon: <Edit className="size-4" />,
-              onClick: () => onEdit(row.original),
-              className: "text-muted-foreground hover:text-foreground",
-            })
-          }
-          if (canDelete) {
-            actions.push({
-              label: t("common:actions.delete", { defaultValue: "Xóa" }),
-              icon: <Trash2 className="size-4" />,
-              onClick: () => setDeleteTarget(row.original),
-              className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-              variant: "destructive" as const,
-            })
-          }
-          return (
-            <div onClick={(e) => e.stopPropagation()}>
-              <RowActions actions={actions} />
-            </div>
-          )
-        },
+        Cell: ({ row }) => (
+          <div onClick={(e) => e.stopPropagation()}>
+            <MobileRowActions actions={buildActions(row.original)} />
+          </div>
+        ),
       },
     ],
-    [canEdit, canDelete, onEdit, t, navigate, customers, selectedIds, onSelectedIdsChange],
+    [buildActions, customers, onSelectedIdsChange, selectedIds, t],
   )
 
   const table = useMantineReactTable({
@@ -208,19 +217,66 @@ export function CustomerTable({
       sx: { overflowX: "auto", WebkitOverflowScrolling: "touch" },
     },
     mantineTableBodyRowProps: ({ row }) => ({
-      // onClick: () => navigate(salesCustomerDetailPath(row.original.id)),
-      onClick: () => navigate(`/sales/customers/${row.original.id}`),
+      onClick: () => {
+        void navigate(`/sales/customers/${row.original.id}`)
+      },
       style: { cursor: "pointer" },
     }),
   })
 
   return (
     <>
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={customers}
+        isLoading={isLoading}
+        keyExtractor={(customer) => customer.id}
+        emptyIcon={Users}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(customer) => (
+          <div
+            className="rounded-xl border bg-card p-4 shadow-sm transition-colors active:bg-muted/40"
+            onClick={() => {
+              void navigate(`/sales/customers/${customer.id}`)
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-sm font-semibold">{customer.customer_name}</h3>
+                  <StatusBadge status={customer.classification} />
+                </div>
+                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                  {customer.customer_code}
+                </p>
+              </div>
+              <div onClick={(e) => e.stopPropagation()} className="-mr-2 -mt-1">
+                <MobileRowActions actions={buildActions(customer)} />
+              </div>
+            </div>
 
-      {/* Delete confirmation dialog */}
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Phone className="size-4 shrink-0" />
+                <span>{customer.phone || "—"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="size-4 shrink-0" />
+                <span className="truncate">{customer.email || "—"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Briefcase className="size-4 shrink-0" />
+                <span>{customer.sales_rep?.full_name || "—"}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <MantineReactTable table={table} />
+          </div>
+        }
+      />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -235,9 +291,9 @@ export function CustomerTable({
             <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={async () => {
+              onClick={() => {
                 if (deleteTarget) {
-                  await onDelete(deleteTarget.id)
+                  void onDelete(deleteTarget.id)
                   setDeleteTarget(null)
                 }
               }}

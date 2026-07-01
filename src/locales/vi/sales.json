@@ -101,7 +101,8 @@
     "contacts_list": "Danh sách người liên hệ",
     "add_contact": "Thêm liên hệ",
     "interactions_list": "Lịch sử làm việc",
-    "add_interaction": "Ghi nhận tương tác"
+    "add_interaction": "Ghi nhận tương tác",
+    "phone": "Số điện thoại"
   },
   "contact": {
     "columns": {

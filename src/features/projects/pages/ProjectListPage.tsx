@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus } from "lucide-react"
+import { Plus, Briefcase } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Fab } from "@/components/common/Fab"
 import { ProjectTable } from "../components/ProjectTable"
 import { ProjectFormModal } from "../components/ProjectFormModal"
 
@@ -125,12 +127,10 @@ export function ProjectListPage() {
       type: "select",
       placeholder: t("common:filter.all"),
       value: queryParams.status || "",
-      options: [
-        ...statuses.map((s) => ({
-          label: s.label,
-          value: s.value.toString(),
-        })),
-      ],
+      options: statuses.map((s) => ({
+        label: s.label,
+        value: s.value.toString(),
+      })),
     },
     {
       field: "customer_id",
@@ -155,21 +155,36 @@ export function ProjectListPage() {
   ]
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("projects:list.title")}</h1>
-        {canCreate && (
-          <Button
-            onClick={() => {
-              setEditingId(null)
-              setModalOpen(true)
-            }}
-          >
-            <Plus className="mr-2 size-4" />
-            {t("projects:list.create")}
-          </Button>
-        )}
-      </div>
+    <div className="space-y-4 pb-20 md:pb-0">
+      <MobileActionHeader
+        icon={Briefcase}
+        title={t("projects:list.title")}
+        subtitle={isLoading ? t("common:table.loading") : `${totalRecords}`}
+        actions={
+          canCreate ? (
+            <Button
+              onClick={() => {
+                setEditingId(null)
+                setModalOpen(true)
+              }}
+              className="hidden gap-2 min-h-11 md:flex md:min-h-9"
+            >
+              <Plus className="size-4" />
+              {t("projects:list.create")}
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {canCreate && (
+        <Fab
+          onClick={() => {
+            setEditingId(null)
+            setModalOpen(true)
+          }}
+          label={t("projects:list.create")}
+        />
+      )}
 
       <FilterPanel
         applyMode

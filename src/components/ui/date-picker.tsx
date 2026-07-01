@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import dayjs from "@/lib/dayjs"
 import { CalendarIcon, X } from "lucide-react"
 
@@ -24,15 +25,12 @@ type DatePickerProps = {
   className?: string
 }
 
-export function DatePicker({
-  value,
-  onChange,
-  placeholder = "Chọn ngày",
-  className,
-}: DatePickerProps) {
+export function DatePicker({ value, onChange, placeholder, className }: DatePickerProps) {
+  const { t } = useTranslation(["common"])
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const selected = value ? dayjs(value).toDate() : undefined
+  const finalPlaceholder = placeholder ?? t("common:datePicker.selectDate")
 
   const handleSelect = (date: Date | undefined) => {
     onChange(date ? dayjs(date).format("YYYY-MM-DD") : null)
@@ -55,7 +53,7 @@ export function DatePicker({
     >
       <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
       <span className="flex-1 text-left truncate">
-        {selected ? dayjs(selected).format("DD/MM/YYYY") : placeholder}
+        {selected ? dayjs(selected).format("DD/MM/YYYY") : finalPlaceholder}
       </span>
       {value ? (
         <span
@@ -79,7 +77,9 @@ export function DatePicker({
         <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
         <DrawerContent className="p-0 flex flex-col max-h-[85dvh] overflow-hidden">
           <DrawerHeader className="border-b border-border pb-3 shrink-0">
-            <DrawerTitle className="text-center text-sm font-medium">Chọn ngày</DrawerTitle>
+            <DrawerTitle className="text-center text-sm font-medium">
+              {t("common:datePicker.selectDate")}
+            </DrawerTitle>
           </DrawerHeader>
           <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 min-h-0">
             <Calendar
@@ -96,11 +96,11 @@ export function DatePicker({
               className="h-9 flex-1 text-sm"
               onClick={handleSelectToday}
             >
-              Hôm nay
+              {t("common:datePicker.today")}
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" size="sm" className="h-9 flex-1 text-sm">
-                Hủy
+                {t("common:actions.cancel")}
               </Button>
             </DrawerClose>
           </div>
@@ -121,7 +121,7 @@ export function DatePicker({
             className="h-7 w-full text-xs"
             onClick={handleSelectToday}
           >
-            Hôm nay
+            {t("common:datePicker.today")}
           </Button>
         </div>
       </PopoverContent>

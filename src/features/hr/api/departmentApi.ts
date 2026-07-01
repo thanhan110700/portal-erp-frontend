@@ -12,15 +12,8 @@ export type UpdateDepartmentPayload = Partial<CreateDepartmentPayload>
 
 export const departmentApi = {
   async list(): Promise<Department[]> {
-    // Workaround for 404 error on GET /v1/departments
-    // Uses the options endpoint instead, which returns {id, label, code}
-    const response = await axiosInstance.get<ApiResponse<any[]>>("/v1/options/departments")
-    return response.data.data.map((item) => ({
-      id: item.id,
-      name: item.label,
-      code: item.code,
-      description: null,
-    }))
+    const response = await axiosInstance.get<ApiResponse<Department[]>>("/v1/departments")
+    return response.data.data
   },
 
   async get(id: number): Promise<Department> {

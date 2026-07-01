@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next"
 import { TablePagination } from "@/components/common/TablePagination"
 import { Button } from "@/components/ui/button"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Fab } from "@/components/common/Fab"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
@@ -73,10 +75,10 @@ export function EmployeeListPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [search, deptFilter, page])
+  }, [search, deptFilter, page, t])
 
   useEffect(() => {
-    fetchEmployees()
+    void fetchEmployees()
   }, [fetchEmployees])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -197,46 +199,52 @@ export function EmployeeListPage() {
   }, [search, deptFilter, departments, t])
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-20 md:pb-0">
       {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Users className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">{t("hr:employees.title")}</h1>
-            <p className="text-sm text-muted-foreground">
-              {isLoading ? t("common:table.loading") : `${total}`}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            id="btn-export-employees-current"
-            variant="outline"
-            onClick={handleExportCurrent}
-            className="gap-2"
-            disabled={employees.length === 0}
-          >
-            <Download className="size-4" />
-            {t("hr:employees.actions.export_current", { defaultValue: "Xuất danh sách hiện tại" })}
-          </Button>
-          {canCreate && (
+      <MobileActionHeader
+        icon={Users}
+        title={t("hr:employees.title")}
+        subtitle={isLoading ? t("common:table.loading") : `${total}`}
+        actions={
+          <>
             <Button
-              id="btn-create-employee"
-              onClick={() => {
-                setEditTarget(null)
-                setFormOpen(true)
-              }}
-              className="gap-2"
+              id="btn-export-employees-current"
+              variant="outline"
+              onClick={handleExportCurrent}
+              className="min-h-11 gap-2 md:min-h-9"
+              disabled={employees.length === 0}
             >
-              <Plus className="size-4" />
-              {t("hr:employees.create")}
+              <Download className="size-4" />
+              {t("hr:employees.actions.export_current", {
+                defaultValue: "Xuất danh sách hiện tại",
+              })}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button
+                id="btn-create-employee"
+                onClick={() => {
+                  setEditTarget(null)
+                  setFormOpen(true)
+                }}
+                className="hidden min-h-11 gap-2 md:flex md:min-h-9"
+              >
+                <Plus className="size-4" />
+                {t("hr:employees.create")}
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      {canCreate && (
+        <Fab
+          onClick={() => {
+            setEditTarget(null)
+            setFormOpen(true)
+          }}
+          label={t("hr:employees.create")}
+        />
+      )}
 
       {/* ── Filters ───────────────────────────────────────────────────────── */}
       <FilterPanel

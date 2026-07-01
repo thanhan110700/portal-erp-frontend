@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
-import { Building2, Plus, Edit, Trash2, RefreshCw } from "lucide-react"
+import { Building2, Plus, Edit, Trash2, RefreshCw, FolderTree } from "lucide-react"
 import { toast } from "sonner"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 
@@ -18,6 +18,10 @@ import {
 import { departmentApi, type CreateDepartmentPayload } from "../api/departmentApi"
 import type { Department } from "../types/employee"
 import { DepartmentFormModal } from "../components/DepartmentFormModal"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
+import { Fab } from "@/components/common/Fab"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { useTranslation } from "react-i18next"
@@ -89,6 +93,33 @@ export function DepartmentListPage() {
     }
   }
 
+  const buildActions = useCallback(
+    (department: Department): RowAction[] => {
+      const actions: RowAction[] = []
+
+      if (canEdit) {
+        actions.push({
+          label: t("common:actions.edit", { defaultValue: "Sửa" }),
+          icon: <Edit className="size-4" />,
+          onClick: () => handleOpenEdit(department),
+        })
+      }
+
+      if (canDelete) {
+        actions.push({
+          label: t("hr:department.actions.delete", { defaultValue: "Xóa" }),
+          icon: <Trash2 className="size-4" />,
+          onClick: () => setDeleteTarget(department),
+          variant: "destructive",
+          separator: actions.length > 0,
+        })
+      }
+
+      return actions
+    },
+    [canDelete, canEdit, t],
+  )
+
   const columns = useMemo<MRT_ColumnDef<Department>[]>(
     () => [
       {
@@ -128,32 +159,13 @@ export function DepartmentListPage() {
               className="flex items-center justify-end gap-1"
               onClick={(e) => e.stopPropagation()}
             >
-              {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={() => handleOpenEdit(row.original)}
-                >
-                  <Edit className="size-4" />
-                </Button>
-              )}
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteTarget(row.original)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
+              <MobileRowActions actions={buildActions(row.original)} />
             </div>
           )
         },
       },
     ],
-    [canEdit, canDelete, t],
+    [buildActions, canDelete, canEdit, t],
   )
 
   const table = useMantineReactTable({
@@ -189,43 +201,77 @@ export function DepartmentListPage() {
   })
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-20 md:pb-0">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Building2 className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">{t("hr:department.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("hr:department.description")}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void loadData()}
-            disabled={isLoading}
-            className="gap-1.5 min-h-11 md:min-h-9"
-          >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            {t("common:actions.refresh")}
-          </Button>
-          {canCreate && (
-            <Button size="sm" onClick={handleOpenCreate} className="gap-2 min-h-11 md:min-h-9">
-              <Plus className="size-4" />
-              {t("hr:department.create")}
+      <MobileActionHeader
+        icon={Building2}
+        title={t("hr:department.title")}
+        subtitle={t("hr:department.description")}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadData()}
+              disabled={isLoading}
+              className="gap-1.5 min-h-11 md:min-h-9"
+            >
+              <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              {t("common:actions.refresh")}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button
+                size="sm"
+                onClick={handleOpenCreate}
+                className="hidden gap-2 min-h-11 md:flex md:min-h-9"
+              >
+                <Plus className="size-4" />
+                {t("hr:department.create")}
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      {canCreate && <Fab onClick={handleOpenCreate} label={t("hr:department.create")} />}
 
       {/* ── Table ───────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3">
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <MantineReactTable table={table} />
-        </div>
+        <MobileCardList
+          data={departments}
+          isLoading={isLoading}
+          keyExtractor={(department) => department.id}
+          emptyIcon={FolderTree}
+          emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+          renderCard={(department) => (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate text-sm font-semibold">{department.name}</h3>
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      {department.code}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {department.description || "—"}
+                  </p>
+                </div>
+
+                {buildActions(department).length > 0 && (
+                  <div className="-mr-2 -mt-1">
+                    <MobileRowActions actions={buildActions(department)} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          desktopTable={
+            <div className="rounded-xl border bg-card overflow-hidden">
+              <MantineReactTable table={table} />
+            </div>
+          }
+        />
       </div>
 
       {/* ── Modals ───────────────────────────────────────────────────────── */}
@@ -250,9 +296,9 @@ export function DepartmentListPage() {
             <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={async () => {
+              onClick={() => {
                 if (deleteTarget) {
-                  await handleDelete(deleteTarget.id)
+                  void handleDelete(deleteTarget.id)
                   setDeleteTarget(null)
                 }
               }}

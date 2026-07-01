@@ -1,11 +1,14 @@
 import { useState, useMemo, useCallback } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Plus, Trash2, Check, X } from "lucide-react"
+import { Plus, Trash2, Check, X, Receipt, Calendar, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import type { ProjectExpense, CreateProjectExpensePayload } from "../types/project"
 import { projectApi } from "../api/projectApi"
 import { voucherApi } from "@/features/finance/api/voucherApi"
@@ -70,7 +73,7 @@ export function ProjectExpensesTab({
         toast.error(t("projects:expenses.approve_error"))
       }
     },
-    [projectId, expenses, onRefresh, t],
+    [expenses, onRefresh, projectId, t],
   )
 
   const handleReject = useCallback((expenseId: number) => {
@@ -107,7 +110,7 @@ export function ProjectExpensesTab({
         setDeleteConfirmId(null)
       }
     },
-    [projectId, onRefresh, t],
+    [onRefresh, projectId, t],
   )
 
   const handleRemove = useCallback((expenseId: number) => {
@@ -134,6 +137,40 @@ export function ProjectExpensesTab({
     }
   }
 
+  const buildActions = useCallback(
+    (expense: ProjectExpense): RowAction[] => {
+      const actions: RowAction[] = []
+      const isPending = expense.status === "pending"
+
+      if (canApprove && isPending) {
+        actions.push({
+          label: t("projects:expenses.actions.approve"),
+          icon: <Check className="size-4" />,
+          onClick: () => void handleApprove(expense.id),
+        })
+        actions.push({
+          label: t("projects:expenses.actions.reject"),
+          icon: <X className="size-4" />,
+          onClick: () => handleReject(expense.id),
+          variant: "destructive",
+        })
+      }
+
+      if (canDelete) {
+        actions.push({
+          label: t("projects:expenses.actions.delete"),
+          icon: <Trash2 className="size-4" />,
+          onClick: () => handleRemove(expense.id),
+          variant: "destructive",
+          separator: actions.length > 0,
+        })
+      }
+
+      return actions
+    },
+    [canApprove, canDelete, handleApprove, handleReject, handleRemove, t],
+  )
+
   const columns = useMemo<MRT_ColumnDef<ProjectExpense>[]>(
     () => [
       {
@@ -154,7 +191,7 @@ export function ProjectExpensesTab({
         header: t("projects:expenses.columns.date"),
         size: 130,
         Cell: ({ cell }) => (
-          <span className="text-muted-foreground whitespace-nowrap">{cell.getValue<string>()}</span>
+          <span className="whitespace-nowrap text-muted-foreground">{cell.getValue<string>()}</span>
         ),
       },
       {
@@ -163,7 +200,7 @@ export function ProjectExpensesTab({
         size: 250,
         Cell: ({ cell }) => (
           <span
-            className="text-muted-foreground truncate block max-w-[250px]"
+            className="block max-w-[250px] truncate text-muted-foreground"
             title={cell.getValue<string>()}
           >
             {cell.getValue<string>()}
@@ -200,7 +237,7 @@ export function ProjectExpensesTab({
         Cell: ({ row }) => {
           const expense = row.original
           return (
-            <div className="text-xs space-y-1">
+            <div className="space-y-1 text-xs">
               <div className="text-muted-foreground">
                 {t("projects:expenses.approvers.requester")}{" "}
                 <span className="font-medium text-foreground">
@@ -238,55 +275,10 @@ export function ProjectExpensesTab({
         id: "actions",
         header: t("common:table.actions"),
         size: 150,
-        Cell: ({ row }) => {
-          const expense = row.original
-          const isPending = expense.status === "pending"
-          const canApproveReject = canApprove && isPending
-
-          return (
-            <div
-              className="flex items-center justify-center gap-1.5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {canApproveReject && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 md:size-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                    onClick={() => handleApprove(expense.id)}
-                    title={t("projects:expenses.actions.approve")}
-                  >
-                    <Check className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 md:size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                    onClick={() => handleReject(expense.id)}
-                    title={t("projects:expenses.actions.reject")}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </>
-              )}
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-11 md:size-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                  onClick={() => handleRemove(expense.id)}
-                  title={t("projects:expenses.actions.delete")}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
-            </div>
-          )
-        },
+        Cell: ({ row }) => <MobileRowActions actions={buildActions(row.original)} />,
       },
     ],
-    [canApprove, canDelete, handleApprove, handleReject, handleRemove, t],
+    [buildActions, t],
   )
 
   const table = useMantineReactTable({
@@ -327,25 +319,81 @@ export function ProjectExpensesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
-          {t("projects:expenses.title")} ({expenses.length})
-        </h3>
-        {canCreate && (
-          <Button
-            size="sm"
-            onClick={() => setModalOpen(true)}
-            className="gap-2 min-h-11 md:min-h-9"
-          >
-            <Plus className="size-4" />
-            {t("projects:expenses.add_expense")}
-          </Button>
-        )}
-      </div>
+      <MobileActionHeader
+        title={t("projects:expenses.title")}
+        subtitle={`(${expenses.length})`}
+        actions={
+          canCreate ? (
+            <Button
+              size="sm"
+              onClick={() => setModalOpen(true)}
+              className="gap-2 min-h-11 md:min-h-9"
+            >
+              <Plus className="size-4" />
+              {t("projects:expenses.add_expense")}
+            </Button>
+          ) : undefined
+        }
+      />
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={expenses}
+        keyExtractor={(expense) => expense.id}
+        emptyIcon={Receipt}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(expense) => (
+          <div
+            className="rounded-xl border bg-card p-4 shadow-sm transition-colors active:bg-muted/40"
+            onClick={() => {
+              setSelectedExpense(expense)
+              setDetailOpen(true)
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-semibold">
+                    {expense.expense_type
+                      ? t(`projects:expense_types.${expense.expense_type}`, {
+                          defaultValue: expense.expense_type,
+                        })
+                      : "—"}
+                  </p>
+                  <StatusBadge status={expense.status} />
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  {expense.description || "—"}
+                </p>
+              </div>
+              <div onClick={(e) => e.stopPropagation()} className="-mr-2 -mt-1">
+                <MobileRowActions actions={buildActions(expense)} />
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="size-4 shrink-0" />
+                <span>{expense.expense_date}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Wallet className="size-4 shrink-0" />
+                <span>{Number(expense.amount).toLocaleString("vi-VN")} VNĐ</span>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <span>{expense.user?.full_name || "—"}</span>
+              {expense.approver && <span>{expense.approver.full_name}</span>}
+              {expense.voucher && <span className="font-mono">{expense.voucher.voucher_code}</span>}
+            </div>
+          </div>
+        )}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <MantineReactTable table={table} />
+          </div>
+        }
+      />
 
       {modalOpen && (
         <ProjectExpenseFormModal

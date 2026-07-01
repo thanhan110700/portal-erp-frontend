@@ -6,7 +6,11 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TablePagination } from "@/components/common/TablePagination"
-import { RowActions } from "@/components/common/RowActions"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { Fab } from "@/components/common/Fab"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { Receipt } from "lucide-react"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { voucherApi } from "../api/voucherApi"
@@ -414,7 +418,7 @@ export function VoucherListPage() {
           const isPending = voucher.status === "pending"
           const isDraftOrPending = voucher.status === "draft" || isPending
 
-          const actions: import("@/components/common/RowActions").RowAction[] = []
+          const actions: RowAction[] = []
 
           if (canApprove && isPending) {
             actions.push({
@@ -465,7 +469,7 @@ export function VoucherListPage() {
 
           return (
             <div onClick={(e) => e.stopPropagation()}>
-              <RowActions actions={actions} />
+              <MobileRowActions actions={actions} />
             </div>
           )
         },
@@ -512,25 +516,35 @@ export function VoucherListPage() {
   })
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("finance:list.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("finance:list.description")}</p>
-        </div>
-        {canCreate && (
-          <Button
-            onClick={() => {
-              setSelectedVoucher(null)
-              setFormOpen(true)
-            }}
-            className="gap-2 min-h-11 md:min-h-9"
-          >
-            <Plus className="size-4" />
-            {t("finance:list.create")}
-          </Button>
-        )}
-      </div>
+    <div className="space-y-6 pb-20 md:pb-0">
+      <MobileActionHeader
+        title={t("finance:list.title")}
+        subtitle={t("finance:list.description")}
+        actions={
+          canCreate ? (
+            <Button
+              onClick={() => {
+                setSelectedVoucher(null)
+                setFormOpen(true)
+              }}
+              className="gap-2 min-h-11 md:min-h-9 hidden md:flex"
+            >
+              <Plus className="size-4" />
+              {t("finance:list.create")}
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {canCreate && (
+        <Fab
+          onClick={() => {
+            setSelectedVoucher(null)
+            setFormOpen(true)
+          }}
+          label={t("finance:list.create")}
+        />
+      )}
 
       <FilterPanel
         applyMode
@@ -551,9 +565,108 @@ export function VoucherListPage() {
         }}
       />
 
-      <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={vouchers}
+        isLoading={loading}
+        keyExtractor={(item) => item.id.toString()}
+        renderCard={(voucher) => {
+          const isReceipt = voucher.voucher_type === "receipt"
+          const isPending = voucher.status === "pending"
+          const isDraftOrPending = voucher.status === "draft" || isPending
+
+          const actions: RowAction[] = []
+
+          if (canApprove && isPending) {
+            actions.push({
+              label: t("finance:list.actions.approve"),
+              icon: <Check className="size-4" />,
+              onClick: () => void handleApprove(voucher.id),
+              className: "text-emerald-600",
+            })
+            actions.push({
+              label: t("finance:list.actions.reject"),
+              icon: <X className="size-4" />,
+              onClick: () => {
+                setSelectedVoucher(voucher)
+                setRejectOpen(true)
+              },
+              className: "text-rose-600",
+            })
+          }
+
+          if (canEdit && isDraftOrPending) {
+            actions.push({
+              label: t("finance:list.actions.edit"),
+              icon: <Edit2 className="size-4" />,
+              onClick: () => {
+                setSelectedVoucher(voucher)
+                setFormOpen(true)
+              },
+            })
+          }
+          if (canDelete && isDraftOrPending) {
+            actions.push({
+              label: t("finance:list.actions.delete"),
+              icon: <Trash2 className="size-4" />,
+              onClick: () => void handleDelete(voucher.id),
+              variant: "destructive",
+              separator: true,
+            })
+          }
+
+          return (
+            <div
+              className="bg-card rounded-xl border p-4 shadow-sm flex flex-col gap-3 active:bg-muted/50 transition-colors cursor-pointer"
+              onClick={() => {
+                setSelectedVoucher(voucher)
+                setDetailOpen(true)
+              }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-foreground flex items-center gap-2 flex-wrap">
+                    <span className="truncate">{voucher.voucher_code}</span>
+                    <StatusBadge status={voucher.status} />
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    {voucher.description}
+                  </div>
+                </div>
+                <div onClick={(e) => e.stopPropagation()} className="-mt-1 -mr-2">
+                  <MobileRowActions actions={actions} />
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between mt-1">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <span>{voucher.voucher_date}</span>
+                  {voucher.files && voucher.files.length > 0 && (
+                    <span className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+                      <Paperclip className="size-3" />
+                      {voucher.files.length}
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={`font-mono font-bold text-base ${
+                    isReceipt ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {isReceipt ? "+" : "-"}
+                  {Number(voucher.amount).toLocaleString("vi-VN")} ₫
+                </div>
+              </div>
+            </div>
+          )
+        }}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
+            <MantineReactTable table={table} />
+          </div>
+        }
+        emptyIcon={Receipt}
+        emptyTitle={t("common:table.noData")}
+      />
 
       <TablePagination
         total={totalItems}

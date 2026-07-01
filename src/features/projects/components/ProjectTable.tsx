@@ -1,8 +1,9 @@
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
-import { Eye, Edit, Trash2 } from "lucide-react"
+import { Eye, Edit, Trash2, Briefcase, Building2, TrendingUp } from "lucide-react"
 
-import { RowActions } from "@/components/common/RowActions"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { TablePagination } from "@/components/common/TablePagination"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Project } from "../types/project"
@@ -36,6 +37,40 @@ export function ProjectTable({
   pagination,
 }: ProjectTableProps) {
   const { t } = useTranslation(["projects", "common"])
+
+  const buildActions = useCallback(
+    (project: Project): RowAction[] => {
+      const actions: RowAction[] = [
+        {
+          label: t("common:actions.view", { defaultValue: "Xem" }),
+          icon: <Eye className="size-4" />,
+          onClick: () => onView(project.id),
+        },
+      ]
+
+      if (canEdit) {
+        actions.push({
+          label: t("common:actions.edit", { defaultValue: "Sửa" }),
+          icon: <Edit className="size-4" />,
+          onClick: () => onEdit(project.id),
+        })
+      }
+
+      if (canDelete) {
+        actions.push({
+          label: t("common:actions.delete", { defaultValue: "Xóa" }),
+          icon: <Trash2 className="size-4" />,
+          onClick: () => onDelete(project.id),
+          variant: "destructive",
+          separator: true,
+        })
+      }
+
+      return actions
+    },
+    [canDelete, canEdit, onDelete, onEdit, onView, t],
+  )
+
   const columns = useMemo<MRT_ColumnDef<Project>[]>(
     () => [
       {
@@ -85,36 +120,10 @@ export function ProjectTable({
         id: "actions",
         header: t("common:table.actions"),
         size: 120,
-        Cell: ({ row }) => {
-          const actions: import("@/components/common/RowActions").RowAction[] = [
-            {
-              label: t("common:actions.view", { defaultValue: "Xem" }),
-              icon: <Eye className="size-4" />,
-              onClick: () => onView(row.original.id),
-              className: "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
-            },
-          ]
-          if (canEdit) {
-            actions.push({
-              label: t("common:actions.edit", { defaultValue: "Sửa" }),
-              icon: <Edit className="size-4" />,
-              onClick: () => onEdit(row.original.id),
-              className: "text-amber-600 hover:text-amber-700 hover:bg-amber-50",
-            })
-          }
-          if (canDelete) {
-            actions.push({
-              label: t("common:actions.delete", { defaultValue: "Xóa" }),
-              icon: <Trash2 className="size-4" />,
-              onClick: () => onDelete(row.original.id),
-              className: "text-red-600 hover:text-red-700 hover:bg-red-50",
-            })
-          }
-          return <RowActions actions={actions} />
-        },
+        Cell: ({ row }) => <MobileRowActions actions={buildActions(row.original)} />,
       },
     ],
-    [onEdit, onDelete, onView, canEdit, canDelete, t],
+    [buildActions, t],
   )
 
   const table = useMantineReactTable({
@@ -152,7 +161,66 @@ export function ProjectTable({
 
   return (
     <div>
-      <MantineReactTable table={table} />
+      <MobileCardList
+        data={data}
+        isLoading={isLoading}
+        keyExtractor={(project) => project.id}
+        emptyIcon={Briefcase}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(project) => {
+          const contractValue = Number(project.contract_value || 0)
+          const progress = project.progress_percent || 0
+
+          return (
+            <div
+              className="rounded-xl border bg-card p-4 shadow-sm transition-colors active:bg-muted/40"
+              onClick={() => onView(project.id)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate text-sm font-semibold text-foreground">
+                      {project.project_name}
+                    </h3>
+                    <StatusBadge status={project.status} />
+                  </div>
+                  <p className="mt-1 font-mono text-xs text-muted-foreground">
+                    {project.project_code}
+                  </p>
+                </div>
+                <div onClick={(e) => e.stopPropagation()} className="-mr-2 -mt-1">
+                  <MobileRowActions actions={buildActions(project)} />
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Building2 className="size-4 shrink-0" />
+                  <span className="truncate">{project.customer?.name || "—"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-4 shrink-0" />
+                  <span>{new Intl.NumberFormat("vi-VN").format(contractValue)} VNĐ</span>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{t("projects:detail.progress")}</span>
+                  <span className="font-semibold text-foreground">{progress}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        }}
+        desktopTable={<MantineReactTable table={table} />}
+      />
       <TablePagination
         page={pagination.page}
         perPage={pagination.perPage}

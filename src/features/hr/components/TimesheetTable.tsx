@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { useState, useMemo, useCallback } from "react"
+import { CheckCircle2, XCircle, CalendarDays, Clock3, Timer, ClipboardList } from "lucide-react"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
 
-import { RowActions } from "@/components/common/RowActions"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import {
   AlertDialog,
@@ -65,6 +66,27 @@ export function TimesheetTable({
     }
     setConfirmTarget(null)
   }
+
+  const buildActions = useCallback(
+    (ts: Timesheet): RowAction[] => {
+      if (ts.status !== "pending" || !canApprove) return []
+
+      return [
+        {
+          label: t("hr:timesheet.actions.approve", { defaultValue: "Duyệt" }),
+          icon: <CheckCircle2 className="size-4" />,
+          onClick: () => setConfirmTarget({ timesheet: ts, action: "approve" }),
+        },
+        {
+          label: t("hr:timesheet.actions.reject", { defaultValue: "Từ chối" }),
+          icon: <XCircle className="size-4" />,
+          onClick: () => setConfirmTarget({ timesheet: ts, action: "reject" }),
+          variant: "destructive",
+        },
+      ]
+    },
+    [canApprove, t],
+  )
 
   const columns = useMemo<MRT_ColumnDef<Timesheet>[]>(
     () => [
@@ -155,31 +177,13 @@ export function TimesheetTable({
           }
           return (
             <div onClick={(e) => e.stopPropagation()}>
-              <RowActions
-                actions={
-                  [
-                    {
-                      label: t("hr:timesheet.actions.approve", { defaultValue: "Duyệt" }),
-                      icon: <CheckCircle2 className="size-4" />,
-                      onClick: () => setConfirmTarget({ timesheet: ts, action: "approve" }),
-                      className: "text-success hover:text-success hover:bg-success/10",
-                    },
-                    {
-                      label: t("hr:timesheet.actions.reject", { defaultValue: "Từ chối" }),
-                      icon: <XCircle className="size-4" />,
-                      onClick: () => setConfirmTarget({ timesheet: ts, action: "reject" }),
-                      className: "text-destructive hover:text-destructive hover:bg-destructive/10",
-                      variant: "destructive" as const,
-                    },
-                  ] as import("@/components/common/RowActions").RowAction[]
-                }
-              />
+              <MobileRowActions actions={buildActions(ts)} />
             </div>
           )
         },
       },
     ],
-    [onApprove, onReject, t],
+    [buildActions, t],
   )
 
   const table = useMantineReactTable({
@@ -220,9 +224,101 @@ export function TimesheetTable({
 
   return (
     <>
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={timesheets}
+        isLoading={isLoading}
+        keyExtractor={(timesheet) => timesheet.id}
+        emptyIcon={ClipboardList}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(timesheet) => {
+          const actions = buildActions(timesheet)
+
+          return (
+            <div className="relative rounded-xl border bg-card p-4 shadow-sm">
+              <div className="absolute bottom-0 left-[1.4rem] top-0 w-px bg-border/70" />
+
+              <div className="relative flex items-start gap-3">
+                <div className="relative z-10 mt-1 flex size-6 shrink-0 items-center justify-center rounded-full border bg-background">
+                  <div
+                    className={`size-2.5 rounded-full ${
+                      timesheet.status === "approved"
+                        ? "bg-success"
+                        : timesheet.status === "rejected"
+                          ? "bg-destructive"
+                          : "bg-warning"
+                    }`}
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      {showEmployee && (
+                        <p className="truncate text-sm font-semibold">
+                          {timesheet.user?.full_name ?? "—"}
+                        </p>
+                      )}
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-sm font-medium">
+                          <CalendarDays className="size-4 text-muted-foreground" />
+                          {formatDate(timesheet.timesheet_date)}
+                        </span>
+                        <StatusBadge status={timesheet.status} />
+                      </div>
+                    </div>
+
+                    {actions.length > 0 && (
+                      <div className="-mr-2 -mt-1">
+                        <MobileRowActions actions={actions} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <div className="rounded-lg bg-muted/40 p-3">
+                      <div className="flex items-center gap-1 text-xs">
+                        <Clock3 className="size-3.5" />
+                        {t("hr:timesheet.columns.check_in")}
+                      </div>
+                      <p className="mt-1 font-medium text-foreground">
+                        {formatTime(timesheet.check_in_time)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-muted/40 p-3">
+                      <div className="flex items-center gap-1 text-xs">
+                        <Clock3 className="size-3.5" />
+                        {t("hr:timesheet.columns.check_out")}
+                      </div>
+                      <p className="mt-1 font-medium text-foreground">
+                        {formatTime(timesheet.check_out_time)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Timer className="size-4" />
+                      {timesheet.working_hours != null ? `${timesheet.working_hours}h` : "—"}
+                    </span>
+                    {timesheet.approver && (
+                      <span className="text-xs">bởi {timesheet.approver.full_name}</span>
+                    )}
+                  </div>
+
+                  {timesheet.notes && (
+                    <p className="text-sm text-muted-foreground">{timesheet.notes}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        }}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <MantineReactTable table={table} />
+          </div>
+        }
+      />
 
       {/* Confirm Dialog */}
       <AlertDialog open={!!confirmTarget} onOpenChange={(open) => !open && setConfirmTarget(null)}>

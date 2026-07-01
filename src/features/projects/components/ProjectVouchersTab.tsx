@@ -7,6 +7,8 @@ import { projectApi } from "../api/projectApi"
 import { toast } from "sonner"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { TablePagination } from "@/components/common/TablePagination"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileCardList } from "@/components/common/MobileCardList"
 import { useTranslation } from "react-i18next"
 import type { ProjectVoucher } from "../types/project"
 
@@ -163,18 +165,72 @@ export function ProjectVouchersTab({ projectId }: ProjectVouchersTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
-          {t("projects:vouchers.title")} ({totalRecords})
-        </h3>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Info className="size-3.5" /> {t("projects:vouchers.info")}
-        </span>
-      </div>
+      <MobileActionHeader
+        title={t("projects:vouchers.title")}
+        subtitle={`(${totalRecords})`}
+        actions={
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Info className="size-3.5 shrink-0" />{" "}
+            <span className="hidden md:inline">{t("projects:vouchers.info")}</span>
+          </span>
+        }
+      />
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={vouchers}
+        keyExtractor={(voucher) => voucher.id}
+        emptyIcon={Receipt}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(voucher) => {
+          const isReceipt = voucher.voucher_type === "receipt"
+          return (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                        isReceipt ? "text-emerald-600" : "text-rose-600"
+                      }`}
+                    >
+                      <Receipt className="size-3.5" />
+                      {isReceipt
+                        ? t("projects:vouchers.types.receipt")
+                        : t("projects:vouchers.types.payment")}
+                    </span>
+                    <span className="font-mono text-sm font-semibold">{voucher.voucher_code}</span>
+                  </div>
+                  <div className="mt-2">
+                    <StatusBadge status={voucher.status} />
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                    {voucher.description || voucher.notes || "—"}
+                  </p>
+                </div>
+                <div
+                  className={`text-right font-mono font-semibold ${
+                    isReceipt ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {isReceipt ? "+" : "-"}
+                  {Number(voucher.amount).toLocaleString("vi-VN")} VNĐ
+                </div>
+              </div>
+              <div className="mt-3 flex items-center text-xs text-muted-foreground border-t pt-3">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5" />
+                  <span>{voucher.voucher_date}</span>
+                </div>
+              </div>
+            </div>
+          )
+        }}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <MantineReactTable table={table} />
+          </div>
+        }
+      />
       {totalRecords > 0 && (
         <TablePagination
           page={page}

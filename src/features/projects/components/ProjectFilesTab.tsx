@@ -12,6 +12,9 @@ import { SearchableSelect } from "@/components/common/SearchableSelect"
 import { FileUploadField } from "@/components/common/FileUploadField"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { ImagePreviewDialog } from "@/components/common/ImagePreviewDialog"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { optionApi, type OptionItem } from "@/shared/api/optionApi"
 import { projectApi } from "../api/projectApi"
 import type { ProjectFile } from "../types/project"
@@ -133,6 +136,42 @@ export function ProjectFilesTab({
     const q = searchQuery.toLowerCase()
     return files.filter((f) => f.original_name.toLowerCase().includes(q))
   }, [files, searchQuery])
+
+  const buildActions = useCallback(
+    (file: ProjectFile): RowAction[] => {
+      const isOwner = file.uploaded_by === currentUserId
+      const showDelete = isAdmin || isOwner
+      const actions: RowAction[] = []
+
+      actions.push({
+        label: t("projects:files.download", { defaultValue: "Tải xuống" }),
+        icon: <Download className="size-4" />,
+        onClick: () => {
+          const a = document.createElement("a")
+          a.href = file.url
+          a.download = file.original_name
+          a.target = "_blank"
+          a.rel = "noopener noreferrer"
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        },
+      })
+
+      if (showDelete) {
+        actions.push({
+          label: t("common:actions.delete"),
+          icon: <Trash2 className="size-4" />,
+          onClick: () => handleDelete(file.id),
+          variant: "destructive",
+          separator: true,
+        })
+      }
+
+      return actions
+    },
+    [currentUserId, isAdmin, handleDelete, t],
+  )
 
   const columns = useMemo<MRT_ColumnDef<ProjectFile>[]>(
     () => [
@@ -289,29 +328,30 @@ export function ProjectFilesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center gap-4">
-        <h3 className="text-lg font-semibold whitespace-nowrap">
-          {t("projects:files.title")} ({filteredFiles.length})
-        </h3>
-        <div className="flex-1 flex justify-end items-center gap-3">
-          <Input
-            placeholder={t("common:actions.search")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-xs h-9"
-          />
-          {canEdit && !showUploadForm && (
-            <Button
-              size="sm"
-              onClick={() => setShowUploadForm(true)}
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <Upload className="size-4" />
-              {t("projects:files.upload")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <MobileActionHeader
+        title={t("projects:files.title")}
+        subtitle={`(${filteredFiles.length})`}
+        actions={
+          <div className="flex flex-1 items-center justify-end gap-3 w-full">
+            <Input
+              placeholder={t("common:actions.search")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-[150px] h-9 md:max-w-xs"
+            />
+            {canEdit && !showUploadForm && (
+              <Button
+                size="sm"
+                onClick={() => setShowUploadForm(true)}
+                className="gap-2 min-h-11 md:min-h-9"
+              >
+                <Upload className="size-4" />
+                {t("projects:files.upload")}
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {showUploadForm && (
         <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
@@ -398,9 +438,66 @@ export function ProjectFilesTab({
         </div>
       )}
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <MantineReactTable table={table} />
-      </div>
+      <MobileCardList
+        data={filteredFiles}
+        keyExtractor={(file) => file.id}
+        emptyIcon={FileText}
+        emptyTitle={t("common:table.noData", { defaultValue: "Không có dữ liệu" })}
+        renderCard={(file) => {
+          const cat = file.pivot?.file_category || file.category
+          return (
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-4 shrink-0 text-primary" />
+                    <p
+                      className="truncate text-sm font-semibold text-primary cursor-pointer hover:underline"
+                      onClick={(e) => {
+                        if (isImage(file.url)) {
+                          e.preventDefault()
+                          setPreviewUrl(file.url)
+                        } else {
+                          window.open(file.url, "_blank")
+                        }
+                      }}
+                    >
+                      {file.original_name}
+                    </p>
+                  </div>
+                  <div className="mt-1">
+                    <span className="capitalize text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                      {cat ? t(`projects:file_categories.${cat}`, { defaultValue: cat }) : "—"}
+                    </span>
+                  </div>
+                  {file.pivot?.notes && (
+                    <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                      {file.pivot.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="-mr-2 -mt-1">
+                  <MobileRowActions actions={buildActions(file)} />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5" />
+                  <span>
+                    {dayjs(file.uploaded_at || file.pivot?.added_at).format("DD/MM/YYYY")}
+                  </span>
+                </div>
+                <div className="font-mono">{formatFileSize(file.file_size)}</div>
+              </div>
+            </div>
+          )
+        }}
+        desktopTable={
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <MantineReactTable table={table} />
+          </div>
+        }
+      />
 
       <ConfirmDialog
         open={deleteConfirmId !== null}

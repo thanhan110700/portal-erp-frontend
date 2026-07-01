@@ -67,40 +67,48 @@ export function TablePagination({
 
       {/* Page buttons */}
       <div className="flex items-center gap-1">
-        {/* Prev */}
+        {/* Prev — size-9 = 36px, but with p-0 it's clickable. Add min-h-11 on mobile via Tailwind */}
         <Button
           variant="outline"
           size="icon-sm"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
           aria-label={t("common:pagination.prev_page")}
+          className="size-9 md:size-7"
         >
-          <ChevronLeft className="size-3.5" />
+          <ChevronLeft className="size-4 md:size-3.5" />
         </Button>
 
-        {/* Numbered pages */}
-        {pages.map((p, idx) =>
-          p === "..." ? (
-            <span
-              key={`ellipsis-${idx}`}
-              className="flex size-7 items-center justify-center text-xs text-muted-foreground select-none"
-            >
-              …
-            </span>
-          ) : (
-            <Button
-              key={p}
-              variant={p === page ? "default" : "outline"}
-              size="icon-sm"
-              onClick={() => onPageChange(p)}
-              aria-label={t("common:pagination.page_n", { page: p })}
-              aria-current={p === page ? "page" : undefined}
-              className={cn("text-xs font-medium", p === page && "pointer-events-none")}
-            >
-              {p}
-            </Button>
-          ),
-        )}
+        {/* Mobile: show only current page indicator */}
+        <span className="flex sm:hidden items-center justify-center px-3 text-sm font-medium text-muted-foreground">
+          {page} / {totalPages}
+        </span>
+
+        {/* Desktop: full numbered pages */}
+        <div className="hidden sm:flex items-center gap-1">
+          {pages.map((p, idx) =>
+            p === "..." ? (
+              <span
+                key={`ellipsis-${idx}`}
+                className="flex size-7 items-center justify-center text-xs text-muted-foreground select-none"
+              >
+                …
+              </span>
+            ) : (
+              <Button
+                key={p}
+                variant={p === page ? "default" : "outline"}
+                size="icon-sm"
+                onClick={() => onPageChange(p)}
+                aria-label={t("common:pagination.page_n", { page: p })}
+                aria-current={p === page ? "page" : undefined}
+                className={cn("size-7 text-xs font-medium", p === page && "pointer-events-none")}
+              >
+                {p}
+              </Button>
+            ),
+          )}
+        </div>
 
         {/* Next */}
         <Button
@@ -109,8 +117,9 @@ export function TablePagination({
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
           aria-label={t("common:pagination.next_page")}
+          className="size-9 md:size-7"
         >
-          <ChevronRight className="size-3.5" />
+          <ChevronRight className="size-4 md:size-3.5" />
         </Button>
       </div>
     </div>

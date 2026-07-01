@@ -1,7 +1,7 @@
 {
   "actions": {
     "save": "Lưu",
-    "cancel": "Hủy",
+    "cancel": "Thoát",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",
     "create": "Thêm mới",
@@ -129,6 +129,19 @@
     "tech": "Kỹ thuật",
     "technician": "Kỹ thuật",
     "employee": "Nhân viên"
+  },
+  "datePicker": {
+    "selectDate": "Chọn ngày",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "last7Days": "7 ngày qua",
+    "last30Days": "30 ngày qua",
+    "thisMonth": "Tháng này",
+    "lastMonth": "Tháng trước",
+    "thisYear": "Năm nay",
+    "lastYear": "Năm trước",
+    "custom": "Tùy chọn",
+    "apply": "Áp dụng"
   },
   "currency": "VNĐ"
 }

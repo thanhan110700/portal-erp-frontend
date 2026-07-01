@@ -8,5 +8,18 @@
   "overview": "Overview",
   "live": "Live Dashboard",
   "welcome": "Welcome, {{name}}!",
-  "description": "Welcome to your new project base template. You can start adding features here."
+  "description": "Welcome to your new project base template. You can start adding features here.",
+  "quickActions": {
+    "title": "Quick Actions",
+    "createVoucher": "Create Voucher",
+    "viewKpi": "View KPI",
+    "newQuote": "New Quote",
+    "createProject": "New Project"
+  },
+  "summaryCards": {
+    "totalIncome": "Monthly Income",
+    "totalExpense": "Monthly Expense",
+    "balance": "Current Balance",
+    "pendingTasks": "Pending Tasks"
+  }
 }

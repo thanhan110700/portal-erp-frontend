@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
 
 import { customerApi } from "../api/customerApi"
 import type {
@@ -69,7 +70,7 @@ export function CustomerDetailPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [customerId, navigate])
+  }, [customerId, navigate, t])
 
   useEffect(() => {
     void loadCustomerData()
@@ -148,32 +149,77 @@ export function CustomerDetailPage() {
     <div className="flex flex-col gap-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/sales/customers")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            void navigate("/sales/customers")
+          }}
+        >
           <ArrowLeft className="size-5" />
         </Button>
-        <div className="flex flex-1 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Building2 className="size-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold">{customer.customer_name}</h1>
-              <p className="text-sm text-muted-foreground">
-                {t("sales:customer_detail.tax_number")}: {customer.tax_number ?? "—"}
-              </p>
-            </div>
-          </div>
-          {customer.classification ? (
-            <StatusBadge
-              status={customer.classification}
-              className="text-sm px-3 py-1 bg-background"
-            />
-          ) : (
-            <Badge variant="outline" className="text-sm px-3 py-1 bg-background">
-              {t("sales:customer_detail.unclassified")}
-            </Badge>
-          )}
+        <div className="min-w-0 flex-1">
+          <MobileActionHeader
+            icon={Building2}
+            title={customer.customer_name || t("sales:customer_detail.unknown_customer")}
+            subtitle={`${t("sales:customer_detail.tax_number")}: ${customer.tax_number ?? "—"}`}
+            actions={
+              customer.classification ? (
+                <StatusBadge
+                  status={customer.classification}
+                  className="bg-background px-3 py-1 text-sm"
+                />
+              ) : (
+                <Badge variant="outline" className="bg-background px-3 py-1 text-sm">
+                  {t("sales:customer_detail.unclassified")}
+                </Badge>
+              )
+            }
+          />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {customer.phone && (
+          <a
+            href={`tel:${customer.phone}`}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border bg-card px-4 text-sm font-medium shadow-sm"
+          >
+            <Phone className="size-4" />
+            {t("sales:customer_detail.phone")}
+          </a>
+        )}
+        {customer.email && (
+          <a
+            href={`mailto:${customer.email}`}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border bg-card px-4 text-sm font-medium shadow-sm"
+          >
+            <Mail className="size-4" />
+            Email
+          </a>
+        )}
+        {canEdit && (
+          <Button
+            variant="outline"
+            className="min-h-12 gap-2 rounded-xl"
+            onClick={() => {
+              setSelectedContact(null)
+              setContactModalOpen(true)
+            }}
+          >
+            <UserPlus className="size-4" />
+            {t("sales:customer_detail.add_contact")}
+          </Button>
+        )}
+        {canEdit && (
+          <Button
+            className="min-h-12 gap-2 rounded-xl"
+            onClick={() => setInteractionModalOpen(true)}
+          >
+            <Plus className="size-4" />
+            {t("sales:customer_detail.add_interaction")}
+          </Button>
+        )}
       </div>
 
       {/* ── Top Overview ────────────────────────────────────────────────── */}
@@ -249,7 +295,7 @@ export function CustomerDetailPage() {
 
       {/* ── Main Content Tabs ───────────────────────────────────────────── */}
       <Tabs defaultValue="contacts" className="w-full">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 flex h-auto min-h-[48px] w-full justify-start overflow-x-auto whitespace-nowrap rounded-xl bg-muted/50 p-1">
           <TabsTrigger value="contacts" className="gap-2">
             {t("sales:customer_detail.contacts_tab")}{" "}
             <Badge variant="secondary">{contacts.length}</Badge>

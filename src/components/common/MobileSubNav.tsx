@@ -43,29 +43,38 @@ export function MobileSubNav() {
   }
 
   return (
-    <div className="sticky top-14 z-10 w-full overflow-x-auto border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 px-3 pb-2 pt-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <div className="flex w-max space-x-2">
-        {availableSubItems.map((subItem) => {
-          // Exact match for root, prefix match for others to keep active state when viewing details
-          const isActive =
-            pathname === subItem.href || (pathname.startsWith(subItem.href) && subItem.href !== "/")
+    <div className="sticky top-14 z-10 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+      {/* Gradient fade edges to indicate horizontal scroll */}
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-background/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-background/95 to-transparent" />
+        <div className="overflow-x-auto px-3 pb-2 pt-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex w-max space-x-2">
+            {availableSubItems.map((subItem) => {
+              // Exact match for root, prefix match for others to keep active state when viewing details
+              const isActive =
+                pathname === subItem.href ||
+                (pathname.startsWith(subItem.href) && subItem.href !== "/")
 
-          return (
-            <NavLink
-              key={subItem.name}
-              to={subItem.href}
-              className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors border",
-                isActive
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {subItem.icon && <subItem.icon className="size-3.5" />}
-              <span>{subItem.translationKey ? t(subItem.translationKey) : subItem.name}</span>
-            </NavLink>
-          )
-        })}
+              return (
+                <NavLink
+                  key={subItem.name}
+                  to={subItem.href}
+                  className={cn(
+                    // min-h-11 ensures ≥44px touch target
+                    "flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-colors border",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  {subItem.icon && <subItem.icon className="size-4" />}
+                  <span>{subItem.translationKey ? t(subItem.translationKey) : subItem.name}</span>
+                </NavLink>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )

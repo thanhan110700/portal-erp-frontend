@@ -27,8 +27,11 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { CommonDialog } from "@/components/common/CommonDialog"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { PageLoader } from "@/components/common/PageLoader"
+import { useIsMobile } from "@/hooks/useMobile"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 
@@ -59,6 +62,7 @@ export function ProjectDetailPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const projectId = parseInt(id || "0")
   const currentTab = searchParams.get("tab") || "members"
+  const isMobile = useIsMobile()
 
   const user = useAuthStore((s) => s.user)
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditProjects)
@@ -91,7 +95,7 @@ export function ProjectDetailPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [projectId, navigate])
+  }, [projectId, navigate, t])
 
   useEffect(() => {
     void loadProjectData()
@@ -116,8 +120,15 @@ export function ProjectDetailPage() {
       // Soft refresh other stats that might be recalculated
       const data = await projectApi.get(projectId)
       setProject(data)
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || t("projects:detail.status_update_error")
+    } catch (err: unknown) {
+      const errMsg =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message ===
+          "string"
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : t("projects:detail.status_update_error")
       toast.error(errMsg)
     } finally {
       setStatusUpdating(false)
@@ -144,6 +155,10 @@ export function ProjectDetailPage() {
   // Profit Margin
   const profitMargin = contractVal > 0 ? (profitVal / contractVal) * 100 : 0
   const isProfitPositive = profitVal >= 0
+  const statusActions: RowAction[] = STATUS_OPTIONS.map((status) => ({
+    label: t(`common:status.${status.value}`),
+    onClick: () => handleStatusChangeClick(status.value),
+  }))
 
   return (
     <div className="flex flex-col gap-6">
@@ -157,62 +172,75 @@ export function ProjectDetailPage() {
         >
           <ArrowLeft className="size-5" />
         </Button>
-        <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Briefcase className="size-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                {project.project_name}
+        <div className="min-w-0 flex-1">
+          <MobileActionHeader
+            icon={Briefcase}
+            title={project.project_name}
+            subtitle={
+              <span className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="font-mono text-xs uppercase">
                   {project.project_code}
                 </Badge>
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t("projects:detail.customer")}{" "}
-                <span className="font-medium text-foreground">{project.customer?.name || "—"}</span>
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {canEdit ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-auto p-1.5 px-3 gap-2 hover:bg-muted/50 rounded-full"
-                    disabled={statusUpdating}
-                  >
-                    <StatusBadge status={project.status} />
-                    <ChevronDown className="size-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[180px]">
-                  {STATUS_OPTIONS.map((s) => (
-                    <DropdownMenuItem
-                      key={s.value}
-                      onClick={() => handleStatusChangeClick(s.value)}
-                      className="gap-2 cursor-pointer"
-                    >
-                      <StatusBadge status={s.value} />
-                      <span className="text-xs text-muted-foreground flex-1 text-right">
-                        {t(`common:status.${s.value}`)}
-                      </span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <StatusBadge status={project.status} />
-            )}
-          </div>
+                <span>
+                  {t("projects:detail.customer")}{" "}
+                  <span className="font-medium text-foreground">
+                    {project.customer?.name || "—"}
+                  </span>
+                </span>
+              </span>
+            }
+            actions={
+              canEdit ? (
+                isMobile ? (
+                  <MobileRowActions
+                    actions={statusActions}
+                    triggerLabel={t("projects:detail.status_update_prompt", {
+                      defaultValue: "Cập nhật trạng thái",
+                    })}
+                    drawerTitle={t("projects:detail.status_update_prompt", {
+                      defaultValue: "Cập nhật trạng thái",
+                    })}
+                    className="size-11"
+                  />
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-auto gap-2 rounded-full px-3 py-1.5 hover:bg-muted/50"
+                        disabled={statusUpdating}
+                      >
+                        <StatusBadge status={project.status} />
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[180px]">
+                      {STATUS_OPTIONS.map((s) => (
+                        <DropdownMenuItem
+                          key={s.value}
+                          onClick={() => handleStatusChangeClick(s.value)}
+                          className="cursor-pointer gap-2"
+                        >
+                          <StatusBadge status={s.value} />
+                          <span className="flex-1 text-right text-xs text-muted-foreground">
+                            {t(`common:status.${s.value}`)}
+                          </span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              ) : (
+                <StatusBadge status={project.status} />
+              )
+            }
+          />
         </div>
       </div>
 
       {/* ── Financial Cards & Progress ─────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+      <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0 lg:pb-0">
+        <div className="min-w-[260px] snap-start rounded-xl border bg-card p-5 shadow-sm lg:min-w-0">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.contract_value_title")}</span>
             <DollarSign className="size-4 text-primary" />
@@ -227,7 +255,7 @@ export function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+        <div className="min-w-[260px] snap-start rounded-xl border bg-card p-5 shadow-sm lg:min-w-0">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.received_title")}</span>
             <TrendingUp className="size-4 text-emerald-500" />
@@ -245,7 +273,7 @@ export function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+        <div className="min-w-[260px] snap-start rounded-xl border bg-card p-5 shadow-sm lg:min-w-0">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.spent_title")}</span>
             <TrendingDown className="size-4 text-rose-500" />
@@ -263,7 +291,7 @@ export function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+        <div className="min-w-[260px] snap-start rounded-xl border bg-card p-5 shadow-sm lg:min-w-0">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>
               {t("projects:detail.remaining_receivable", { defaultValue: "Còn phải thu" })}
@@ -280,7 +308,7 @@ export function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-5 space-y-2 shadow-sm">
+        <div className="min-w-[260px] snap-start rounded-xl border bg-card p-5 shadow-sm lg:min-w-0">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>{t("projects:detail.profit_title")}</span>
             {isProfitPositive ? (
@@ -364,40 +392,44 @@ export function ProjectDetailPage() {
           onValueChange={(val) => setSearchParams({ tab: val })}
           className="w-full"
         >
-          <TabsList className="w-full flex justify-start md:grid md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto min-h-[48px] overflow-x-auto scrollbar-none whitespace-nowrap">
-            <TabsTrigger
-              value="members"
-              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
-            >
-              {t("projects:detail.tabs.members")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="milestones"
-              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
-            >
-              {t("projects:detail.tabs.milestones")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="expenses"
-              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
-            >
-              {t("projects:detail.tabs.expenses")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="files"
-              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
-            >
-              {t("projects:detail.tabs.files")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="vouchers"
-              className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
-            >
-              {t("projects:detail.tabs.vouchers")}
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-background to-transparent md:hidden" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-background to-transparent md:hidden" />
+            <TabsList className="w-full flex justify-start md:grid md:grid-cols-5 p-1 rounded-xl bg-muted/50 h-auto min-h-[48px] overflow-x-auto scrollbar-none whitespace-nowrap">
+              <TabsTrigger
+                value="members"
+                className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+              >
+                {t("projects:detail.tabs.members")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="milestones"
+                className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+              >
+                {t("projects:detail.tabs.milestones")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="expenses"
+                className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+              >
+                {t("projects:detail.tabs.expenses")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="files"
+                className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+              >
+                {t("projects:detail.tabs.files")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="vouchers"
+                className="rounded-lg py-2 px-4 md:px-2 text-sm min-h-[40px] flex-shrink-0 md:flex-shrink-auto"
+              >
+                {t("projects:detail.tabs.vouchers")}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="mt-4 p-5 rounded-xl border bg-card min-h-[400px]">
+          <div className="mt-4 min-h-[400px] rounded-xl border bg-card p-4 md:p-5">
             <TabsContent value="members" className="m-0 focus-visible:outline-none">
               <ProjectMembersTab
                 projectId={project.id}

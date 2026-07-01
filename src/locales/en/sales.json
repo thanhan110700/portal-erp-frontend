@@ -101,7 +101,8 @@
     "contacts_list": "Contacts List",
     "add_contact": "Add Contact",
     "interactions_list": "Interaction History",
-    "add_interaction": "Record Interaction"
+    "add_interaction": "Record Interaction",
+    "phone": "Phone Number"
   },
   "contact": {
     "columns": {

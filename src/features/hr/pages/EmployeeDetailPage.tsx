@@ -12,6 +12,7 @@ import {
   Briefcase,
   MapPin,
   Shield,
+  FolderKanban,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from "mantine-react-table"
+import { EmptyState } from "@/components/common/EmptyState"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
+import { MobileCardList } from "@/components/common/MobileCardList"
+import { MobileRowActions, type RowAction } from "@/components/common/MobileRowActions"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { useIsMobile } from "@/hooks/useMobile"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
 import { PATHS } from "@/constants/paths"
@@ -82,6 +88,7 @@ export function EmployeeDetailPage() {
   const canEdit = hasPermission(user?.permissions, PermissionSlugs.EditEmployees)
   const canAssignProjects = hasPermission(user?.permissions, PermissionSlugs.EditProjectMembers)
   const canAssignRoles = hasPermission(user?.permissions, PermissionSlugs.EditPermissions)
+  const isMobile = useIsMobile()
 
   const [employee, setEmployee] = useState<Employee | null>(null)
   const [departments, setDepartments] = useState<Department[]>([])
@@ -183,12 +190,12 @@ export function EmployeeDetailPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [id, navigate])
+  }, [id, navigate, t])
 
   useEffect(() => {
-    fetchEmployee()
-    departmentApi.list().then(setDepartments).catch(console.error)
-    optionApi.getEmployees().then(setManagerOptions).catch(console.error)
+    void fetchEmployee()
+    void departmentApi.list().then(setDepartments).catch(console.error)
+    void optionApi.getEmployees().then(setManagerOptions).catch(console.error)
   }, [fetchEmployee])
 
   const handleUpdate = async (
@@ -246,10 +253,36 @@ export function EmployeeDetailPage() {
 
   if (!employee) return null
 
+  const headerActions: RowAction[] = []
+
+  if (canAssignProjects) {
+    headerActions.push({
+      label: t("hr:employees.actions.assign_projects"),
+      icon: <Briefcase className="size-4" />,
+      onClick: () => setProjectDrawerOpen(true),
+    })
+  }
+
+  if (canAssignRoles) {
+    headerActions.push({
+      label: t("hr:employees.actions.assign_role"),
+      icon: <Shield className="size-4" />,
+      onClick: () => setRoleOpen(true),
+    })
+  }
+
+  if (canEdit) {
+    headerActions.push({
+      label: t("common:actions.edit"),
+      icon: <Pencil className="size-4" />,
+      onClick: () => setFormOpen(true),
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* ── Back + Actions ────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4">
         <Button
           variant="ghost"
           size="sm"
@@ -260,47 +293,69 @@ export function EmployeeDetailPage() {
           {t("hr:employees.title")}
         </Button>
 
-        <div className="flex gap-2">
-          {canAssignProjects && (
-            <Button
-              id="btn-assign-projects"
-              size="sm"
-              onClick={() => setProjectDrawerOpen(true)}
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <Briefcase className="size-4" />
-              {t("hr:employees.actions.assign_projects")}
-            </Button>
-          )}
-          {canAssignRoles && (
-            <Button
-              id="btn-assign-role"
-              variant="outline"
-              size="sm"
-              onClick={() => setRoleOpen(true)}
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <Shield className="size-4" />
-              {t("hr:employees.actions.assign_role")}
-            </Button>
-          )}
-          {canEdit && (
-            <Button
-              id="btn-edit-employee"
-              size="sm"
-              onClick={() => setFormOpen(true)}
-              className="gap-2 min-h-11 md:min-h-9"
-            >
-              <Pencil className="size-4" />
-              {t("common:actions.edit")}
-            </Button>
-          )}
-        </div>
+        <MobileActionHeader
+          icon={User}
+          title={employee.full_name}
+          subtitle={
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs">{employee.user_code}</span>
+              <span>{employee.department?.name ?? "—"}</span>
+            </span>
+          }
+          actions={
+            isMobile ? (
+              headerActions.length > 0 ? (
+                <MobileRowActions
+                  actions={headerActions}
+                  triggerLabel={t("common:table.actions")}
+                  drawerTitle={employee.full_name}
+                />
+              ) : undefined
+            ) : (
+              <>
+                {canAssignProjects && (
+                  <Button
+                    id="btn-assign-projects"
+                    size="sm"
+                    onClick={() => setProjectDrawerOpen(true)}
+                    className="gap-2 min-h-11 md:min-h-9"
+                  >
+                    <Briefcase className="size-4" />
+                    {t("hr:employees.actions.assign_projects")}
+                  </Button>
+                )}
+                {canAssignRoles && (
+                  <Button
+                    id="btn-assign-role"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRoleOpen(true)}
+                    className="gap-2 min-h-11 md:min-h-9"
+                  >
+                    <Shield className="size-4" />
+                    {t("hr:employees.actions.assign_role")}
+                  </Button>
+                )}
+                {canEdit && (
+                  <Button
+                    id="btn-edit-employee"
+                    size="sm"
+                    onClick={() => setFormOpen(true)}
+                    className="gap-2 min-h-11 md:min-h-9"
+                  >
+                    <Pencil className="size-4" />
+                    {t("common:actions.edit")}
+                  </Button>
+                )}
+              </>
+            )
+          }
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* ── Left: Identity card ───────────────────────────────────────── */}
-        <Card className="rounded-xl border bg-card">
+        <Card className="rounded-xl border bg-card md:sticky md:top-20">
           <CardContent className="flex flex-col items-center gap-4 pt-6 pb-6">
             {/* Avatar */}
             <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 ring-4 ring-background shadow-sm text-primary text-2xl font-bold">
@@ -426,24 +481,70 @@ export function EmployeeDetailPage() {
           </CardHeader>
           <CardContent>
             {!employee.projects || employee.projects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 rounded-lg border border-dashed">
-                <Briefcase className="size-8 text-muted-foreground/50 mb-3" />
-                <h3 className="text-sm font-medium">
-                  {t("hr:employees.no_projects_title", {
-                    defaultValue: "Nhân viên chưa tham gia dự án nào",
-                  })}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-                  {t("hr:employees.no_projects_description", {
-                    defaultValue:
-                      "Sử dụng nút 'Phân công dự án' để gắn nhân viên này vào các dự án hiện có.",
-                  })}
-                </p>
-              </div>
+              <EmptyState
+                icon={FolderKanban}
+                title={t("hr:employees.no_projects_title", {
+                  defaultValue: "Nhân viên chưa tham gia dự án nào",
+                })}
+                description={t("hr:employees.no_projects_description", {
+                  defaultValue:
+                    "Sử dụng nút 'Phân công dự án' để gắn nhân viên này vào các dự án hiện có.",
+                })}
+              />
             ) : (
-              <div className="rounded-xl border overflow-hidden">
-                <MantineReactTable table={projectTable} />
-              </div>
+              <MobileCardList
+                data={employee.projects}
+                keyExtractor={(project) => project.id}
+                renderCard={(project) => (
+                  <div className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold">{project.project_name}</p>
+                        <p className="mt-1 font-mono text-xs text-muted-foreground">
+                          {project.project_code}
+                        </p>
+                      </div>
+                      <StatusBadge status={project.status} />
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {t("projects:members.fields.role", { defaultValue: "Vai trò" })}
+                        </span>
+                        <p className="mt-1 font-medium">{project.role || "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {t("projects:members.fields.allocation_percent", {
+                            defaultValue: "% Tham gia",
+                          })}
+                        </span>
+                        <p className="mt-1 font-medium">
+                          {project.allocation_percent ? `${project.allocation_percent}%` : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {t("projects:fields.start_date", { defaultValue: "Ngày bắt đầu" })}
+                        </span>
+                        <p className="mt-1 font-medium">{project.start_date || "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {t("projects:fields.end_date", { defaultValue: "Ngày kết thúc" })}
+                        </span>
+                        <p className="mt-1 font-medium">{project.end_date || "—"}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                desktopTable={
+                  <div className="rounded-xl border overflow-hidden">
+                    <MantineReactTable table={projectTable} />
+                  </div>
+                }
+              />
             )}
           </CardContent>
         </Card>

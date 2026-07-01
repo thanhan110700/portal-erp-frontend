@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { TablePagination } from "@/components/common/TablePagination"
 import { FilterPanel, type FilterFieldDef } from "@/components/common/FilterPanel"
+import { MobileActionHeader } from "@/components/common/MobileActionHeader"
 import type { DateRangeValue } from "@/components/ui/date-range-picker-presets"
 import { useAuthStore } from "@/hooks/useAuthStore"
 import { hasPermission, PermissionSlugs } from "@/constants/permissions"
@@ -122,7 +123,7 @@ export function TimesheetListPage() {
   }, [isManager, userFilter, statusFilter, dateFrom, dateTo, page, user?.id, t])
 
   useEffect(() => {
-    fetchTimesheets()
+    void fetchTimesheets()
   }, [fetchTimesheets])
 
   // ── Handlers ─────────────────────────────────────────────────────────────
@@ -223,47 +224,42 @@ export function TimesheetListPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ── Page Header ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ClipboardList className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">{t("hr:timesheet.title")}</h1>
-            <p className="text-sm text-muted-foreground">
-              {isLoading ? t("common:table.loading") : total}
-              {isManager
-                ? ` — ${t("hr:timesheet.mode_manager")}`
-                : ` — ${t("hr:timesheet.mode_my")}`}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            id="btn-refresh-timesheets"
-            variant="outline"
-            size="sm"
-            onClick={fetchTimesheets}
-            disabled={isLoading}
-            className="gap-1.5"
-          >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            {t("common:actions.refresh")}
-          </Button>
-          {canCreate && (
+      <MobileActionHeader
+        icon={ClipboardList}
+        title={t("hr:timesheet.title")}
+        subtitle={
+          <>
+            {isLoading ? t("common:table.loading") : total}
+            {isManager ? ` — ${t("hr:timesheet.mode_manager")}` : ` — ${t("hr:timesheet.mode_my")}`}
+          </>
+        }
+        actions={
+          <>
             <Button
-              id="btn-submit-timesheet"
+              id="btn-refresh-timesheets"
+              variant="outline"
               size="sm"
-              onClick={() => setSubmitOpen(true)}
-              className="gap-2"
+              onClick={fetchTimesheets}
+              disabled={isLoading}
+              className="min-h-11 gap-1.5 md:min-h-9"
             >
-              <Plus className="size-4" />
-              {t("hr:timesheet.create")}
+              <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              {t("common:actions.refresh")}
             </Button>
-          )}
-        </div>
-      </div>
+            {canCreate && (
+              <Button
+                id="btn-submit-timesheet"
+                size="sm"
+                onClick={() => setSubmitOpen(true)}
+                className="min-h-11 gap-2 md:min-h-9"
+              >
+                <Plus className="size-4" />
+                {t("hr:timesheet.create")}
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* ── Stats row ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
